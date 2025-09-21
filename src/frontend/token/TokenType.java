@@ -17,7 +17,7 @@ public enum TokenType {
     Mod("MOD"),
     LT("LSS"),
     LE("LEQ"),
-    GT("GT"),
+    GT("GRE"),
     GE("GEQ"),
     EQ("EQL"),
     NE("NEQ"),
@@ -40,9 +40,10 @@ public enum TokenType {
     If("IFTK"),
     Else("ELSETK"),
     While("WHILETK"),
-    GetInt("GETINTTK"),
     Printf("PRINTFTK"),
     Return("RETURNTK"),
+    Static("STATICTK"),
+    For("FORTK"),
     Unknown("UNKNOWN");
 
     private String alias;
