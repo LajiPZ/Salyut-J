@@ -1,5 +1,7 @@
 package frontend;
 
+import frontend.error.Error;
+import frontend.error.ErrorType;
 import frontend.token.Token;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
@@ -7,6 +9,7 @@ import utils.FileLoc;
 import utils.Pair;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Map;
 import static java.util.Map.entry;
 
@@ -83,10 +86,12 @@ final public class Lexer {
 
     private Reader reader;
     private TokenStream tokenStream;
+    private ArrayList<Error> errors;
 
     public Lexer(String filePath) throws IOException {
         reader = new Reader(filePath);
         tokenStream = new TokenStream();
+        errors = new ArrayList<>();
     }
 
     public boolean analyze() throws IOException {
@@ -110,7 +115,11 @@ final public class Lexer {
             }
         }
 
-        return true;
+        if (errors.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public TokenStream getTokenStream() {
@@ -124,6 +133,14 @@ final public class Lexer {
     public void printTokenStream(String filePath) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
         writer.write(tokenStream.toString());
+        writer.close();
+    }
+
+    public void printErrors(String filePath) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
+        for (Error error : errors) {
+            writer.write(error.toString());
+        }
         writer.close();
     }
 
@@ -233,23 +250,32 @@ final public class Lexer {
                 reader.read();
                 addToken(TokenType.And, "&&", startLoc);
             } else {
-                // TODO: Error handling
+                addError(ErrorType.IllegalSymbol, "&", startLoc);
+                addToken(TokenType.And, "&", startLoc);
             }
         } else if (chr == '|') {
             if (nextChar == '|') {
                 reader.read();
                 addToken(TokenType.Or, "||", startLoc);
             } else {
-                // TODO: Error handling
+                addError(ErrorType.IllegalSymbol, "|", startLoc);
+                addToken(TokenType.Or, "|", startLoc);
             }
         } else {
-            // TODO: Error handling
-            assert TokenTypeMaps.symbols.containsKey(String.valueOf(chr)) : "Invalid symbol: " + chr;
-            addToken(
-                TokenTypeMaps.symbols.get(String.valueOf(chr)),
-                String.valueOf(chr),
-                startLoc
-            );
+            if (TokenTypeMaps.symbols.containsKey(String.valueOf(chr))) {
+                addToken(
+                        TokenTypeMaps.symbols.get(String.valueOf(chr)),
+                        String.valueOf(chr),
+                        startLoc
+                );
+            } else {
+                addToken(
+                        TokenType.Unknown,
+                        String.valueOf(chr),
+                        startLoc
+                );
+                addError(ErrorType.IllegalSymbol, String.valueOf(chr), startLoc);
+            }
         }
     }
 
@@ -258,4 +284,8 @@ final public class Lexer {
         tokenStream.append(token);
     }
 
+    private void addError(ErrorType type, String content, Pair<Integer, Integer> startLoc) {
+        Error err = new Error(type, content, new FileLoc(startLoc, reader.getLocation()));
+        errors.add(err);
+    }
 }

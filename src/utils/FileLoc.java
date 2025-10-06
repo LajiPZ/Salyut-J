@@ -8,4 +8,8 @@ public class FileLoc {
         this.start = start;
         this.end = end;
     }
+
+    public int getStartLine() {
+        return start.getValue1();
+    }
 }

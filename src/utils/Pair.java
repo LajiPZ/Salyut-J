@@ -10,6 +10,10 @@ public class Pair<K,V> {
         this.value2 = value2;
     }
 
+    public K getValue1() {
+        return value1;
+    }
+
     @Override
     public String toString() {
         return "<" + value1.toString() + "," + value2.toString() + ">";

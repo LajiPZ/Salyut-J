@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Salyut-J:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Salyut_J_jar</output-path>
+    <root id="archive" name="Salyut-J.jar">
+      <element id="module-output" name="Salyut-J" />
+    </root>
+  </artifact>
+</component>
