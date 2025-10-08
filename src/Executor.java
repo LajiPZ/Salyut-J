@@ -1,4 +1,5 @@
 import frontend.Lexer;
+import frontend.Parser;
 import frontend.token.TokenStream;
 
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class Executor {
         }
 
         // 2. Syntactic analysis
-
+        Parser parser = new Parser(tokenStream);
 
 
 

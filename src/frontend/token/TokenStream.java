@@ -10,7 +10,10 @@ public class TokenStream {
 
     public void append(Token token) {
         tokens.addLast(token);
-        index++;
+    }
+
+    public Token peek() {
+        return tokens.peek();
     }
 
     public Token peek(int offset) {
@@ -22,7 +25,12 @@ public class TokenStream {
     }
 
     public Token poll() {
+        index++;
         return tokens.poll();
+    }
+
+    public boolean isEnd() {
+        return index >= tokens.size();
     }
 
     @Override
