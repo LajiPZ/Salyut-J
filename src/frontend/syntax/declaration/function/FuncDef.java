@@ -1,8 +1,12 @@
 package frontend.syntax.declaration.function;
 
+import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
 import frontend.syntax.block.Block;
 import frontend.token.Token;
+import frontend.token.TokenStream;
+
+import java.util.List;
 
 public class FuncDef extends ASTNode {
     private FuncType type;
@@ -22,5 +26,10 @@ public class FuncDef extends ASTNode {
         this.ident = ident;
         this.block = block;
         this.fParams = null;
+    }
+
+    public static FuncDef parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+
+        return null;
     }
 }

@@ -1,6 +1,6 @@
 package frontend;
 
-import frontend.error.Error;
+import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -86,7 +86,7 @@ final public class Lexer {
 
     private Reader reader;
     private TokenStream tokenStream;
-    private ArrayList<Error> errors;
+    private ArrayList<ErrorEntry> errors;
 
     public Lexer(String filePath) throws IOException {
         reader = new Reader(filePath);
@@ -138,7 +138,7 @@ final public class Lexer {
 
     public void printErrors(String filePath) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
-        for (Error error : errors) {
+        for (ErrorEntry error : errors) {
             writer.write(error.toString());
         }
         writer.close();
@@ -285,7 +285,7 @@ final public class Lexer {
     }
 
     private void addError(ErrorType type, String content, Pair<Integer, Integer> startLoc) {
-        Error err = new Error(type, content, new FileLoc(startLoc, reader.getLocation()));
+        ErrorEntry err = new ErrorEntry(type, content, new FileLoc(startLoc, reader.getLocation()));
         errors.add(err);
     }
 }

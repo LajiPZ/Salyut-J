@@ -1,15 +1,35 @@
 package frontend.syntax.declaration.object;
 
+import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
+import frontend.token.TokenStream;
+import frontend.token.TokenType;
 
-abstract public class Decl extends ASTNode {
+import java.util.List;
+
+public class Decl extends ASTNode {
     public enum Type {
         ConstDecl, VarDecl
     }
 
     private Type type;
+    private Object value;
 
-    public Decl(Type type) {
-        this.type = type;
+    public Decl(ConstDecl decl) {
+        this.type = Type.ConstDecl;
+        this.value = decl;
+    }
+
+    public Decl(VarDecl decl) {
+        this.type = Type.VarDecl;
+        this.value = decl;
+    }
+
+    public static Decl parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+        if (tokenStream.peek().ofType(TokenType.Const)) {
+            return new Decl(ConstDecl.parse(tokenStream, errors));
+        } else {
+            return new Decl(VarDecl.parse(tokenStream, errors));
+        }
     }
 }
