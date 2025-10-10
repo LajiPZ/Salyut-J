@@ -1,6 +1,10 @@
 package frontend.syntax.expression;
 
+import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
+import frontend.token.TokenStream;
+
+import java.util.List;
 
 public class ConstExp extends ASTNode {
     // TODO: 使用的 Ident 必须是常量
@@ -13,5 +17,9 @@ public class ConstExp extends ASTNode {
 
     public AddExp getAddExp() {
         return addExp;
+    }
+
+    public static ConstExp parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+       return new ConstExp(AddExp.parse(tokenStream, errors));
     }
 }

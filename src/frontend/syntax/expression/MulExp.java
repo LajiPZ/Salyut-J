@@ -1,8 +1,13 @@
 package frontend.syntax.expression;
 
+import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
+import frontend.token.Token;
+import frontend.token.TokenStream;
+import frontend.token.TokenType;
 
 import java.util.ArrayList;
+import java.util.List;
 
 final public class MulExp extends ASTNode {
     public enum MulOperator {
@@ -20,6 +25,23 @@ final public class MulExp extends ASTNode {
     public void addRUnaryExp(MulOperator operator, UnaryExp RUnaryExp) {
         operators.add(operator);
         RUnaryExps.add(RUnaryExp);
+    }
+
+    public static MulExp parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+        MulExp mulExp = new MulExp(UnaryExp.parse(tokenStream,errors));
+        while (tokenStream.check(TokenType.Mul, TokenType.Div, TokenType.Mod)) {
+            // log
+            Token type = tokenStream.poll();
+            MulOperator operator = type.ofType(TokenType.Mul) ? MulOperator.MUL :
+                                   type.ofType(TokenType.Div) ? MulOperator.DIV :
+                                   MulOperator.MOD;
+            mulExp.addRUnaryExp(
+                operator,
+                UnaryExp.parse(tokenStream, errors)
+            );
+        }
+        // log
+        return mulExp;
     }
 
 }

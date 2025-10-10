@@ -1,20 +1,29 @@
 package frontend.syntax.misc;
 
+import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
 import frontend.syntax.expression.Exp;
+import frontend.token.Token;
+import frontend.token.TokenStream;
+import frontend.token.TokenType;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class FuncRParams extends ASTNode {
-    private Exp lExp;
-    private ArrayList<Exp> rExps = new ArrayList<>();
+    private ArrayList<Exp> exps = new ArrayList<>();
 
-    public FuncRParams(Exp lExp) {
-        this.lExp = lExp;
-    }
+    public FuncRParams(Exp exp) { this.exps.add(exp); }
 
     public void addExp (Exp exp) {
-        rExps.add(exp);
+        exps.add(exp);
     }
 
+    public static FuncRParams parse(TokenStream ts, List<ErrorEntry> errors) {
+        FuncRParams retValue =  new FuncRParams(Exp.parse(ts, errors));
+        while (ts.checkPoll(TokenType.Comma)) {
+            retValue.addExp(Exp.parse(ts, errors));
+        }
+        return retValue;
+    }
 }

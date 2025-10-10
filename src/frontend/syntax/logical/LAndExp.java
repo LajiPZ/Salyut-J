@@ -1,18 +1,33 @@
 package frontend.syntax.logical;
 
+import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
+import frontend.token.TokenStream;
+import frontend.token.TokenType;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.ErrorManager;
 
 final public class LAndExp extends ASTNode {
-    private final EqExp LEqExp;
-    private final ArrayList<EqExp> REqExps = new ArrayList<>();
+    private final ArrayList<EqExp> eqExps = new ArrayList<>();
 
-    public LAndExp(EqExp LEqExp) {
-        this.LEqExp = LEqExp;
+    public LAndExp() {}
+
+    public void addEqExp(EqExp EqExp) {
+        this.eqExps.add(EqExp);
     }
 
-    public void addREqExp(EqExp EqExp) {
-        this.REqExps.add(EqExp);
+    public static LAndExp parse(TokenStream ts, List<ErrorEntry> errors) {
+        LAndExp exp = new LAndExp();
+        exp.addEqExp(EqExp.parse(ts, errors));
+        while (ts.check(TokenType.And)) {
+            // TODO
+            ts.poll();
+            exp.addEqExp(EqExp.parse(ts, errors));
+        }
+        // TODO
+        return exp;
     }
 }

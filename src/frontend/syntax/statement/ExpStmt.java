@@ -10,8 +10,7 @@ public class ExpStmt extends Stmt {
         exp = null;
     }
 
-    public ExpStmt(Exp exp) {
-        super(Type.Exp);
+    public void setExp(Exp exp) {
         this.exp = exp;
     }
 }

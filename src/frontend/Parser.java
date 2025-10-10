@@ -19,10 +19,6 @@ final public class Parser {
 
     public boolean parse() {
         this.compileUnit = CompileUnit.parse(tokenStream, errors);
-        if (errors.isEmpty()) {
-            return true;
-        } else {
-            return false;
-        }
+        return errors.isEmpty();
     }
 }

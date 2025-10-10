@@ -34,6 +34,10 @@ public class Token {
         return false;
     }
 
+    public String getValue() {
+        return value;
+    }
+
     /**
      * Check the specified token is of the same type as the current token.
      * @param type TokenType for comparison

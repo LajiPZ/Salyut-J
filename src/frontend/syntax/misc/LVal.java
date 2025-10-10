@@ -1,8 +1,14 @@
 package frontend.syntax.misc;
 
+import frontend.error.ErrorEntry;
+import frontend.error.ErrorType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.expression.Exp;
 import frontend.token.Token;
+import frontend.token.TokenStream;
+import frontend.token.TokenType;
+
+import java.util.List;
 
 public class LVal extends ASTNode {
     private Token ident;
@@ -16,5 +22,19 @@ public class LVal extends ASTNode {
     public LVal(Token ident, Exp index) {
         this.ident = ident;
         this.index = index;
+    }
+
+    public static LVal parse(TokenStream ts, List<ErrorEntry> errors) {
+        Token ident = ts.next(TokenType.Ident);
+        if (ts.checkPoll(TokenType.LeftBracket)) {
+            Exp exp = Exp.parse(ts, errors);
+            if (!ts.checkPoll(TokenType.RightBracket)) {
+                errors.add(
+                    new ErrorEntry(ErrorType.MissingRBracket, "]", ts.peek(-1).getFileLoc())
+                );
+            }
+            return new LVal(ident, exp);
+        }
+        return new LVal(ident);
     }
 }

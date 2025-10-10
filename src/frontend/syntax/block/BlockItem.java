@@ -1,13 +1,19 @@
 package frontend.syntax.block;
 
+import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
 import frontend.syntax.declaration.object.Decl;
 import frontend.syntax.statement.Stmt;
+import frontend.token.TokenStream;
+import frontend.token.TokenType;
+
+import java.util.List;
 
 final public class BlockItem extends ASTNode {
     public enum Type {
         Decl, Stmt
     }
+
     private Type type;
     private Decl decl;
     private Stmt stmt;
@@ -22,5 +28,15 @@ final public class BlockItem extends ASTNode {
         this.type = Type.Stmt;
         this.stmt = stmt;
         this.decl = null;
+    }
+
+    public static BlockItem parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+        if (tokenStream.checkPoll(
+            TokenType.Const, TokenType.Static,
+            TokenType.Int // BType可用的所有类型
+        )) {
+            return new BlockItem(Decl.parse(tokenStream, errors));
+        }
+        return new BlockItem(Stmt.parse(tokenStream, errors));
     }
 }
