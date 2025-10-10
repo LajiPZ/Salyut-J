@@ -1,23 +1,46 @@
 package frontend.syntax.declaration.object;
 
+import frontend.error.ErrorEntry;
+import frontend.error.ErrorType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.expression.ConstExp;
 import frontend.token.Token;
+import frontend.token.TokenStream;
+import frontend.token.TokenType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConstDef extends ASTNode {
     private Token ident;
-    private ConstExp indexExp;
-    private ConstInitVal initVal;
+    private ConstExp indexExp = null;
+    private ConstInitVal initVal = null;
 
-    public ConstDef(Token ident, ConstExp indexExp, ConstInitVal initVal) {
+    public ConstDef(Token ident) {
         this.ident = ident;
-        this.indexExp = indexExp;
+    }
+
+    public void setInitVal(ConstInitVal initVal) {
         this.initVal = initVal;
     }
 
-    public ConstDef(Token ident, ConstInitVal initVal) {
-        this.ident = ident;
-        this.initVal = initVal;
-        this.indexExp = null;
+    public void setIndexExp(ConstExp indexExp) {
+        this.indexExp = indexExp;
+    }
+
+    public static ConstDef parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+        Token ident = tokenStream.next(TokenType.Ident);
+        ConstDef def = new ConstDef(ident);
+        if (tokenStream.checkPoll(TokenType.LeftBracket)) {
+            def.setIndexExp(ConstExp.parse(tokenStream, errors));
+            if (!tokenStream.checkPoll(TokenType.RightBracket)) {
+                errors.add(
+                    new ErrorEntry(ErrorType.MissingRBracket, "]", tokenStream.peek(-1).getFileLoc())
+                );
+            }
+        }
+        tokenStream.next(TokenType.Assign);
+        def.setInitVal(ConstInitVal.parse(tokenStream, errors));
+        return def;
     }
 }

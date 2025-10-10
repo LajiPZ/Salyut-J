@@ -2,6 +2,8 @@ package frontend.token;
 
 import utils.FileLoc;
 
+import java.util.Arrays;
+
 public class Token {
     private TokenType type;
     private String value;
@@ -10,6 +12,10 @@ public class Token {
         this.type = type;
         this.value = value;
         this.loc = loc;
+    }
+
+    public FileLoc getFileLoc() {
+        return loc;
     }
 
     @Override
@@ -35,5 +41,13 @@ public class Token {
      */
     public boolean ofType(TokenType type) {
         return this.type.equals(type);
+    }
+
+    public boolean ofType(TokenType... types) {
+        return Arrays.stream(types).anyMatch(this::ofType);
+    }
+
+    public TokenType getType() {
+        return type;
     }
 }

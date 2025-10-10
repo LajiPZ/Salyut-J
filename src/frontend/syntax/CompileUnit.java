@@ -32,10 +32,11 @@ public class CompileUnit extends ASTNode {
 
     public static CompileUnit parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         CompileUnit compileUnit = new CompileUnit();
+        // int main()
         while (!tokenStream.isEnd()) {
-            if (tokenStream.peek(1).ofType(TokenType.Main)) {
+            if (tokenStream.check(1,TokenType.Main)) {
                 compileUnit.setMainFuncDef(MainFuncDef.parse(tokenStream, errors));
-            } else if (tokenStream.peek(2).ofType(TokenType.LeftParen)) {
+            } else if (tokenStream.check(2,TokenType.LeftParen)) {
                 compileUnit.addFuncDef(FuncDef.parse(tokenStream, errors));
             } else {
                 compileUnit.addDecl(Decl.parse(tokenStream, errors));
