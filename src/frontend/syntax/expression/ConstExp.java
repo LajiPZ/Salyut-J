@@ -20,6 +20,8 @@ public class ConstExp extends ASTNode {
     }
 
     public static ConstExp parse(TokenStream tokenStream, List<ErrorEntry> errors) {
-       return new ConstExp(AddExp.parse(tokenStream, errors));
+       ConstExp exp =  new ConstExp(AddExp.parse(tokenStream, errors));
+       tokenStream.logParse("<ConstExp>");
+       return exp;
     }
 }

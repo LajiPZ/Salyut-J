@@ -34,6 +34,7 @@ public class PrimaryExp extends ASTNode {
     }
 
     public static PrimaryExp parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+        PrimaryExp retExp;
         if (tokenStream.checkPoll(TokenType.LeftParen)) {
             Exp exp = Exp.parse(tokenStream, errors);
             if (!tokenStream.checkPoll(TokenType.RightParen)) {
@@ -41,12 +42,14 @@ public class PrimaryExp extends ASTNode {
                     new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.peek(-1).getFileLoc())
                 );
             }
-            return new PrimaryExp(exp);
+            retExp = new PrimaryExp(exp);
+        } else if (tokenStream.check(TokenType.Int)) {
+            retExp = new PrimaryExp(Number.parse(tokenStream, errors));
+        } else {
+            retExp = new PrimaryExp(LVal.parse(tokenStream, errors));
         }
-        if (tokenStream.check(TokenType.Int)) {
-            return new PrimaryExp(Number.parse(tokenStream, errors));
-        }
-        return new PrimaryExp(LVal.parse(tokenStream, errors));
+        tokenStream.logParse("<PrimaryExp>");
+        return retExp;
     }
 
 }

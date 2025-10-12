@@ -21,13 +21,17 @@ public class FuncType extends ASTNode {
 
     public static FuncType parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         Token type = tokenStream.next(TokenType.Void, TokenType.Int);
+        FuncType funcType = null;
         switch (type.getType()) {
             case Int:
-                return new FuncType(Type.Int);
+                funcType = new FuncType(Type.Int);
+                break;
             case Void:
-                return new FuncType(Type.Void);
-            default:
-                return null;
+                funcType =  new FuncType(Type.Void);
+                break;
+            default: {}
         }
+        tokenStream.logParse("<FuncType>");
+        return funcType;
     }
 }

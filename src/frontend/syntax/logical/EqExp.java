@@ -30,14 +30,14 @@ final public class EqExp extends ASTNode {
     public static EqExp parse(TokenStream ts, List<ErrorEntry> errors) {
         EqExp exp = new EqExp(RelationExp.parse(ts, errors));
         while (ts.check(TokenType.EQ, TokenType.NE)) {
-            // log
+            ts.logParse("<EqExp>");
             Token operator = ts.poll();
             exp.addRRelExp(
                 operator.ofType(TokenType.EQ) ? EqOperator.EQ : EqOperator.NE,
                 RelationExp.parse(ts,errors)
             );
         }
-        // log
+        ts.logParse("<EqExp>");
         return exp;
     }
 

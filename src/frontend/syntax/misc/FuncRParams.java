@@ -24,6 +24,7 @@ public class FuncRParams extends ASTNode {
         while (ts.checkPoll(TokenType.Comma)) {
             retValue.addExp(Exp.parse(ts, errors));
         }
+        ts.logParse("<FuncRParams>");
         return retValue;
     }
 }

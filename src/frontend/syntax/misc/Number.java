@@ -17,6 +17,7 @@ public class Number extends ASTNode {
 
     public static Number parse(TokenStream ts, List<ErrorEntry> errors) {
         Token t = ts.next(TokenType.IntConst);
+        ts.logParse("<Number>");
         return new Number(Integer.parseInt(t.getValue()));
     }
 }

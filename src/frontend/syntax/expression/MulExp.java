@@ -30,7 +30,7 @@ final public class MulExp extends ASTNode {
     public static MulExp parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         MulExp mulExp = new MulExp(UnaryExp.parse(tokenStream,errors));
         while (tokenStream.check(TokenType.Mul, TokenType.Div, TokenType.Mod)) {
-            // log
+            tokenStream.logParse("<MulExp>");
             Token type = tokenStream.poll();
             MulOperator operator = type.ofType(TokenType.Mul) ? MulOperator.MUL :
                                    type.ofType(TokenType.Div) ? MulOperator.DIV :
@@ -40,7 +40,7 @@ final public class MulExp extends ASTNode {
                 UnaryExp.parse(tokenStream, errors)
             );
         }
-        // log
+        tokenStream.logParse("<MulExp>");
         return mulExp;
     }
 

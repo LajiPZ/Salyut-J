@@ -32,7 +32,7 @@ final public class RelationExp extends ASTNode {
     public static RelationExp parse(TokenStream ts, List<ErrorEntry> errors) {
         RelationExp exp = new RelationExp(AddExp.parse(ts, errors));
         while (ts.check(TokenType.LT, TokenType.GT, TokenType.LE, TokenType.GE)) {
-            // log
+            ts.logParse("<RelExp>");
             Token t = ts.poll();
             RelationOperator operator = t.ofType(TokenType.LT) ? RelationOperator.LT :
                                         t.ofType(TokenType.GT) ? RelationOperator.GT :
@@ -40,7 +40,7 @@ final public class RelationExp extends ASTNode {
                                         RelationOperator.GE;
             exp.addRAddExp(operator, AddExp.parse(ts, errors));
         }
-        // log
+        ts.logParse("<RelExp>");
         return exp;
     }
 

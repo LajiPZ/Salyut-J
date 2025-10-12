@@ -26,10 +26,13 @@ public class Decl extends ASTNode {
     }
 
     public static Decl parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+        Decl decl;
         if (tokenStream.check(TokenType.Const)) {
-            return new Decl(ConstDecl.parse(tokenStream, errors));
+            decl = new Decl(ConstDecl.parse(tokenStream, errors));
         } else {
-            return new Decl(VarDecl.parse(tokenStream, errors));
+            decl = new Decl(VarDecl.parse(tokenStream, errors));
         }
+        tokenStream.logParse("<Decl>");
+        return decl;
     }
 }

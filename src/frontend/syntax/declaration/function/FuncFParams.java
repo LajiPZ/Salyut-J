@@ -22,6 +22,7 @@ public class FuncFParams extends ASTNode {
         do {
             funcFParams.addFuncFParam(FuncFParam.parse(tokenStream, errors));
         } while(tokenStream.checkPoll(TokenType.Comma));
+        tokenStream.logParse("<FuncFParams>");
         return funcFParams;
     }
 }

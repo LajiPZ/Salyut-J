@@ -1,5 +1,10 @@
 package frontend.token;
 
+import settings.Settings;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
@@ -10,6 +15,7 @@ public class TokenStream {
     private int index = 0;
     private boolean hasCheckpoint = false;
     private int checkpoint = 0;
+    private StringBuilder parseLog = new StringBuilder();
 
     public void append(Token token) {
         tokens.addLast(token);
@@ -29,12 +35,17 @@ public class TokenStream {
 
     public Token poll() {
         index++;
-        return hasCheckpoint ? tokens.get(index) : tokens.poll();
+        Token token = hasCheckpoint ? tokens.get(index) : tokens.poll();
+        if (Settings.PrintConfig.printParseProcess) {
+            assert token != null;
+            logParse(token.toString());
+        }
+        return token;
     }
 
     public Token next(TokenType... types) {
         if (check(types)) {
-            return hasCheckpoint ? tokens.get(index) : tokens.poll();
+            return poll();
         } else {
             throw new IllegalStateException("Expecting " + Arrays.toString(types) + "but got " + tokens.peek());
         }
@@ -80,6 +91,16 @@ public class TokenStream {
 
     public boolean isEnd() {
         return index >= tokens.size();
+    }
+
+    public void logParse(String log) {
+        parseLog.append(log);
+    }
+
+    public void printParseLog(String filePath) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
+        writer.write(parseLog.toString());
+        writer.close();
     }
 
     @Override

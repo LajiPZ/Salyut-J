@@ -18,6 +18,8 @@ final public class CondExp extends ASTNode {
     }
 
     public static CondExp parse(TokenStream tokenStream, List<ErrorEntry> errors) {
-        return new CondExp(LOrExp.parse(tokenStream, errors));
+        CondExp condExp = new CondExp(LOrExp.parse(tokenStream, errors));
+        tokenStream.logParse("<Cond>");
+        return condExp;
     }
 }

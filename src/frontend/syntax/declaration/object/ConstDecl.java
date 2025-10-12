@@ -34,6 +34,7 @@ public class ConstDecl extends ASTNode {
                 new ErrorEntry(ErrorType.MissingSemicolon,";",tokenStream.peek(-1).getFileLoc())
             );
         }
+        tokenStream.logParse("<ConstDecl>");
         return decl;
     }
 }

@@ -21,11 +21,11 @@ final public class LOrExp extends ASTNode {
         LOrExp lOrExp = new LOrExp();
         lOrExp.addLAndExp(LAndExp.parse(ts, errors));
         while (ts.check(TokenType.Or)) {
-            // TODO: log <LOrExp>
+            ts.logParse("<LOrExp>");
             ts.poll();
             lOrExp.addLAndExp(LAndExp.parse(ts, errors));
         }
-        // TODO: log <LOrExp>
+        ts.logParse("<LOrExp>");
         return lOrExp;
     }
 }

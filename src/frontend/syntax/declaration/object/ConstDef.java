@@ -41,6 +41,7 @@ public class ConstDef extends ASTNode {
         }
         tokenStream.next(TokenType.Assign);
         def.setInitVal(ConstInitVal.parse(tokenStream, errors));
+        tokenStream.logParse("<ConstDef>");
         return def;
     }
 }

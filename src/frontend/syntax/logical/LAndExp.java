@@ -23,11 +23,11 @@ final public class LAndExp extends ASTNode {
         LAndExp exp = new LAndExp();
         exp.addEqExp(EqExp.parse(ts, errors));
         while (ts.check(TokenType.And)) {
-            // TODO
+            ts.logParse("<LAndExp>");
             ts.poll();
             exp.addEqExp(EqExp.parse(ts, errors));
         }
-        // TODO
+        ts.logParse("<LAndExp>");
         return exp;
     }
 }

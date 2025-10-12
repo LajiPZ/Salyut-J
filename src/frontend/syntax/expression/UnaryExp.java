@@ -22,6 +22,7 @@ public abstract class UnaryExp extends ASTNode {
     }
 
     public static UnaryExp parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+        UnaryExp retExp;
         if (tokenStream.check(TokenType.Ident) && tokenStream.check(1, TokenType.LeftParen)) {
             Token ident = tokenStream.poll();
             tokenStream.poll(); // (
@@ -31,14 +32,17 @@ public abstract class UnaryExp extends ASTNode {
                     new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.peek(-1).getFileLoc())
                 );
             }
-            return new UnaryCallExp(ident, params);
+            retExp = new UnaryCallExp(ident, params);
         } else if (tokenStream.check(TokenType.Plus, TokenType.Minus, TokenType.Not)) {
             Token opToken = tokenStream.poll();
             UnaryOpExp.UnaryOp op = opToken.ofType(TokenType.Plus) ? UnaryOpExp.UnaryOp.PLUS :
                 opToken.ofType(TokenType.Minus) ? UnaryOpExp.UnaryOp.MINUS : UnaryOpExp.UnaryOp.NOT;
-            return new UnaryOpExp(op, UnaryExp.parse(tokenStream, errors));
+            tokenStream.logParse("<UnaryOp>"); // 懒得再给UnaryOp写了，就这样吧
+            retExp = new UnaryOpExp(op, UnaryExp.parse(tokenStream, errors));
         } else {
-            return new UnaryPrimaryExp(PrimaryExp.parse(tokenStream, errors));
+            retExp = new UnaryPrimaryExp(PrimaryExp.parse(tokenStream, errors));
         }
+        tokenStream.logParse("<UnaryExp>");
+        return retExp;
     }
 }

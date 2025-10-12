@@ -18,6 +18,8 @@ final public class Exp extends ASTNode {
     }
 
     public static Exp parse(TokenStream tokenStream, List<ErrorEntry> errors) {
-        return new Exp(AddExp.parse(tokenStream, errors));
+        Exp exp = new Exp(AddExp.parse(tokenStream, errors));
+        tokenStream.logParse("<Exp>");
+        return exp;
     }
 }

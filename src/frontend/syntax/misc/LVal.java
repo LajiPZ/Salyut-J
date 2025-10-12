@@ -26,6 +26,7 @@ public class LVal extends ASTNode {
 
     public static LVal parse(TokenStream ts, List<ErrorEntry> errors) {
         Token ident = ts.next(TokenType.Ident);
+        LVal lval;
         if (ts.checkPoll(TokenType.LeftBracket)) {
             Exp exp = Exp.parse(ts, errors);
             if (!ts.checkPoll(TokenType.RightBracket)) {
@@ -33,8 +34,11 @@ public class LVal extends ASTNode {
                     new ErrorEntry(ErrorType.MissingRBracket, "]", ts.peek(-1).getFileLoc())
                 );
             }
-            return new LVal(ident, exp);
+            lval = new LVal(ident, exp);
+        } else {
+            lval =  new LVal(ident);
         }
-        return new LVal(ident);
+        ts.logParse("<LVal>");
+        return lval;
     }
 }

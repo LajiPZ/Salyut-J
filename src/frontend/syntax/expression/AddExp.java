@@ -30,14 +30,14 @@ final public class AddExp extends ASTNode {
     public static AddExp parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         AddExp exp = new AddExp(MulExp.parse(tokenStream, errors));
         while (tokenStream.check(TokenType.Plus, TokenType.Minus)) {
-            // log
+            tokenStream.logParse("<AddExp>");
             Token type = tokenStream.poll();
             AddOperator operator = type.ofType(TokenType.Plus) ? AddOperator.ADD : AddOperator.SUB;
             exp.addRMulExp(
                 operator, MulExp.parse(tokenStream,errors)
             );
         }
-        // log
+        tokenStream.logParse("<AddExp>");
         return exp;
     }
 

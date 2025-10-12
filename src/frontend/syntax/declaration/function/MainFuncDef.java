@@ -32,6 +32,7 @@ public class MainFuncDef extends ASTNode {
             );
         }
         mainFuncDef.setBlock(Block.parse(tokenStream, errors));
+        tokenStream.logParse("<MainFuncDef>");
         return mainFuncDef;
     }
 }

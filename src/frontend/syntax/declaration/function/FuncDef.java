@@ -43,6 +43,7 @@ public class FuncDef extends ASTNode {
             );
         }
         funcDef.setBlock(Block.parse(tokenStream, errors));
+        tokenStream.logParse("<FuncDef>");
         return funcDef;
     }
 }

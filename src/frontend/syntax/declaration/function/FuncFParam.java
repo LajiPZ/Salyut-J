@@ -29,15 +29,18 @@ public class FuncFParam extends ASTNode {
     public static FuncFParam parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         BType type = BType.parse(tokenStream, errors);
         Token ident = tokenStream.next(TokenType.Ident);
+        FuncFParam funcFParam;
         if (tokenStream.checkPoll(TokenType.LeftBracket)) {
             if (!tokenStream.checkPoll(TokenType.RightBracket)) {
                 errors.add(
                     new ErrorEntry(ErrorType.MissingRBracket, "]", tokenStream.peek(-1).getFileLoc())
                 );
             }
-            return new FuncFParam(type, ident, 1);
+            funcFParam = new FuncFParam(type, ident, 1);
         } else {
-            return new FuncFParam(type, ident);
+            funcFParam =  new FuncFParam(type, ident);
         }
+        tokenStream.logParse("<FuncFParam>");
+        return funcFParam;
     }
 }

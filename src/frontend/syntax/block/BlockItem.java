@@ -31,12 +31,16 @@ final public class BlockItem extends ASTNode {
     }
 
     public static BlockItem parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+        BlockItem blockItem;
         if (tokenStream.checkPoll(
             TokenType.Const, TokenType.Static,
             TokenType.Int // BType可用的所有类型
         )) {
-            return new BlockItem(Decl.parse(tokenStream, errors));
+            blockItem = new BlockItem(Decl.parse(tokenStream, errors));
+        } else {
+            blockItem = new BlockItem(Stmt.parse(tokenStream, errors));
         }
-        return new BlockItem(Stmt.parse(tokenStream, errors));
+        tokenStream.logParse("<BlockItem>");
+        return blockItem;
     }
 }

@@ -35,6 +35,7 @@ final public class ForStmt extends ASTNode {
             Exp exp2 = Exp.parse(ts, errors);
             forStmt.addExtraStmt(lVal2, exp2);
         }
+        ts.logParse("<ForStmt>");
         return forStmt;
     }
 }

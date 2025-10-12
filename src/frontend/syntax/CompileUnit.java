@@ -42,6 +42,7 @@ public class CompileUnit extends ASTNode {
                 compileUnit.addDecl(Decl.parse(tokenStream, errors));
             }
         }
+        tokenStream.logParse("<CompUnit>");
         return compileUnit;
     }
 }

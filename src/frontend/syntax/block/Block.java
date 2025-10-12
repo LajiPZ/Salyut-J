@@ -27,6 +27,7 @@ public class Block {
             );
         }
         tokenStream.next(TokenType.RightBrace);
+        tokenStream.logParse("<Block>");
         return block;
     }
 }

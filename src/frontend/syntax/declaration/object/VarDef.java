@@ -46,6 +46,7 @@ public class VarDef extends ASTNode {
                 InitVal.parse(tokenStream, errors)
             );
         }
+        tokenStream.logParse("<VarDef>");
         return varDef;
     }
 }

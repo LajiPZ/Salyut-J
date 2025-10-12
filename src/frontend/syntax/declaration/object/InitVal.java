@@ -51,6 +51,7 @@ public class InitVal extends ASTNode {
                 Exp.parse(tokenStream, errors)
             );
         }
+        tokenStream.logParse("<InitVal>");
         return initVal;
     }
 }

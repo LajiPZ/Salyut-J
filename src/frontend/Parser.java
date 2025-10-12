@@ -4,6 +4,9 @@ import frontend.error.ErrorEntry;
 import frontend.syntax.CompileUnit;
 import frontend.token.TokenStream;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 final public class Parser {
@@ -20,5 +23,17 @@ final public class Parser {
     public boolean parse() {
         this.compileUnit = CompileUnit.parse(tokenStream, errors);
         return errors.isEmpty();
+    }
+
+    public CompileUnit getCompileUnit() {
+        return compileUnit;
+    }
+
+    public void printErrors(String filePath) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
+        for (ErrorEntry error : errors) {
+            writer.write(error.toString());
+        }
+        writer.close();
     }
 }

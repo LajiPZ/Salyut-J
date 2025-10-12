@@ -51,6 +51,7 @@ public class ConstInitVal extends ASTNode {
                 ConstExp.parse(tokenStream, errors)
             );
         }
+        tokenStream.logParse("<ConstInitVal>");
         return initVal;
     }
 }

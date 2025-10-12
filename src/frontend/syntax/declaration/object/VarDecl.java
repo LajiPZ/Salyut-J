@@ -36,6 +36,7 @@ public class VarDecl extends ASTNode {
                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.peek(-1).getFileLoc())
             );
         }
+        tokenStream.logParse("<VarDecl>");
         return varDecl;
     }
 }
