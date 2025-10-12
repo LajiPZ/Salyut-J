@@ -10,6 +10,7 @@ import utils.Pair;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import static java.util.Map.entry;
 
@@ -136,12 +137,8 @@ final public class Lexer {
         writer.close();
     }
 
-    public void printErrors(String filePath) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
-        for (ErrorEntry error : errors) {
-            writer.write(error.toString());
-        }
-        writer.close();
+    public List<ErrorEntry> getErrors() {
+        return errors;
     }
 
     private void scanNumber() throws IOException {

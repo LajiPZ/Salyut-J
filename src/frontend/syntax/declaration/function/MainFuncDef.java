@@ -28,7 +28,7 @@ public class MainFuncDef extends ASTNode {
         tokenStream.next(TokenType.LeftParen);
         if (!tokenStream.checkPoll(TokenType.RightParen)) {
             errors.add(
-                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.peek(-1).getFileLoc())
+                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
             );
         }
         mainFuncDef.setBlock(Block.parse(tokenStream, errors));

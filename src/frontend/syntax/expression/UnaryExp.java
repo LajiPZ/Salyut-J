@@ -25,14 +25,18 @@ public abstract class UnaryExp extends ASTNode {
         UnaryExp retExp;
         if (tokenStream.check(TokenType.Ident) && tokenStream.check(1, TokenType.LeftParen)) {
             Token ident = tokenStream.poll();
+            retExp = new UnaryCallExp(ident);
             tokenStream.poll(); // (
-            FuncRParams params = FuncRParams.parse(tokenStream, errors);
+            if (!tokenStream.check(TokenType.RightParen)) {
+                FuncRParams params = FuncRParams.parse(tokenStream, errors);
+                ((UnaryCallExp)retExp).setFuncRParams(params);
+            }
             if (!tokenStream.checkPoll(TokenType.RightParen)) {
                 errors.add(
-                    new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.peek(-1).getFileLoc())
+                    new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
                 );
             }
-            retExp = new UnaryCallExp(ident, params);
+
         } else if (tokenStream.check(TokenType.Plus, TokenType.Minus, TokenType.Not)) {
             Token opToken = tokenStream.poll();
             UnaryOpExp.UnaryOp op = opToken.ofType(TokenType.Plus) ? UnaryOpExp.UnaryOp.PLUS :

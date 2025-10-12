@@ -13,20 +13,23 @@ public class TokenStream {
 
     private LinkedList<Token> tokens = new LinkedList<>();
     private int index = 0;
+    private int size = 0;
     private boolean hasCheckpoint = false;
     private int checkpoint = 0;
     private StringBuilder parseLog = new StringBuilder();
+    private Token prevToken = null;
 
     public void append(Token token) {
         tokens.addLast(token);
+        size++;
     }
 
     public Token peek() {
-        return hasCheckpoint ? tokens.get(index) : tokens.peek();
+        return hasCheckpoint ? tokens.get(index - checkpoint) : tokens.peek();
     }
 
     public Token peek(int offset) {
-        int pos = index + offset;
+        int pos = hasCheckpoint ? index - checkpoint + offset: offset;
         if (0 <= pos && pos < tokens.size()) {
             return tokens.get(pos);
         }
@@ -34,12 +37,13 @@ public class TokenStream {
     }
 
     public Token poll() {
+        Token token = hasCheckpoint ? tokens.get(index - checkpoint) : tokens.poll();
         index++;
-        Token token = hasCheckpoint ? tokens.get(index) : tokens.poll();
         if (Settings.PrintConfig.printParseProcess) {
             assert token != null;
             logParse(token.toString());
         }
+        prevToken = token;
         return token;
     }
 
@@ -47,7 +51,7 @@ public class TokenStream {
         if (check(types)) {
             return poll();
         } else {
-            throw new IllegalStateException("Expecting " + Arrays.toString(types) + "but got " + tokens.peek());
+            throw new IllegalStateException("Expecting " + Arrays.toString(types) + " but got " + tokens.peek());
         }
     }
 
@@ -90,11 +94,19 @@ public class TokenStream {
     }
 
     public boolean isEnd() {
-        return index >= tokens.size();
+        return index >= size;
     }
 
     public void logParse(String log) {
-        parseLog.append(log);
+        if (!hasCheckpoint) {
+            // System.out.println(log);
+            parseLog.append(log);
+            parseLog.append("\n");
+        }
+    }
+
+    public Token getPrevToken() {
+        return prevToken;
     }
 
     public void printParseLog(String filePath) throws IOException {

@@ -5,12 +5,13 @@ import frontend.token.Token;
 
 public class UnaryCallExp extends UnaryExp {
     private Token ident;
-    private FuncRParams params;
+    private FuncRParams params = null;
 
-    public UnaryCallExp(Token ident, FuncRParams params) {
+    public UnaryCallExp(Token ident) {
         super(Type.Call);
         this.ident = ident;
-        this.params = params;
     }
+
+    public void setFuncRParams(FuncRParams params) { this.params = params; }
 
 }

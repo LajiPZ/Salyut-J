@@ -13,10 +13,18 @@ public class ErrorEntry {
         this.fileLoc = fileLoc;
     }
 
+    public int getErrorLine() {
+        return fileLoc.getStartLine();
+    }
+
+    public ErrorType getType() {
+        return type;
+    }
+
     @Override
     public String toString() {
         char typeCode = (char) ('a' + type.ordinal());
-        return (fileLoc.getStartLine() + " " + typeCode);
+        return (getErrorLine() + " " + typeCode + "\n");
     }
 }
 

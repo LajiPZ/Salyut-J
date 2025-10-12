@@ -32,7 +32,7 @@ final public class BlockItem extends ASTNode {
 
     public static BlockItem parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         BlockItem blockItem;
-        if (tokenStream.checkPoll(
+        if (tokenStream.check(
             TokenType.Const, TokenType.Static,
             TokenType.Int // BType可用的所有类型
         )) {
@@ -40,7 +40,7 @@ final public class BlockItem extends ASTNode {
         } else {
             blockItem = new BlockItem(Stmt.parse(tokenStream, errors));
         }
-        tokenStream.logParse("<BlockItem>");
+        // tokenStream.logParse("<BlockItem>");
         return blockItem;
     }
 }

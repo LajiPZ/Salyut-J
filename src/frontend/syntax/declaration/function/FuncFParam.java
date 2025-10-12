@@ -33,7 +33,7 @@ public class FuncFParam extends ASTNode {
         if (tokenStream.checkPoll(TokenType.LeftBracket)) {
             if (!tokenStream.checkPoll(TokenType.RightBracket)) {
                 errors.add(
-                    new ErrorEntry(ErrorType.MissingRBracket, "]", tokenStream.peek(-1).getFileLoc())
+                    new ErrorEntry(ErrorType.MissingRBracket, "]", tokenStream.getPrevToken().getFileLoc())
                 );
             }
             funcFParam = new FuncFParam(type, ident, 1);

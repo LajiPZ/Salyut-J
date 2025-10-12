@@ -39,11 +39,11 @@ public class PrimaryExp extends ASTNode {
             Exp exp = Exp.parse(tokenStream, errors);
             if (!tokenStream.checkPoll(TokenType.RightParen)) {
                 errors.add(
-                    new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.peek(-1).getFileLoc())
+                    new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
                 );
             }
             retExp = new PrimaryExp(exp);
-        } else if (tokenStream.check(TokenType.Int)) {
+        } else if (tokenStream.check(TokenType.IntConst)) {
             retExp = new PrimaryExp(Number.parse(tokenStream, errors));
         } else {
             retExp = new PrimaryExp(LVal.parse(tokenStream, errors));

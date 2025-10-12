@@ -73,7 +73,7 @@ abstract public class Stmt extends ASTNode {
         Token token = tokenStream.poll();
         if (!tokenStream.checkPoll(TokenType.Semicolon)) {
             errors.add(
-                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.peek(-1).getFileLoc())
+                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
             );
         }
         return new ContinueStmt(token);
@@ -85,7 +85,7 @@ abstract public class Stmt extends ASTNode {
         CondExp cond = CondExp.parse(tokenStream, errors);
         if (!tokenStream.checkPoll(TokenType.RightParen)) {
             errors.add(
-                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.peek(-1).getFileLoc())
+                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
             );
         }
         Stmt stmt = Stmt.parse(tokenStream, errors);
@@ -106,7 +106,7 @@ abstract public class Stmt extends ASTNode {
         ForStmt step = tokenStream.check(TokenType.RightParen) ? null : ForStmt.parse(tokenStream, errors);
         if (!tokenStream.checkPoll(TokenType.RightParen)) {
             errors.add(
-                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.peek(-1).getFileLoc())
+                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
             );
         }
         Stmt stmt = Stmt.parse(tokenStream, errors);
@@ -117,7 +117,7 @@ abstract public class Stmt extends ASTNode {
         Token token = tokenStream.poll();
         if (!tokenStream.checkPoll(TokenType.Semicolon)) {
             errors.add(
-                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.peek(-1).getFileLoc())
+                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
             );
         }
         return new BreakStmt(token);
@@ -133,12 +133,12 @@ abstract public class Stmt extends ASTNode {
         }
         if (!tokenStream.checkPoll(TokenType.RightParen)) {
             errors.add(
-                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.peek(-1).getFileLoc())
+                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
             );
         }
         if (!tokenStream.checkPoll(TokenType.Semicolon)) {
             errors.add(
-                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.peek(-1).getFileLoc())
+                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
             );
         }
         return retStmt;
@@ -150,14 +150,14 @@ abstract public class Stmt extends ASTNode {
             Exp expr = Exp.parse(tokenStream, errors);
             if (!tokenStream.checkPoll(TokenType.Semicolon)) {
                 errors.add(
-                    new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.peek(-1).getFileLoc())
+                    new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
                 );
             }
             return new ReturnStmt(token,expr);
         }
         if (!tokenStream.checkPoll(TokenType.Semicolon)) {
             errors.add(
-                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.peek(-1).getFileLoc())
+                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
             );
         }
         tokenStream.next(TokenType.Semicolon);
@@ -171,18 +171,18 @@ abstract public class Stmt extends ASTNode {
             Exp exp = Exp.parse(tokenStream, errors);
             if (!tokenStream.checkPoll(TokenType.Semicolon)) {
                 errors.add(
-                    new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.peek(-1).getFileLoc())
+                    new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
                 );
             }
             return new AssignStmt(lVal, exp);
         } else {
             ExpStmt stmt = new ExpStmt();
-            if (tokenStream.check(TokenType.Semicolon)) {
+            if (!tokenStream.check(TokenType.Semicolon)) {
                 stmt.setExp(Exp.parse(tokenStream, errors));
             }
             if (!tokenStream.checkPoll(TokenType.Semicolon)) {
                 errors.add(
-                    new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.peek(-1).getFileLoc())
+                    new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
                 );
             }
             return stmt;

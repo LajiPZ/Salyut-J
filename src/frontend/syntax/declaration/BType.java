@@ -22,7 +22,7 @@ final public class BType extends ASTNode {
     public static BType parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         Token type = tokenStream.next(TokenType.Int);
         if (type.ofType(TokenType.Int)) {
-            tokenStream.logParse("<BType>");
+            // tokenStream.logParse("<BType>");
             return new BType(Type.Int);
         }
         return null;

@@ -36,7 +36,7 @@ public class VarDef extends ASTNode {
             ConstExp exp = ConstExp.parse(tokenStream, errors);
             if (!tokenStream.checkPoll(TokenType.RightBracket)) {
                 errors.add(
-                    new ErrorEntry(ErrorType.MissingRBracket, "]", tokenStream.peek(-1).getFileLoc())
+                    new ErrorEntry(ErrorType.MissingRBracket, "]", tokenStream.getPrevToken().getFileLoc())
                 );
             }
             varDef.setIndexExp(exp);

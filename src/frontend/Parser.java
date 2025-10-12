@@ -8,6 +8,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 final public class Parser {
     private TokenStream tokenStream;
@@ -29,11 +30,7 @@ final public class Parser {
         return compileUnit;
     }
 
-    public void printErrors(String filePath) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
-        for (ErrorEntry error : errors) {
-            writer.write(error.toString());
-        }
-        writer.close();
+    public List<ErrorEntry> getErrors() {
+        return errors;
     }
 }

@@ -39,7 +39,7 @@ public class FuncDef extends ASTNode {
         }
         if (!tokenStream.checkPoll(TokenType.RightParen)) {
             errors.add(
-                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.peek(-1).getFileLoc())
+                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
             );
         }
         funcDef.setBlock(Block.parse(tokenStream, errors));

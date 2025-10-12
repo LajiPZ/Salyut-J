@@ -33,7 +33,7 @@ public class VarDecl extends ASTNode {
         } while (tokenStream.checkPoll(TokenType.Comma));
         if (!tokenStream.checkPoll(TokenType.Semicolon)) {
             errors.add(
-               new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.peek(-1).getFileLoc())
+               new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
             );
         }
         tokenStream.logParse("<VarDecl>");

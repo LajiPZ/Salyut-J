@@ -32,7 +32,7 @@ public class Decl extends ASTNode {
         } else {
             decl = new Decl(VarDecl.parse(tokenStream, errors));
         }
-        tokenStream.logParse("<Decl>");
+        // tokenStream.logParse("<Decl>");
         return decl;
     }
 }
