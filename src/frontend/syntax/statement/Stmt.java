@@ -160,7 +160,6 @@ abstract public class Stmt extends ASTNode {
                 new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
             );
         }
-        tokenStream.next(TokenType.Semicolon);
         return new ReturnStmt(token);
     }
 

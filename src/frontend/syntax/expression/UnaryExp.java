@@ -27,9 +27,13 @@ public abstract class UnaryExp extends ASTNode {
             Token ident = tokenStream.poll();
             retExp = new UnaryCallExp(ident);
             tokenStream.poll(); // (
+            // 可能出现无可选项，但缺右括号的情况
+            // 此时parse必定出例外，故套个catch，交给下面括号匹配检查即可
             if (!tokenStream.check(TokenType.RightParen)) {
-                FuncRParams params = FuncRParams.parse(tokenStream, errors);
-                ((UnaryCallExp)retExp).setFuncRParams(params);
+                try {
+                    FuncRParams params = FuncRParams.parse(tokenStream, errors);
+                    ((UnaryCallExp)retExp).setFuncRParams(params);
+                } catch (Exception e) {}
             }
             if (!tokenStream.checkPoll(TokenType.RightParen)) {
                 errors.add(

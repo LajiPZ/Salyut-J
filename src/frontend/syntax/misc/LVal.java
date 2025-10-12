@@ -31,7 +31,7 @@ public class LVal extends ASTNode {
             Exp exp = Exp.parse(ts, errors);
             if (!ts.checkPoll(TokenType.RightBracket)) {
                 errors.add(
-                    new ErrorEntry(ErrorType.MissingRBracket, "]", ts.peek(-1).getFileLoc())
+                    new ErrorEntry(ErrorType.MissingRBracket, "]", ts.getPrevToken().getFileLoc())
                 );
             }
             lval = new LVal(ident, exp);

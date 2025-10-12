@@ -35,7 +35,11 @@ public class FuncDef extends ASTNode {
         FuncDef funcDef = new FuncDef(type, ident);
         tokenStream.next(TokenType.LeftParen);
         if (!tokenStream.check(TokenType.RightParen)) {
-            funcDef.setfParams(FuncFParams.parse(tokenStream, errors));
+            // 可能出现无可选项，但缺右括号的情况
+            // 此时parse必定出例外，故套个catch，交给下面括号匹配检查即可
+            try {
+                funcDef.setfParams(FuncFParams.parse(tokenStream, errors));
+            } catch (Exception e) {}
         }
         if (!tokenStream.checkPoll(TokenType.RightParen)) {
             errors.add(
