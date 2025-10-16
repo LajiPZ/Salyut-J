@@ -39,6 +39,7 @@ public class Executor {
             collectErrors(parser.getErrors());
         }
 
+        // 2.5 Symbol table
 
 
         // 3. Intermediate code generation
