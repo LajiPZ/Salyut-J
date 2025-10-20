@@ -4,11 +4,10 @@ import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.symbol.FuncSymbol;
-import frontend.symbol.ValSymbol;
 import frontend.symbol.VarSymbol;
-import frontend.symbol.datatype.ArrayType;
-import frontend.symbol.datatype.DataType;
-import frontend.symbol.datatype.IntType;
+import frontend.symbol.datatype.init.ArrayType;
+import frontend.symbol.datatype.init.InitDataType;
+import frontend.symbol.datatype.init.IntType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.declaration.BType;
 import frontend.token.Token;
@@ -53,8 +52,8 @@ public class FuncFParam extends ASTNode {
     }
 
     public void visit(FuncSymbol funcSymbol) {
-        DataType dataType = depth == 0 ? new IntType() : new ArrayType(ArrayType.ElementType.Int);
-        VarSymbol symbol = Tabulator.addParameter(funcSymbol, ident.getValue(), dataType);
+        InitDataType initDataType = depth == 0 ? new IntType() : new ArrayType(ArrayType.ElementType.Int); // TODO： this is not right
+        VarSymbol symbol = Tabulator.addParameter(funcSymbol, ident.getValue(), initDataType);
         if (symbol == null) {
             Tabulator.recordError(
                 new ErrorEntry(ErrorType.NameRedefinition, ident.getFileLoc())

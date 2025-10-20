@@ -1,6 +1,6 @@
 package frontend.symbol;
 
-import frontend.symbol.datatype.DataType;
+import frontend.symbol.datatype.init.InitDataType;
 
 public class ValSymbol extends Symbol {
     public enum Type {
@@ -8,13 +8,13 @@ public class ValSymbol extends Symbol {
     }
 
     private boolean isFuncParam = false;
-    private DataType dataType;
+    private InitDataType initDataType;
     private Type type;
 
-    public ValSymbol(String ident, Type type, DataType dataType) {
+    public ValSymbol(String ident, Type type, InitDataType initDataType) {
         super(ident);
         this.type = type;
-        this.dataType = dataType;
+        this.initDataType = initDataType;
     }
 
 }

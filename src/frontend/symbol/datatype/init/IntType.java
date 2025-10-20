@@ -1,6 +1,6 @@
-package frontend.symbol.datatype;
+package frontend.symbol.datatype.init;
 
-public class IntType extends DataType {
+public class IntType extends InitDataType {
     private int value;
 
     public IntType(int value) {
