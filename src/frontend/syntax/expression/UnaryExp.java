@@ -53,4 +53,21 @@ public abstract class UnaryExp extends ASTNode {
         tokenStream.logParse("<UnaryExp>");
         return retExp;
     }
+
+    public void visit() {
+        switch (type) {
+            case Call -> {
+                UnaryCallExp exp = (UnaryCallExp) this;
+                exp.visit();
+            }
+            case Op -> {
+                UnaryOpExp exp = (UnaryOpExp) this;
+                exp.visit();
+            }
+            case Primary -> {
+                UnaryPrimaryExp exp = (UnaryPrimaryExp) this;
+                exp.visit();
+            }
+        }
+    }
 }

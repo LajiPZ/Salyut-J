@@ -35,4 +35,12 @@ public class Decl extends ASTNode {
         // tokenStream.logParse("<Decl>");
         return decl;
     }
+
+    public void visit() {
+        if (this.type == Type.ConstDecl) {
+            ((ConstDecl)value).visit();
+        } else {
+            ((VarDecl)value).visit();
+        }
+    }
 }

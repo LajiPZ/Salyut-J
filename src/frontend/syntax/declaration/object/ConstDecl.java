@@ -37,4 +37,10 @@ public class ConstDecl extends ASTNode {
         tokenStream.logParse("<ConstDecl>");
         return decl;
     }
+
+    public void visit() {
+        for (ConstDef constDef : constDefs) {
+            constDef.visit(type);
+        }
+    }
 }

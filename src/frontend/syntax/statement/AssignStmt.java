@@ -12,4 +12,10 @@ public class AssignStmt extends Stmt {
         this.lval = lval;
         this.exp = exp;
     }
+
+    @Override
+    public void visit() {
+        lval.visit(true);
+        exp.visit();
+    }
 }

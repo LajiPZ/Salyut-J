@@ -1,6 +1,9 @@
 package frontend.syntax.misc;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
+import frontend.error.ErrorType;
+import frontend.symbol.FuncSymbol;
 import frontend.syntax.ASTNode;
 import frontend.syntax.expression.Exp;
 import frontend.token.Token;
@@ -26,5 +29,14 @@ public class FuncRParams extends ASTNode {
         }
         ts.logParse("<FuncRParams>");
         return retValue;
+    }
+
+    public int getParameterCount() { return exps.size(); }
+
+    public void visit() {
+        for (Exp exp : exps) {
+            exp.visit();
+        }
+
     }
 }

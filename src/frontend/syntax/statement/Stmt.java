@@ -1,13 +1,11 @@
 package frontend.syntax.statement;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.syntax.ASTNode;
-import frontend.syntax.block.Block;
 import frontend.syntax.expression.Exp;
-import frontend.syntax.logical.CondExp;
 import frontend.syntax.misc.LVal;
-import frontend.token.Token;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
 
@@ -29,31 +27,31 @@ abstract public class Stmt extends ASTNode {
         Stmt retStmt;
         switch (tokenStream.peek().getType()) {
             case LeftBrace: {
-                retStmt = parseBlockStmt(tokenStream, errors);
+                retStmt = BlockStmt.parse(tokenStream, errors);
                 break;
             }
             case If: {
-                retStmt = parseIfStmt(tokenStream, errors);
+                retStmt = IfStmt.parse(tokenStream, errors);
                 break;
             }
             case For: {
-                retStmt = parseForBlockStmt(tokenStream, errors);
+                retStmt = ForBlockStmt.parse(tokenStream, errors);
                 break;
             }
             case Break: {
-                retStmt = parseBreakStmt(tokenStream, errors);
+                retStmt = BreakStmt.parse(tokenStream, errors);
                 break;
             }
             case Continue: {
-                retStmt = parseContinueStmt(tokenStream, errors);
+                retStmt = ContinueStmt.parse(tokenStream, errors);
                 break;
             }
             case Return: {
-                retStmt = parseReturnStmt(tokenStream, errors);
+                retStmt = ReturnStmt.parse(tokenStream, errors);
                 break;
             }
             case Printf: {
-                retStmt = parsePrintfStmt(tokenStream, errors);
+                retStmt = PrintfStmt.parse(tokenStream, errors);
                 break;
             }
             default: {
@@ -63,104 +61,6 @@ abstract public class Stmt extends ASTNode {
         }
         tokenStream.logParse("<Stmt>");
         return retStmt;
-    }
-
-    private static BlockStmt parseBlockStmt(TokenStream tokenStream, List<ErrorEntry> errors) {
-        return new BlockStmt(Block.parse(tokenStream, errors));
-    }
-
-    private static ContinueStmt parseContinueStmt(TokenStream tokenStream, List<ErrorEntry> errors) {
-        Token token = tokenStream.poll();
-        if (!tokenStream.checkPoll(TokenType.Semicolon)) {
-            errors.add(
-                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
-            );
-        }
-        return new ContinueStmt(token);
-    }
-
-    private static IfStmt parseIfStmt(TokenStream tokenStream, List<ErrorEntry> errors) {
-        Token token = tokenStream.poll();
-        tokenStream.next(TokenType.LeftParen);
-        CondExp cond = CondExp.parse(tokenStream, errors);
-        if (!tokenStream.checkPoll(TokenType.RightParen)) {
-            errors.add(
-                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
-            );
-        }
-        Stmt stmt = Stmt.parse(tokenStream, errors);
-        if (tokenStream.checkPoll(TokenType.Else)) {
-            Stmt elseStmt = Stmt.parse(tokenStream, errors);
-            return new IfStmt(token, cond, stmt, elseStmt);
-        }
-        return new IfStmt(token, cond, stmt);
-    }
-
-    private static ForBlockStmt parseForBlockStmt(TokenStream tokenStream, List<ErrorEntry> errors) {
-        Token token = tokenStream.poll();
-        tokenStream.next(TokenType.LeftParen);
-        ForStmt init = tokenStream.check(TokenType.Semicolon) ? null : ForStmt.parse(tokenStream, errors);
-        tokenStream.next(TokenType.Semicolon);
-        CondExp cond = tokenStream.check(TokenType.Semicolon) ? null : CondExp.parse(tokenStream, errors);
-        tokenStream.next(TokenType.Semicolon);
-        ForStmt step = tokenStream.check(TokenType.RightParen) ? null : ForStmt.parse(tokenStream, errors);
-        if (!tokenStream.checkPoll(TokenType.RightParen)) {
-            errors.add(
-                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
-            );
-        }
-        Stmt stmt = Stmt.parse(tokenStream, errors);
-        return new ForBlockStmt(init, cond, step, stmt);
-    }
-
-    private static BreakStmt parseBreakStmt(TokenStream tokenStream, List<ErrorEntry> errors) {
-        Token token = tokenStream.poll();
-        if (!tokenStream.checkPoll(TokenType.Semicolon)) {
-            errors.add(
-                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
-            );
-        }
-        return new BreakStmt(token);
-    }
-
-    private static PrintfStmt parsePrintfStmt(TokenStream tokenStream, List<ErrorEntry> errors) {
-        Token token = tokenStream.poll();
-        tokenStream.next(TokenType.LeftParen);
-        Token str = tokenStream.next(TokenType.StringConst);
-        PrintfStmt retStmt = new PrintfStmt(token, str.getValue());
-        while (tokenStream.checkPoll(TokenType.Comma)) {
-            retStmt.addArgument(Exp.parse(tokenStream, errors));
-        }
-        if (!tokenStream.checkPoll(TokenType.RightParen)) {
-            errors.add(
-                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
-            );
-        }
-        if (!tokenStream.checkPoll(TokenType.Semicolon)) {
-            errors.add(
-                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
-            );
-        }
-        return retStmt;
-    }
-
-    private static ReturnStmt parseReturnStmt(TokenStream tokenStream, List<ErrorEntry> errors) {
-        Token token = tokenStream.poll();
-        if (!tokenStream.check(TokenType.Semicolon)) {
-            Exp expr = Exp.parse(tokenStream, errors);
-            if (!tokenStream.checkPoll(TokenType.Semicolon)) {
-                errors.add(
-                    new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
-                );
-            }
-            return new ReturnStmt(token,expr);
-        }
-        if (!tokenStream.checkPoll(TokenType.Semicolon)) {
-            errors.add(
-                new ErrorEntry(ErrorType.MissingSemicolon, ";", tokenStream.getPrevToken().getFileLoc())
-            );
-        }
-        return new ReturnStmt(token);
     }
 
     private static Stmt parseDefaultStmt(TokenStream tokenStream, List<ErrorEntry> errors) {
@@ -200,6 +100,60 @@ abstract public class Stmt extends ASTNode {
             tokenStream.releaseCheckpoint();
         }
         return true;
+    }
+
+    public void visit() {
+        switch (this.type) {
+            case Assign: {
+                AssignStmt assignStmt = (AssignStmt) this;
+                assignStmt.visit();
+                break;
+            }
+            case Exp: {
+                ExpStmt expStmt = (ExpStmt) this;
+                expStmt.visit();
+                break;
+            }
+            case Block: {
+                BlockStmt blockStmt = (BlockStmt) this;
+                Tabulator.intoNewScope();
+                blockStmt.visit();
+                Tabulator.exitScope();
+                break;
+            }
+            case If: {
+                IfStmt ifStmt = (IfStmt) this;
+                ifStmt.visit();
+                break;
+            }
+            case For: {
+                ForBlockStmt forBlockStmt = (ForBlockStmt) this;
+                Tabulator.intoLoop();
+                forBlockStmt.visit();
+                Tabulator.exitLoop();
+                break;
+            }
+            case Break: {
+                BreakStmt breakStmt = (BreakStmt) this;
+                breakStmt.visit();
+                break;
+            }
+            case Continue: {
+                ContinueStmt continueStmt = (ContinueStmt) this;
+                continueStmt.visit();
+                break;
+            }
+            case Return: {
+                ReturnStmt returnStmt = (ReturnStmt) this;
+                returnStmt.visit();
+                break;
+            }
+            case Printf: {
+                PrintfStmt printfStmt = (PrintfStmt) this;
+                printfStmt.visit();
+                break;
+            }
+        }
     }
 
 }

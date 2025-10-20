@@ -22,4 +22,8 @@ final public class Exp extends ASTNode {
         tokenStream.logParse("<Exp>");
         return exp;
     }
+
+    public void visit() {
+        addExp.visit();
+    }
 }

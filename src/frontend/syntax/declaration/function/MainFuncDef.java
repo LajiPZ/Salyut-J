@@ -1,7 +1,9 @@
 package frontend.syntax.declaration.function;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.symbol.FuncSymbol;
 import frontend.syntax.ASTNode;
 import frontend.syntax.block.Block;
 import frontend.token.Token;
@@ -13,6 +15,7 @@ import java.util.List;
 public class MainFuncDef extends ASTNode {
     private Token ident;
     private Block block = null;
+    private FuncSymbol symbol = null;
 
     public MainFuncDef(Token ident) {
         this.ident = ident;
@@ -34,5 +37,31 @@ public class MainFuncDef extends ASTNode {
         mainFuncDef.setBlock(Block.parse(tokenStream, errors));
         tokenStream.logParse("<MainFuncDef>");
         return mainFuncDef;
+    }
+
+    public void visit() {
+        // Basically identical to FuncDef
+        FuncSymbol funcSymbol = Tabulator.addFuncSymbol(
+            ident.getValue(),
+            FuncSymbol.Type.Int
+        );
+        if (funcSymbol == null) {
+            Tabulator.recordError(
+                new ErrorEntry(ErrorType.NameRedefinition,  ident.getFileLoc())
+            );
+        } else {
+            this.symbol = funcSymbol;
+            Tabulator.setExpectedReturnType(
+                Tabulator.FuncReturnType.Int
+            );
+            Tabulator.intoNewScope();
+            block.visit();
+            if (!Tabulator.returnTypeMatches()) {
+                Tabulator.recordError(
+                    new ErrorEntry(ErrorType.ReturnTypeMismatch, ident.getFileLoc())
+                );
+            }
+            Tabulator.exitScope();
+        }
     }
 }

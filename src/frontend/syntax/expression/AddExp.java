@@ -41,4 +41,11 @@ final public class AddExp extends ASTNode {
         return exp;
     }
 
+
+    public void visit() {
+        LMulExp.visit();
+        for (MulExp exp : RMulExps) {
+            exp.visit();
+        }
+    }
 }

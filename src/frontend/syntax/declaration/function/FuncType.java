@@ -34,4 +34,8 @@ public class FuncType extends ASTNode {
         tokenStream.logParse("<FuncType>");
         return funcType;
     }
+
+    public Type getType() {
+        return type;
+    }
 }

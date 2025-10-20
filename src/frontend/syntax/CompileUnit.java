@@ -45,4 +45,15 @@ public class CompileUnit extends ASTNode {
         tokenStream.logParse("<CompUnit>");
         return compileUnit;
     }
+
+    public void visit() {
+        for (Decl decl : decls) {
+            decl.visit();
+        }
+        for (FuncDef funcDef : funcDefs) {
+            funcDef.visit();
+        }
+        mainFuncDef.visit();
+    }
+
 }

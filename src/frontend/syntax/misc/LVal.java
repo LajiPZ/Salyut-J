@@ -1,7 +1,10 @@
 package frontend.syntax.misc;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.symbol.ConstSymbol;
+import frontend.symbol.ValSymbol;
 import frontend.syntax.ASTNode;
 import frontend.syntax.expression.Exp;
 import frontend.token.Token;
@@ -13,6 +16,7 @@ import java.util.List;
 public class LVal extends ASTNode {
     private Token ident;
     private Exp index;
+    private ValSymbol val;
 
     public LVal(Token ident) {
         this.ident = ident;
@@ -40,5 +44,22 @@ public class LVal extends ASTNode {
         }
         ts.logParse("<LVal>");
         return lval;
+    }
+
+    public void visit(boolean hasAssign) {
+        ValSymbol symbol = Tabulator.getValSymbol(ident.getValue());
+        if (symbol == null) {
+            Tabulator.recordError(
+                new ErrorEntry(ErrorType.UndefinedName, ident.getFileLoc())
+            );
+        } else {
+            val = symbol;
+            index.visit();
+            if (hasAssign && symbol instanceof ConstSymbol) {
+                Tabulator.recordError(
+                    new ErrorEntry(ErrorType.ConstModification, ident.getFileLoc())
+                );
+            }
+        }
     }
 }

@@ -1,7 +1,14 @@
 package frontend.syntax.declaration.function;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.symbol.FuncSymbol;
+import frontend.symbol.ValSymbol;
+import frontend.symbol.VarSymbol;
+import frontend.symbol.datatype.ArrayType;
+import frontend.symbol.datatype.DataType;
+import frontend.symbol.datatype.IntType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.declaration.BType;
 import frontend.token.Token;
@@ -14,6 +21,7 @@ public class FuncFParam extends ASTNode {
     private BType type;
     private Token ident;
     private int depth = 0;
+    private VarSymbol paramSymbol = null;
 
     public FuncFParam(BType type, Token ident) {
         this.type = type;
@@ -42,5 +50,17 @@ public class FuncFParam extends ASTNode {
         }
         tokenStream.logParse("<FuncFParam>");
         return funcFParam;
+    }
+
+    public void visit(FuncSymbol funcSymbol) {
+        DataType dataType = depth == 0 ? new IntType() : new ArrayType(ArrayType.ElementType.Int);
+        VarSymbol symbol = Tabulator.addParameter(funcSymbol, ident.getValue(), dataType);
+        if (symbol == null) {
+            Tabulator.recordError(
+                new ErrorEntry(ErrorType.NameRedefinition, ident.getFileLoc())
+            );
+        } else {
+            this.paramSymbol = symbol;
+        }
     }
 }

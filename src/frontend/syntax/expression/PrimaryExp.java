@@ -52,4 +52,16 @@ public class PrimaryExp extends ASTNode {
         return retExp;
     }
 
+    public void visit() {
+        switch (type) {
+            case Exp -> {
+                ((Exp) value).visit();
+            }
+            case LVal -> {
+                ((LVal) value).visit(false);
+            }
+            case Number -> {}
+        }
+    }
+
 }

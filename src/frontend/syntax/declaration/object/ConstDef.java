@@ -3,12 +3,12 @@ package frontend.syntax.declaration.object;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.syntax.ASTNode;
+import frontend.syntax.declaration.BType;
 import frontend.syntax.expression.ConstExp;
 import frontend.token.Token;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ConstDef extends ASTNode {
@@ -43,5 +43,15 @@ public class ConstDef extends ASTNode {
         def.setInitVal(ConstInitVal.parse(tokenStream, errors));
         tokenStream.logParse("<ConstDef>");
         return def;
+    }
+
+    public void visit(BType type) {
+        // TODO
+        if (this.indexExp != null) {
+            // 数组情况
+            indexExp.visit();
+        } else {
+            // 普通变量
+        }
     }
 }

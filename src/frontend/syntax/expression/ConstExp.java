@@ -7,7 +7,6 @@ import frontend.token.TokenStream;
 import java.util.List;
 
 public class ConstExp extends ASTNode {
-    // TODO: 使用的 Ident 必须是常量
 
     private final AddExp addExp;
 
@@ -23,5 +22,9 @@ public class ConstExp extends ASTNode {
        ConstExp exp =  new ConstExp(AddExp.parse(tokenStream, errors));
        tokenStream.logParse("<ConstExp>");
        return exp;
+    }
+
+    public void visit() {
+        addExp.visit();
     }
 }

@@ -13,6 +13,12 @@ public class ErrorEntry {
         this.fileLoc = fileLoc;
     }
 
+    public ErrorEntry(ErrorType type, FileLoc fileLoc) {
+        this.type = type;
+        this.content = String.valueOf((char) ('a' + type.ordinal()));
+        this.fileLoc = fileLoc;
+    }
+
     public int getErrorLine() {
         return fileLoc.getStartLine();
     }

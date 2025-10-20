@@ -30,4 +30,10 @@ final public class LAndExp extends ASTNode {
         ts.logParse("<LAndExp>");
         return exp;
     }
+
+    public void visit() {
+        for (EqExp eqExp : eqExps) {
+            eqExp.visit();
+        }
+    }
 }

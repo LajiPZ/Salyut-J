@@ -1,5 +1,26 @@
 package frontend.symbol;
 
-public class FuncSymbol extends Symbol {
+import java.util.ArrayList;
 
+public class FuncSymbol extends Symbol {
+    public enum Type {
+        Void, Int
+    }
+
+    private Type type;
+    private ArrayList<ValSymbol> parameters;
+
+    public FuncSymbol(String ident, Type type) {
+        super(ident);
+        this.type = type;
+        this.parameters = new ArrayList<>();
+    }
+
+    public void addParameter(ValSymbol val) {
+        this.parameters.add(val);
+    }
+
+    public int getParameterCount() {
+        return parameters.size();
+    }
 }

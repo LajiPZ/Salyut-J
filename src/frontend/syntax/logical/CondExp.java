@@ -22,4 +22,8 @@ final public class CondExp extends ASTNode {
         tokenStream.logParse("<Cond>");
         return condExp;
     }
+
+    public void visit() {
+        lOrExp.visit();
+    }
 }

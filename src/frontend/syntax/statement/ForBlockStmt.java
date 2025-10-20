@@ -1,6 +1,13 @@
 package frontend.syntax.statement;
 
+import frontend.error.ErrorEntry;
+import frontend.error.ErrorType;
 import frontend.syntax.logical.CondExp;
+import frontend.token.Token;
+import frontend.token.TokenStream;
+import frontend.token.TokenType;
+
+import java.util.List;
 
 public class ForBlockStmt extends Stmt {
     private ForStmt initStmt;
@@ -16,4 +23,28 @@ public class ForBlockStmt extends Stmt {
         this.thenStmt = thenStmt;
     }
 
+    public static ForBlockStmt parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+        Token token = tokenStream.poll();
+        tokenStream.next(TokenType.LeftParen);
+        ForStmt init = tokenStream.check(TokenType.Semicolon) ? null : ForStmt.parse(tokenStream, errors);
+        tokenStream.next(TokenType.Semicolon);
+        CondExp cond = tokenStream.check(TokenType.Semicolon) ? null : CondExp.parse(tokenStream, errors);
+        tokenStream.next(TokenType.Semicolon);
+        ForStmt step = tokenStream.check(TokenType.RightParen) ? null : ForStmt.parse(tokenStream, errors);
+        if (!tokenStream.checkPoll(TokenType.RightParen)) {
+            errors.add(
+                new ErrorEntry(ErrorType.MissingRParen, ")", tokenStream.getPrevToken().getFileLoc())
+            );
+        }
+        Stmt stmt = Stmt.parse(tokenStream, errors);
+        return new ForBlockStmt(init, cond, step, stmt);
+    }
+
+    @Override
+    public void visit() {
+        if (initStmt != null) initStmt.visit();
+        if (condExp != null) condExp.visit();
+        if (thenStmt != null) thenStmt.visit();
+        stmt.visit();
+    }
 }

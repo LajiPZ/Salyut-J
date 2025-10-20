@@ -43,4 +43,12 @@ final public class BlockItem extends ASTNode {
         // tokenStream.logParse("<BlockItem>");
         return blockItem;
     }
+
+    public void visit() {
+        if (type == Type.Decl) {
+            decl.visit();
+        } else {
+            stmt.visit();
+        }
+    }
 }

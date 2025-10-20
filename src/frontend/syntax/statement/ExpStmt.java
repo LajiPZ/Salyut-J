@@ -13,4 +13,9 @@ public class ExpStmt extends Stmt {
     public void setExp(Exp exp) {
         this.exp = exp;
     }
+
+    @Override
+    public void visit() {
+        if (exp != null) exp.visit();
+    }
 }

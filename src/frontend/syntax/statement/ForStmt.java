@@ -38,4 +38,11 @@ final public class ForStmt extends ASTNode {
         ts.logParse("<ForStmt>");
         return forStmt;
     }
+
+    public void visit() {
+        for (int i = 0; i < lVals.size(); i++) {
+            lVals.get(i).visit(true);
+            exps.get(i).visit();
+        }
+    }
 }

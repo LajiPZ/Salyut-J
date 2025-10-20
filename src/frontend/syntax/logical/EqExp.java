@@ -41,4 +41,11 @@ final public class EqExp extends ASTNode {
         return exp;
     }
 
+    public void visit() {
+        LRelExp.visit();
+        for (RelationExp exp : RRelExps) {
+            exp.visit();
+        }
+    }
+
 }

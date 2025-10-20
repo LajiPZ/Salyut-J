@@ -7,4 +7,9 @@ public class UnaryPrimaryExp extends UnaryExp {
         super(Type.Primary);
         this.exp = exp;
     }
+
+    @Override
+    public void visit() {
+        exp.visit();
+    }
 }

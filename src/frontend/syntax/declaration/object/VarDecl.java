@@ -39,4 +39,10 @@ public class VarDecl extends ASTNode {
         tokenStream.logParse("<VarDecl>");
         return varDecl;
     }
+
+    public void visit() {
+        for (VarDef varDef : varDefs) {
+            varDef.visit(type);
+        }
+    }
 }

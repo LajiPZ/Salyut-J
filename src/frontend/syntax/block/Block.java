@@ -1,5 +1,6 @@
 package frontend.syntax.block;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
@@ -29,5 +30,11 @@ public class Block {
         tokenStream.next(TokenType.RightBrace);
         tokenStream.logParse("<Block>");
         return block;
+    }
+
+    public void visit() {
+        for (BlockItem item : items) {
+            item.visit();
+        }
     }
 }

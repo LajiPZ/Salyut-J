@@ -44,4 +44,10 @@ final public class MulExp extends ASTNode {
         return mulExp;
     }
 
+    public void visit() {
+        LUnaryExp.visit();
+        for (UnaryExp exp : RUnaryExps) {
+            exp.visit();
+        }
+    }
 }

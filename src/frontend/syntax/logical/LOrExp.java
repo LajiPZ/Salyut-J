@@ -28,4 +28,10 @@ final public class LOrExp extends ASTNode {
         ts.logParse("<LOrExp>");
         return lOrExp;
     }
+
+    public void visit() {
+        for (LAndExp lAndExp : lAndExps) {
+            lAndExp.visit();
+        }
+    }
 }

@@ -44,4 +44,11 @@ final public class RelationExp extends ASTNode {
         return exp;
     }
 
+    public void visit() {
+        LAddExp.visit();
+        for (AddExp exp : RAddExps) {
+            exp.visit();
+        }
+    }
+
 }

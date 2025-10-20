@@ -3,6 +3,7 @@ package frontend.syntax.declaration.object;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.syntax.ASTNode;
+import frontend.syntax.declaration.BType;
 import frontend.syntax.expression.ConstExp;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -48,5 +49,14 @@ public class VarDef extends ASTNode {
         }
         tokenStream.logParse("<VarDef>");
         return varDef;
+    }
+
+    public void visit(BType type) {
+        // TODO
+        if (indexExp != null) {
+
+        } else {
+
+        }
     }
 }

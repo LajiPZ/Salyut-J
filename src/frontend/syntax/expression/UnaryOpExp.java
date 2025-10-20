@@ -14,4 +14,9 @@ public class UnaryOpExp extends UnaryExp{
         this.op = op;
         this.exp = exp;
     }
+
+    @Override
+    public void visit() {
+        exp.visit();
+    }
 }

@@ -1,6 +1,7 @@
 package frontend.syntax.declaration.function;
 
 import frontend.error.ErrorEntry;
+import frontend.symbol.FuncSymbol;
 import frontend.syntax.ASTNode;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
@@ -24,5 +25,11 @@ public class FuncFParams extends ASTNode {
         } while(tokenStream.checkPoll(TokenType.Comma));
         tokenStream.logParse("<FuncFParams>");
         return funcFParams;
+    }
+
+    public void visit(FuncSymbol funcSymbol) {
+        for (FuncFParam funcFParam : funcFParams) {
+            funcFParam.visit(funcSymbol);
+        }
     }
 }
