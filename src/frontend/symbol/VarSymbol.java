@@ -1,17 +1,14 @@
 package frontend.symbol;
 
-import frontend.symbol.datatype.init.InitDataType;
+import frontend.symbol.datatype.DataType;
+import frontend.symbol.datatype.init.InitType;
 
 public class VarSymbol extends ValSymbol{
-    boolean isStatic = false;
+    private boolean isStatic = false;
 
-    public VarSymbol(String ident, boolean isStatic, InitDataType initDataType) {
-        super(ident, Type.Var, initDataType);
+    public VarSymbol(String ident, boolean isStatic, DataType dataType) {
+        super(ident, Type.Var, dataType);
         this.isStatic = isStatic;
     }
 
-    public VarSymbol(String ident, InitDataType initDataType) {
-        super(ident, Type.Var, initDataType);
-        this.isStatic = false;
-    }
 }

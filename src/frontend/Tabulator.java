@@ -2,7 +2,8 @@ package frontend;
 
 import frontend.error.ErrorEntry;
 import frontend.symbol.*;
-import frontend.symbol.datatype.init.InitDataType;
+import frontend.symbol.datatype.DataType;
+import frontend.symbol.datatype.init.InitType;
 import frontend.syntax.CompileUnit;
 
 import java.util.*;
@@ -103,25 +104,25 @@ public class Tabulator {
         }
     }
 
-    public static VarSymbol addVarSymbol(String ident, InitDataType initDataType, boolean isStatic) {
+    public static VarSymbol addVarSymbol(String ident, boolean isStatic, DataType dataType) {
         if (symbolTables.peek().containsSymbol(ident) ||
             funcSymbols.containsKey(ident)
         ) {
             return null;
         } else {
-            VarSymbol varSymbol = new VarSymbol(ident, isStatic, initDataType);
+            VarSymbol varSymbol = new VarSymbol(ident, isStatic, dataType);
             symbolTables.peek().putSymbol(ident, varSymbol);
             allSymbols.add(varSymbol);
             return varSymbol;
         }
     }
 
-    public static ConstSymbol addConstSymbol(String ident, InitDataType initDataType) {
+    public static ConstSymbol addConstSymbol(String ident, DataType dataType) {
         if (symbolTables.peek().containsSymbol(ident) ||
             funcSymbols.containsKey(ident)) {
             return null;
         } else {
-            ConstSymbol constSymbol = new ConstSymbol(ident, initDataType);
+            ConstSymbol constSymbol = new ConstSymbol(ident, dataType);
             symbolTables.peek().putSymbol(ident, constSymbol);
             allSymbols.add(constSymbol);
             return constSymbol;
@@ -143,8 +144,8 @@ public class Tabulator {
         return funcSymbols.get(ident);
     }
 
-    public static VarSymbol addParameter(FuncSymbol funcSymbol, String ident, InitDataType initDataType) {
-        VarSymbol symbol = addVarSymbol(ident, initDataType, false);
+    public static VarSymbol addParameter(FuncSymbol funcSymbol, String ident, DataType dataType) {
+        VarSymbol symbol = addVarSymbol(ident, false, dataType);
         if (symbol == null) {
             return null;
         } else {

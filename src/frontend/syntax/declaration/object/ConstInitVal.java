@@ -54,4 +54,16 @@ public class ConstInitVal extends ASTNode {
         tokenStream.logParse("<ConstInitVal>");
         return initVal;
     }
+
+    public void visit() {
+        if (type == Type.Single) {
+            singleConstExp.visit();
+        } else {
+            multipleConstExps.forEach(ConstExp::visit);
+        }
+    }
+
+    public int singleCalc() {
+        return singleConstExp.calc();
+    }
 }

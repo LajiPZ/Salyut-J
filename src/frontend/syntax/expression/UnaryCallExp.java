@@ -7,6 +7,8 @@ import frontend.symbol.FuncSymbol;
 import frontend.syntax.misc.FuncRParams;
 import frontend.token.Token;
 
+import java.util.stream.IntStream;
+
 public class UnaryCallExp extends UnaryExp {
     private Token ident;
     private FuncRParams params = null;
@@ -35,7 +37,22 @@ public class UnaryCallExp extends UnaryExp {
                 );
             } else {
                 // TODO: 类型检查
+                if (IntStream.range(0, params.getParameterCount()).anyMatch(
+                    i ->
+                    !funcSymbol.getParameters().get(i).getDataType().compatibleWith(
+                        params.getParameters().get(i).calcType()
+                    )
+                )) {
+                    Tabulator.recordError(
+                        new ErrorEntry(ErrorType.ArgumentTypeMismatch, ident.getFileLoc())
+                    );
+                }
             }
         }
+    }
+
+    @Override
+    public int calc() {
+        throw new RuntimeException("Calc() of UnaryCall not implemented yet");
     }
 }

@@ -12,4 +12,9 @@ public class UnaryPrimaryExp extends UnaryExp {
     public void visit() {
         exp.visit();
     }
+
+    @Override
+    public int calc() {
+        return exp.calc();
+    }
 }

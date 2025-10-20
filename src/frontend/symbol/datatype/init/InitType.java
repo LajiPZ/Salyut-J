@@ -1,4 +1,4 @@
 package frontend.symbol.datatype.init;
 
-abstract public class InitDataType {
+abstract public class InitType {
 }

@@ -70,4 +70,26 @@ public abstract class UnaryExp extends ASTNode {
             }
         }
     }
+
+    public int calc() {
+        int retValue;
+        switch (type) {
+            case Call -> {
+                UnaryCallExp exp = (UnaryCallExp) this;
+                retValue = exp.calc();
+            }
+            case Op -> {
+                UnaryOpExp exp = (UnaryOpExp) this;
+                retValue = exp.calc();
+            }
+            case Primary -> {
+                UnaryPrimaryExp exp = (UnaryPrimaryExp) this;
+                retValue = exp.calc();
+            }
+            default -> {
+                retValue = 0;
+            }
+        }
+        return retValue;
+    }
 }

@@ -20,4 +20,8 @@ public class Number extends ASTNode {
         ts.logParse("<Number>");
         return new Number(Integer.parseInt(t.getValue()));
     }
+
+    public int getValue() {
+        return value;
+    }
 }

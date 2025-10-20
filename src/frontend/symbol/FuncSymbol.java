@@ -1,6 +1,7 @@
 package frontend.symbol;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class FuncSymbol extends Symbol {
     public enum Type {
@@ -22,5 +23,9 @@ public class FuncSymbol extends Symbol {
 
     public int getParameterCount() {
         return parameters.size();
+    }
+
+    public List<ValSymbol> getParameters() {
+        return parameters;
     }
 }

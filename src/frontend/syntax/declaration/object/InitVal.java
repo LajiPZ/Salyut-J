@@ -2,6 +2,7 @@ package frontend.syntax.declaration.object;
 
 import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
+import frontend.syntax.expression.ConstExp;
 import frontend.syntax.expression.Exp;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
@@ -53,5 +54,30 @@ public class InitVal extends ASTNode {
         }
         tokenStream.logParse("<InitVal>");
         return initVal;
+    }
+
+    public void visit() {
+        if (type == Type.Single) {
+            singleExp.visit();
+        } else {
+            multipleExps.forEach(Exp::visit);
+        }
+    }
+
+    public Exp getSingleExp() {
+        return singleExp;
+    }
+
+    public ConstInitVal convert() {
+        if (type == Type.Single) {
+            return new ConstInitVal(new ConstExp(singleExp.getAddExp()));
+        } else {
+            ConstInitVal constInitVal = new ConstInitVal();
+            for (Exp exp : multipleExps) {
+                ConstExp constExp = new ConstExp(exp.getAddExp());
+                constInitVal.addConstExp(constExp);
+            }
+            return constInitVal;
+        }
     }
 }

@@ -64,4 +64,18 @@ public class PrimaryExp extends ASTNode {
         }
     }
 
+    public int calc() {
+        switch (type) {
+            case Exp -> {
+                return ((Exp)value).calc();
+            }
+            case LVal -> {
+                return ((LVal)value).calc();
+            }
+            case Number -> {
+                return ((Number) value).getValue();
+            }
+        }
+    }
+
 }

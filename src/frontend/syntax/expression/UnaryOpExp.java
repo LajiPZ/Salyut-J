@@ -19,4 +19,19 @@ public class UnaryOpExp extends UnaryExp{
     public void visit() {
         exp.visit();
     }
+
+    @Override
+    public int calc() {
+        switch (op) {
+            case PLUS -> {
+                return exp.calc();
+            }
+            case MINUS -> {
+                return -exp.calc();
+            }
+            default -> {
+                throw new Error("Unsupported op in calc(): " + op);
+            }
+        }
+    }
 }

@@ -48,4 +48,16 @@ final public class AddExp extends ASTNode {
             exp.visit();
         }
     }
+
+    public int calc() {
+        int sum = LMulExp.calc();
+        for (int i = 0; i < operators.size(); i++) {
+            if (operators.get(i).equals(AddOperator.ADD)) {
+                sum += RMulExps.get(i).calc();
+            } else {
+                sum -= RMulExps.get(i).calc();
+            }
+        }
+        return sum;
+    }
 }

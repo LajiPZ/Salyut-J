@@ -42,7 +42,7 @@ public class VarDecl extends ASTNode {
 
     public void visit() {
         for (VarDef varDef : varDefs) {
-            varDef.visit(type);
+            varDef.visit(type, isStatic);
         }
     }
 }

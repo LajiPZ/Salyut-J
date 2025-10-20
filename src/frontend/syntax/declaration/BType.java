@@ -1,6 +1,8 @@
 package frontend.syntax.declaration;
 
 import frontend.error.ErrorEntry;
+import frontend.symbol.datatype.DataType;
+import frontend.symbol.datatype.IntType;
 import frontend.syntax.ASTNode;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -26,5 +28,16 @@ final public class BType extends ASTNode {
             return new BType(Type.Int);
         }
         return null;
+    }
+
+    public DataType toDataType() {
+        switch (type) {
+            case Int -> {
+                return new IntType();
+            }
+            default -> {
+                return null; // not likely
+            }
+        }
     }
 }

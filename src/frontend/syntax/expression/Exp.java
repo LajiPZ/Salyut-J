@@ -26,4 +26,8 @@ final public class Exp extends ASTNode {
     public void visit() {
         addExp.visit();
     }
+
+    public int calc() {
+        return addExp.calc();
+    }
 }

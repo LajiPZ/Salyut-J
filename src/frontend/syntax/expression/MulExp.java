@@ -50,4 +50,17 @@ final public class MulExp extends ASTNode {
             exp.visit();
         }
     }
+
+    public int calc() {
+        int sum = LUnaryExp.calc();
+        for (int i = 0; i < operators.size(); i++) {
+            if (operators.get(i).equals(MulOperator.MUL)) {
+                sum *= RUnaryExps.get(i).calc();
+            } else if (operators.get(i).equals(MulOperator.DIV)) {
+                sum /= RUnaryExps.get(i).calc();
+            } else {
+                sum %= RUnaryExps.get(i).calc();
+            }
+        }
+    }
 }
