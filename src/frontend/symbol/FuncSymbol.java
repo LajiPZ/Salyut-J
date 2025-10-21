@@ -1,17 +1,16 @@
 package frontend.symbol;
 
+import frontend.symbol.datatype.DataType;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class FuncSymbol extends Symbol {
-    public enum Type {
-        Void, Int
-    }
 
-    private Type type;
+    private DataType type;
     private ArrayList<ValSymbol> parameters;
 
-    public FuncSymbol(String ident, Type type) {
+    public FuncSymbol(String ident, DataType type) {
         super(ident);
         this.type = type;
         this.parameters = new ArrayList<>();
@@ -27,5 +26,9 @@ public class FuncSymbol extends Symbol {
 
     public List<ValSymbol> getParameters() {
         return parameters;
+    }
+
+    public DataType getType() {
+        return type;
     }
 }

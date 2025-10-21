@@ -2,6 +2,8 @@ package frontend.syntax.expression;
 
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.symbol.datatype.DataType;
+import frontend.symbol.datatype.IntType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.misc.LVal;
 import frontend.syntax.misc.Number;
@@ -76,6 +78,22 @@ public class PrimaryExp extends ASTNode {
                 return ((Number) value).getValue();
             }
         }
+        return 0;
+    }
+
+    public DataType calcType() {
+        switch (type) {
+            case Exp -> {
+                return ((Exp)value).calcType();
+            }
+            case LVal -> {
+                return ((LVal)value).calcType();
+            }
+            case Number -> {
+                return new IntType();
+            }
+        }
+        return null;
     }
 
 }

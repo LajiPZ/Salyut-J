@@ -4,6 +4,7 @@ import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.symbol.FuncSymbol;
+import frontend.symbol.datatype.DataType;
 import frontend.syntax.misc.FuncRParams;
 import frontend.token.Token;
 
@@ -21,7 +22,6 @@ public class UnaryCallExp extends UnaryExp {
 
     public void setFuncRParams(FuncRParams params) { this.params = params; }
 
-    @Override
     public void visit() {
         FuncSymbol symbol = Tabulator.getFuncSymbol(ident.getValue());
         if (symbol == null) {
@@ -36,7 +36,6 @@ public class UnaryCallExp extends UnaryExp {
                     new ErrorEntry(ErrorType.MissingArgument, ident.getFileLoc())
                 );
             } else {
-                // TODO: 类型检查
                 if (IntStream.range(0, params.getParameterCount()).anyMatch(
                     i ->
                     !funcSymbol.getParameters().get(i).getDataType().compatibleWith(
@@ -51,8 +50,11 @@ public class UnaryCallExp extends UnaryExp {
         }
     }
 
-    @Override
     public int calc() {
         throw new RuntimeException("Calc() of UnaryCall not implemented yet");
+    }
+
+    public DataType calcType() {
+        return funcSymbol.getType();
     }
 }

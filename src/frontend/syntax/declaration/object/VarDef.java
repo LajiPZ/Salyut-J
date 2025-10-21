@@ -42,6 +42,7 @@ public class VarDef extends ASTNode {
     public static VarDef parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         Token ident = tokenStream.next(TokenType.Ident);
         VarDef varDef = new VarDef(ident);
+        // TODO：多维数组
         if (tokenStream.checkPoll(TokenType.LeftBracket)) {
             ConstExp exp = ConstExp.parse(tokenStream, errors);
             if (!tokenStream.checkPoll(TokenType.RightBracket)) {

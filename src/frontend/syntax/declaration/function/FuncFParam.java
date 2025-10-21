@@ -60,6 +60,7 @@ public class FuncFParam extends ASTNode {
                 );
                 funcFParam.addIndexExp(null);
             }
+            /* 多维数组，暂时不会发生
             while (tokenStream.checkPoll(TokenType.LeftBracket)) {
                 funcFParam.addIndexExp(ConstExp.parse(tokenStream, errors));
                 if (!tokenStream.checkPoll(TokenType.RightBracket)) {
@@ -68,6 +69,7 @@ public class FuncFParam extends ASTNode {
                     );
                 }
             }
+            */
         } else {
             funcFParam =  new FuncFParam(type, ident, false);
         }

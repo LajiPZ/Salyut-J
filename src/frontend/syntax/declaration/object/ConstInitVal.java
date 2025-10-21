@@ -66,4 +66,12 @@ public class ConstInitVal extends ASTNode {
     public int singleCalc() {
         return singleConstExp.calc();
     }
+
+    public ConstExp getSingleConstExp() {
+        return singleConstExp;
+    }
+
+    public List<ConstExp> getMultipleConstExps() {
+        return multipleConstExps;
+    }
 }

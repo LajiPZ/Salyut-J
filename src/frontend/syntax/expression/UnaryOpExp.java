@@ -1,5 +1,7 @@
 package frontend.syntax.expression;
 
+import frontend.symbol.datatype.DataType;
+
 // I can't come up with a better name for it...
 public class UnaryOpExp extends UnaryExp{
     enum UnaryOp {
@@ -15,12 +17,10 @@ public class UnaryOpExp extends UnaryExp{
         this.exp = exp;
     }
 
-    @Override
     public void visit() {
         exp.visit();
     }
 
-    @Override
     public int calc() {
         switch (op) {
             case PLUS -> {
@@ -34,4 +34,9 @@ public class UnaryOpExp extends UnaryExp{
             }
         }
     }
+
+    public DataType calcType() {
+        return exp.calcType();
+    }
+
 }

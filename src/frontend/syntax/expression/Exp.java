@@ -1,6 +1,7 @@
 package frontend.syntax.expression;
 
 import frontend.error.ErrorEntry;
+import frontend.symbol.datatype.DataType;
 import frontend.syntax.ASTNode;
 import frontend.token.TokenStream;
 
@@ -29,5 +30,9 @@ final public class Exp extends ASTNode {
 
     public int calc() {
         return addExp.calc();
+    }
+
+    public DataType calcType() {
+        return addExp.calcType();
     }
 }

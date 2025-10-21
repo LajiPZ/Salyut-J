@@ -5,6 +5,9 @@ import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.symbol.ConstSymbol;
 import frontend.symbol.ValSymbol;
+import frontend.symbol.datatype.ArrayType;
+import frontend.symbol.datatype.DataType;
+import frontend.symbol.datatype.PointerType;
 import frontend.symbol.datatype.init.ArrayInitType;
 import frontend.symbol.datatype.init.InitType;
 import frontend.symbol.datatype.init.ValInitType;
@@ -77,5 +80,26 @@ public class LVal extends ASTNode {
         } else {
             return ((ArrayInitType)init).get(indexList);
         }
+    }
+
+    public DataType calcType() {
+        // 此处用于函数调用的参数检查，所以...
+
+        // 1. a[], call(a) -> ArrayType
+        DataType dataType = valSymbol.getDataType();
+        if (dataType instanceof PointerType) {
+            dataType = new ArrayType(((PointerType) dataType).getBaseType(), 0);
+        }
+        // 2. call(a[1]) -> Int
+        if (dataType instanceof ArrayType) {
+            for (Exp index : indexList) {
+                dataType = ((ArrayType) dataType).getBaseType();
+            }
+        }
+        // 3. call(a[1][]) -> Ptr
+        if (dataType instanceof ArrayType) {
+            dataType = new PointerType(((ArrayType) dataType).getBaseType());
+        }
+        return dataType;
     }
 }

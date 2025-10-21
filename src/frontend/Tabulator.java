@@ -91,7 +91,7 @@ public class Tabulator {
         errors.add(e);
     }
 
-    public static FuncSymbol addFuncSymbol(String ident, FuncSymbol.Type type) {
+    public static FuncSymbol addFuncSymbol(String ident, DataType type) {
         if (symbolTables.peek().containsSymbol(ident) ||
             funcSymbols.containsKey(ident)
         ) {

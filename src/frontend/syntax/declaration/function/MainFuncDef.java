@@ -4,6 +4,7 @@ import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.symbol.FuncSymbol;
+import frontend.symbol.datatype.IntType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.block.Block;
 import frontend.token.Token;
@@ -43,7 +44,7 @@ public class MainFuncDef extends ASTNode {
         // Basically identical to FuncDef
         FuncSymbol funcSymbol = Tabulator.addFuncSymbol(
             ident.getValue(),
-            FuncSymbol.Type.Int
+            new IntType()
         );
         if (funcSymbol == null) {
             Tabulator.recordError(

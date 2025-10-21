@@ -1,5 +1,7 @@
 package frontend.syntax.expression;
 
+import frontend.symbol.datatype.DataType;
+
 public class UnaryPrimaryExp extends UnaryExp {
     private final PrimaryExp exp;
 
@@ -8,13 +10,15 @@ public class UnaryPrimaryExp extends UnaryExp {
         this.exp = exp;
     }
 
-    @Override
     public void visit() {
         exp.visit();
     }
 
-    @Override
     public int calc() {
         return exp.calc();
+    }
+
+    public DataType calcType() {
+        return exp.calcType();
     }
 }

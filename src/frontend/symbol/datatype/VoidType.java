@@ -1,4 +1,8 @@
 package frontend.symbol.datatype;
 
-public class VoidType {
+public class VoidType extends DataType{
+    @Override
+    public boolean compatibleWith(DataType dt) {
+        return dt instanceof VoidType;
+    }
 }

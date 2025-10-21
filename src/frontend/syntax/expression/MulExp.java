@@ -1,6 +1,7 @@
 package frontend.syntax.expression;
 
 import frontend.error.ErrorEntry;
+import frontend.symbol.datatype.DataType;
 import frontend.syntax.ASTNode;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -62,5 +63,10 @@ final public class MulExp extends ASTNode {
                 sum %= RUnaryExps.get(i).calc();
             }
         }
+        return sum;
+    }
+
+    public DataType calcType() {
+        return LUnaryExp.calcType();
     }
 }

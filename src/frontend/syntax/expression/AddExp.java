@@ -1,6 +1,7 @@
 package frontend.syntax.expression;
 
 import frontend.error.ErrorEntry;
+import frontend.symbol.datatype.DataType;
 import frontend.syntax.ASTNode;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -59,5 +60,9 @@ final public class AddExp extends ASTNode {
             }
         }
         return sum;
+    }
+
+    public DataType calcType() {
+        return LMulExp.calcType();
     }
 }

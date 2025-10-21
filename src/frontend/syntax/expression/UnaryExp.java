@@ -2,6 +2,7 @@ package frontend.syntax.expression;
 
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.symbol.datatype.DataType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.misc.FuncRParams;
 import frontend.token.Token;
@@ -54,42 +55,9 @@ public abstract class UnaryExp extends ASTNode {
         return retExp;
     }
 
-    public void visit() {
-        switch (type) {
-            case Call -> {
-                UnaryCallExp exp = (UnaryCallExp) this;
-                exp.visit();
-            }
-            case Op -> {
-                UnaryOpExp exp = (UnaryOpExp) this;
-                exp.visit();
-            }
-            case Primary -> {
-                UnaryPrimaryExp exp = (UnaryPrimaryExp) this;
-                exp.visit();
-            }
-        }
-    }
+    abstract public void visit();
 
-    public int calc() {
-        int retValue;
-        switch (type) {
-            case Call -> {
-                UnaryCallExp exp = (UnaryCallExp) this;
-                retValue = exp.calc();
-            }
-            case Op -> {
-                UnaryOpExp exp = (UnaryOpExp) this;
-                retValue = exp.calc();
-            }
-            case Primary -> {
-                UnaryPrimaryExp exp = (UnaryPrimaryExp) this;
-                retValue = exp.calc();
-            }
-            default -> {
-                retValue = 0;
-            }
-        }
-        return retValue;
-    }
+    abstract public int calc();
+
+    abstract public DataType calcType();
 }

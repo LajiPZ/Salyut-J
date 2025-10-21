@@ -42,4 +42,14 @@ public class ArrayType extends DataType{
             return Collections.singletonList(size);
         }
     }
+
+    public DataType getBaseType() {
+        return baseType;
+    }
+
+
+    @Override
+    public boolean compatibleWith(DataType other) {
+        return other instanceof ArrayType && ((ArrayType)other).getBaseType().compatibleWith(baseType);
+    }
 }
