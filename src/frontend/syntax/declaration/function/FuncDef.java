@@ -72,18 +72,19 @@ public class FuncDef extends ASTNode {
             );
         } else {
             this.symbol = funcSymbol;
-            Tabulator.setExpectedReturnType(
-                type.getType().equals(FuncType.Type.Void) ? Tabulator.FuncReturnType.Void : Tabulator.FuncReturnType.Int
-            );
-            Tabulator.intoNewScope();
-            if (fParams != null) fParams.visit(funcSymbol);
-            block.visit();
-            if (!Tabulator.returnTypeMatches() && !type.getType().equals(FuncType.Type.Void)) {
-                Tabulator.recordError(
-                    new ErrorEntry(ErrorType.MissingReturn, this.getEndToken().getFileLoc())
-                );
-            }
-            Tabulator.exitScope();
         }
+
+        Tabulator.setExpectedReturnType(
+            type.getType().equals(FuncType.Type.Void) ? Tabulator.FuncReturnType.Void : Tabulator.FuncReturnType.Int
+        );
+        Tabulator.intoNewScope();
+        if (fParams != null) fParams.visit(funcSymbol);
+        block.visit();
+        if (!type.getType().equals(FuncType.Type.Void) && !Tabulator.hasReturn()) {
+            Tabulator.recordError(
+                new ErrorEntry(ErrorType.MissingReturn, this.getEndToken().getFileLoc())
+            );
+        }
+        Tabulator.exitScope();
     }
 }

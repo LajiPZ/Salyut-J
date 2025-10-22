@@ -53,10 +53,8 @@ public class IfStmt extends Stmt {
     public void visit() {
         condExp.visit();
         stmt.visit();
-        Tabulator.setActualReturnType(Tabulator.FuncReturnType.Void); // 由此解决控制流引起的问题
         if (elseStmt != null) {
             elseStmt.visit();
-            Tabulator.setActualReturnType(Tabulator.FuncReturnType.Void); // 同上
         }
     }
 

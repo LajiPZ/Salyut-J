@@ -1,8 +1,10 @@
 package frontend.syntax.block;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
 import frontend.syntax.declaration.object.Decl;
+import frontend.syntax.statement.ReturnStmt;
 import frontend.syntax.statement.Stmt;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
@@ -49,6 +51,7 @@ final public class BlockItem extends ASTNode {
             decl.visit();
         } else {
             stmt.visit();
+            if (!(stmt instanceof ReturnStmt)) Tabulator.revokeReturn(); // this is dumb
         }
     }
 }

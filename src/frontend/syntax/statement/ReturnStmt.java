@@ -47,16 +47,18 @@ public class ReturnStmt extends Stmt {
 
     @Override
     public void visit() {
+        Tabulator.FuncReturnType returnType = null;
         if (this.expr != null) {
-            Tabulator.setActualReturnType(Tabulator.FuncReturnType.Int);
+            returnType = Tabulator.FuncReturnType.Int; // 实际并非如此
             expr.visit();
         } else {
-            Tabulator.setActualReturnType(Tabulator.FuncReturnType.Void);
+            returnType = Tabulator.FuncReturnType.Void;
         }
-        if (!Tabulator.returnTypeMatches()) {
+        if (!Tabulator.returnTypeMatches(returnType) && Tabulator.getExpectedReturnType() == Tabulator.FuncReturnType.Void) {
             Tabulator.recordError(
                 new ErrorEntry(ErrorType.ReturnTypeMismatch, label.getFileLoc())
             );
         }
+        Tabulator.foundReturn();
     }
 }

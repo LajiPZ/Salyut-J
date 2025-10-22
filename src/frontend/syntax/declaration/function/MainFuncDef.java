@@ -61,7 +61,7 @@ public class MainFuncDef extends ASTNode {
             );
             Tabulator.intoNewScope();
             block.visit();
-            if (!Tabulator.returnTypeMatches()) {
+            if (!Tabulator.hasReturn()) {
                 Tabulator.recordError(
                     new ErrorEntry(ErrorType.MissingReturn, this.getEndToken().getFileLoc())
                 );

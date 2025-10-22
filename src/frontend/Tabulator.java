@@ -30,7 +30,6 @@ public class Tabulator {
 
     private static HashMap<String, FuncSymbol> funcSymbols;
     private static FuncReturnType expectedReturnType;
-    private static FuncReturnType actualReturnType;
 
     private static int loopDepth = 0; // for break; and continue;
 
@@ -47,7 +46,6 @@ public class Tabulator {
         symbolTables = new Stack<>();
         symbolTables.push(new SymbolTable(scopeCnt));
         expectedReturnType = FuncReturnType.Void;
-        actualReturnType = FuncReturnType.Void;
     }
 
     public boolean tabulate() {
@@ -83,15 +81,26 @@ public class Tabulator {
 
     public static void setExpectedReturnType(FuncReturnType expectedReturnType) {
         Tabulator.expectedReturnType = expectedReturnType;
-        Tabulator.actualReturnType = FuncReturnType.Void;
     }
 
-    public static void setActualReturnType(FuncReturnType actualReturnType) {
-        Tabulator.actualReturnType = actualReturnType;
+    public static FuncReturnType getExpectedReturnType() {
+        return expectedReturnType;
     }
 
-    public static boolean returnTypeMatches() {
-        return expectedReturnType == actualReturnType;
+    public static boolean returnTypeMatches(FuncReturnType returnType) {
+        return expectedReturnType == returnType;
+    }
+
+    public static void foundReturn() {
+        hasReturn = true;
+    }
+
+    public static void revokeReturn() {
+        hasReturn = false;
+    }
+
+    public static boolean hasReturn() {
+        return hasReturn;
     }
 
     public static void recordError(ErrorEntry e) {
@@ -156,7 +165,7 @@ public class Tabulator {
         if (symbol == null) {
             return null;
         } else {
-            funcSymbol.addParameter(symbol);
+            if (funcSymbol != null) funcSymbol.addParameter(symbol);
             return symbol;
         }
     }
