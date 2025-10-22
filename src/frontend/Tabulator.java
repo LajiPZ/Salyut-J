@@ -121,9 +121,9 @@ public class Tabulator {
     }
 
     public static VarSymbol addVarSymbol(String ident, boolean isStatic, DataType dataType) {
-        if (symbolTables.peek().containsSymbol(ident) ||
-            funcSymbols.containsKey(ident)
-        ) {
+        if (symbolTables.peek().containsSymbol(ident)) {
+            return null;
+        } else if (scopeCnt == 1 && funcSymbols.containsKey(ident)) {
             return null;
         } else {
             VarSymbol varSymbol = new VarSymbol(ident, isStatic, dataType, symbolTables.peek().getId());

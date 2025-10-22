@@ -37,7 +37,8 @@ public class LVal extends ASTNode {
     public static LVal parse(TokenStream ts, List<ErrorEntry> errors) {
         Token ident = ts.next(TokenType.Ident);
         LVal lval = new LVal(ident);
-        if (ts.checkPoll(TokenType.LeftBracket)) {
+        // 多维数组; 不支持的话，while改if即可
+        while (ts.checkPoll(TokenType.LeftBracket)) {
             Exp exp = Exp.parse(ts, errors);
             if (!ts.checkPoll(TokenType.RightBracket)) {
                 errors.add(

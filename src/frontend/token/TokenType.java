@@ -39,7 +39,6 @@ public enum TokenType {
     Continue("CONTINUETK"),
     If("IFTK"),
     Else("ELSETK"),
-    While("WHILETK"),
     Printf("PRINTFTK"),
     Return("RETURNTK"),
     Static("STATICTK"),
