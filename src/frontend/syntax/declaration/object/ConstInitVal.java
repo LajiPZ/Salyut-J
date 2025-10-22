@@ -15,33 +15,33 @@ public class ConstInitVal extends ASTNode {
     }
     private Type type;
     private ConstExp singleConstExp;
-    private ArrayList<ConstExp> multipleConstExps;
+    private ArrayList<ConstInitVal> subInitVals;
 
     public ConstInitVal() {
         this.type = Type.Multiple;
         this.singleConstExp = null;
-        this.multipleConstExps = new ArrayList<>();
+        this.subInitVals = new ArrayList<>();
     }
 
     public ConstInitVal(ConstExp singleConstExp) {
         this.type = Type.Single;
         this.singleConstExp = singleConstExp;
-        this.multipleConstExps = null;
+        this.subInitVals = null;
     }
 
-    public void addConstExp(ConstExp constExp) {
+    public void addSubInitVal(ConstInitVal constInitVal) {
         assert(this.type == Type.Multiple);
-        this.multipleConstExps.add(constExp);
+        this.subInitVals.add(constInitVal);
     }
 
-    public static ConstInitVal parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+    public static ConstInitVal parse(TokenStream tokenStream, List<ErrorEntry> errors, boolean isSub) {
         ConstInitVal initVal;
         if (tokenStream.checkPoll(TokenType.LeftBrace)) {
             initVal = new ConstInitVal();
             if (!tokenStream.check(TokenType.RightBrace)) {
                 do {
-                    initVal.addConstExp(
-                        ConstExp.parse(tokenStream, errors)
+                    initVal.addSubInitVal(
+                        ConstInitVal.parse(tokenStream, errors, true)
                     );
                 } while (tokenStream.checkPoll(TokenType.Comma));
             }
@@ -51,7 +51,7 @@ public class ConstInitVal extends ASTNode {
                 ConstExp.parse(tokenStream, errors)
             );
         }
-        tokenStream.logParse("<ConstInitVal>");
+        if (!isSub) tokenStream.logParse("<ConstInitVal>");
         return initVal;
     }
 
@@ -59,7 +59,7 @@ public class ConstInitVal extends ASTNode {
         if (type == Type.Single) {
             singleConstExp.visit();
         } else {
-            multipleConstExps.forEach(ConstExp::visit);
+            subInitVals.forEach(ConstInitVal::visit);
         }
     }
 
@@ -71,7 +71,7 @@ public class ConstInitVal extends ASTNode {
         return singleConstExp;
     }
 
-    public List<ConstExp> getMultipleConstExps() {
-        return multipleConstExps;
+    public List<ConstInitVal> getSubInitVals() {
+        return subInitVals;
     }
 }

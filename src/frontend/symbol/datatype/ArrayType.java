@@ -52,4 +52,5 @@ public class ArrayType extends DataType{
     public boolean compatibleWith(DataType other) {
         return other instanceof ArrayType && ((ArrayType)other).getBaseType().compatibleWith(baseType);
     }
+
 }

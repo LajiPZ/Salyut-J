@@ -6,7 +6,11 @@ import frontend.symbol.datatype.DataType;
 import frontend.symbol.datatype.init.InitType;
 import frontend.syntax.CompileUnit;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 用于“建立符号表”。
@@ -97,7 +101,7 @@ public class Tabulator {
         ) {
             return null;
         } else {
-            FuncSymbol funcSymbol = new FuncSymbol(ident, type);
+            FuncSymbol funcSymbol = new FuncSymbol(ident, type, scopeCnt);
             funcSymbols.put(ident, funcSymbol);
             allSymbols.add(funcSymbol);
             return funcSymbol;
@@ -110,7 +114,7 @@ public class Tabulator {
         ) {
             return null;
         } else {
-            VarSymbol varSymbol = new VarSymbol(ident, isStatic, dataType);
+            VarSymbol varSymbol = new VarSymbol(ident, isStatic, dataType, scopeCnt);
             symbolTables.peek().putSymbol(ident, varSymbol);
             allSymbols.add(varSymbol);
             return varSymbol;
@@ -122,7 +126,7 @@ public class Tabulator {
             funcSymbols.containsKey(ident)) {
             return null;
         } else {
-            ConstSymbol constSymbol = new ConstSymbol(ident, dataType);
+            ConstSymbol constSymbol = new ConstSymbol(ident, dataType, scopeCnt);
             symbolTables.peek().putSymbol(ident, constSymbol);
             allSymbols.add(constSymbol);
             return constSymbol;
@@ -154,4 +158,13 @@ public class Tabulator {
         }
     }
 
+    public List<ErrorEntry> getErrors() {
+        return errors;
+    }
+
+    public void printTabulationLog(String filePath) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
+        writer.write(allSymbols.stream().map(Symbol::toString).collect(Collectors.joining("\n")));
+        writer.close();
+    }
 }

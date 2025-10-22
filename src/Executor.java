@@ -1,5 +1,6 @@
 import frontend.Lexer;
 import frontend.Parser;
+import frontend.Tabulator;
 import frontend.error.ErrorComparator;
 import frontend.error.ErrorEntry;
 import frontend.syntax.CompileUnit;
@@ -31,7 +32,6 @@ public class Executor {
         Parser parser = new Parser(tokenStream);
         CompileUnit compileUnit = null;
         if (parser.parse()) {
-            compileUnit = parser.getCompileUnit();
             if (Settings.PrintConfig.printParseProcess) {
                 tokenStream.printParseLog(Settings.FilePath.parserOut);
             }
@@ -39,8 +39,17 @@ public class Executor {
             collectErrors(parser.getErrors());
         }
 
-        // 2.5 Symbol table
+        compileUnit = parser.getCompileUnit();
 
+        // 2.5 Symbol table
+        Tabulator tabulator = new Tabulator(compileUnit);
+        if (tabulator.tabulate()) {
+            if (Settings.PrintConfig.printTabulation) {
+                tabulator.printTabulationLog(Settings.FilePath.tabulatorOut);
+            }
+        } else {
+            collectErrors(tabulator.getErrors());
+        }
 
         // 3. Intermediate code generation
 

@@ -16,33 +16,33 @@ public class InitVal extends ASTNode {
     }
     private Type type;
     private Exp singleExp;
-    private ArrayList<Exp> multipleExps;
+    private ArrayList<InitVal> subInitVals;
 
     public InitVal() {
         this.type = Type.Multiple;
         this.singleExp = null;
-        this.multipleExps = new ArrayList<>();
+        this.subInitVals = new ArrayList<>();
     }
 
     public InitVal(Exp singleExp) {
         this.type = Type.Single;
         this.singleExp = singleExp;
-        this.multipleExps = null;
+        this.subInitVals = null;
     }
 
-    public void addMultipleExp(Exp multipleExp) {
+    public void addSubInitVal(InitVal subInitVal) {
         assert(this.type == Type.Multiple);
-        this.multipleExps.add(multipleExp);
+        this.subInitVals.add(subInitVal);
     }
 
-    public static InitVal parse(TokenStream tokenStream, List<ErrorEntry> errors) {
+    public static InitVal parse(TokenStream tokenStream, List<ErrorEntry> errors, boolean isSub) {
         InitVal initVal;
         if (tokenStream.checkPoll(TokenType.LeftBrace)) {
             initVal = new InitVal();
             if (!tokenStream.check(TokenType.RightBrace)) {
                 do {
-                    initVal.addMultipleExp(
-                        Exp.parse(tokenStream, errors)
+                    initVal.addSubInitVal(
+                        InitVal.parse(tokenStream, errors, true)
                     );
                 } while (tokenStream.checkPoll(TokenType.Comma));
             }
@@ -52,7 +52,7 @@ public class InitVal extends ASTNode {
                 Exp.parse(tokenStream, errors)
             );
         }
-        tokenStream.logParse("<InitVal>");
+        if (!isSub) tokenStream.logParse("<InitVal>");
         return initVal;
     }
 
@@ -60,7 +60,7 @@ public class InitVal extends ASTNode {
         if (type == Type.Single) {
             singleExp.visit();
         } else {
-            multipleExps.forEach(Exp::visit);
+            subInitVals.forEach(InitVal::visit);
         }
     }
 
@@ -73,9 +73,8 @@ public class InitVal extends ASTNode {
             return new ConstInitVal(new ConstExp(singleExp.getAddExp()));
         } else {
             ConstInitVal constInitVal = new ConstInitVal();
-            for (Exp exp : multipleExps) {
-                ConstExp constExp = new ConstExp(exp.getAddExp());
-                constInitVal.addConstExp(constExp);
+            for (InitVal initVal : subInitVals) {
+                constInitVal.addSubInitVal(initVal.convert());
             }
             return constInitVal;
         }

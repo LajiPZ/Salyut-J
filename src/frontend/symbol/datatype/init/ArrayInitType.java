@@ -35,7 +35,7 @@ public class ArrayInitType extends InitType {
             if (val.getSingleConstExp() != null) {
                 array.set(index++, val.singleCalc());
             } else {
-                queue.addAll(val.getMultipleConstExps());
+                queue.addAll(val.getSubInitVals());
             }
         }
         return array;

@@ -42,19 +42,18 @@ public class VarDef extends ASTNode {
     public static VarDef parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         Token ident = tokenStream.next(TokenType.Ident);
         VarDef varDef = new VarDef(ident);
-        // TODO：多维数组
-        if (tokenStream.checkPoll(TokenType.LeftBracket)) {
-            ConstExp exp = ConstExp.parse(tokenStream, errors);
+        // 多维数组; 不支持的话，while改if即可
+        while (tokenStream.checkPoll(TokenType.LeftBracket)) {
+            varDef.addIndexExp(ConstExp.parse(tokenStream, errors));
             if (!tokenStream.checkPoll(TokenType.RightBracket)) {
                 errors.add(
                     new ErrorEntry(ErrorType.MissingRBracket, "]", tokenStream.getPrevToken().getFileLoc())
                 );
             }
-            varDef.addIndexExp(exp);
         }
         if (tokenStream.checkPoll(TokenType.Assign)) {
             varDef.setInitVal(
-                InitVal.parse(tokenStream, errors)
+                InitVal.parse(tokenStream, errors, false)
             );
         }
         tokenStream.logParse("<VarDef>");

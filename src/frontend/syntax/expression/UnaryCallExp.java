@@ -30,13 +30,14 @@ public class UnaryCallExp extends UnaryExp {
             );
         } else {
             funcSymbol = symbol;
-            params.visit();
-            if (params.getParameterCount() != funcSymbol.getParameterCount()) {
+            if (params != null) params.visit();
+            int paramsCount = (params == null) ? 0 : params.getParameterCount();
+            if (paramsCount != funcSymbol.getParameterCount()) {
                 Tabulator.recordError(
                     new ErrorEntry(ErrorType.MissingArgument, ident.getFileLoc())
                 );
             } else {
-                if (IntStream.range(0, params.getParameterCount()).anyMatch(
+                if (IntStream.range(0, paramsCount).anyMatch(
                     i ->
                     !funcSymbol.getParameters().get(i).getDataType().compatibleWith(
                         params.getParameters().get(i).calcType()

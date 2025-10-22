@@ -49,9 +49,9 @@ public class ReturnStmt extends Stmt {
     public void visit() {
         if (this.expr != null) {
             Tabulator.setActualReturnType(Tabulator.FuncReturnType.Int);
+            expr.visit();
         } else {
             Tabulator.setActualReturnType(Tabulator.FuncReturnType.Void);
         }
-        expr.visit();
     }
 }

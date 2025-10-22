@@ -41,8 +41,8 @@ public class ConstDef extends ASTNode {
     public static ConstDef parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         Token ident = tokenStream.next(TokenType.Ident);
         ConstDef def = new ConstDef(ident);
-        // TODO：多维数组
-        if (tokenStream.checkPoll(TokenType.LeftBracket)) {
+        // 多维数组; 不支持的话，while改if即可
+        while (tokenStream.checkPoll(TokenType.LeftBracket)) {
             def.addIndexExp(ConstExp.parse(tokenStream, errors));
             if (!tokenStream.checkPoll(TokenType.RightBracket)) {
                 errors.add(
@@ -51,7 +51,7 @@ public class ConstDef extends ASTNode {
             }
         }
         tokenStream.next(TokenType.Assign);
-        def.setInitVal(ConstInitVal.parse(tokenStream, errors));
+        def.setInitVal(ConstInitVal.parse(tokenStream, errors, false));
         tokenStream.logParse("<ConstDef>");
         return def;
     }

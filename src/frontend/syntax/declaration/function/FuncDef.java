@@ -72,7 +72,7 @@ public class FuncDef extends ASTNode {
                 type.getType().equals(FuncType.Type.Void) ? Tabulator.FuncReturnType.Void : Tabulator.FuncReturnType.Int
             );
             Tabulator.intoNewScope();
-            fParams.visit(funcSymbol);
+            if (fParams != null) fParams.visit(funcSymbol);
             block.visit();
             if (!Tabulator.returnTypeMatches()) {
                 if (type.getType().equals(FuncType.Type.Void)) {

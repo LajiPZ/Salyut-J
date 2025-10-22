@@ -1,6 +1,8 @@
 package frontend.symbol;
 
+import frontend.symbol.datatype.ArrayType;
 import frontend.symbol.datatype.DataType;
+import frontend.symbol.datatype.IntType;
 import frontend.symbol.datatype.init.InitType;
 
 public class ValSymbol extends Symbol {
@@ -13,8 +15,8 @@ public class ValSymbol extends Symbol {
     private Type type;
     private DataType dataType;
 
-    public ValSymbol(String ident, Type type, DataType dataType) {
-        super(ident);
+    public ValSymbol(String ident, Type type, DataType dataType, int scopeCnt) {
+        super(ident, scopeCnt);
         this.type = type;
         this.dataType = dataType;
     }
@@ -33,5 +35,15 @@ public class ValSymbol extends Symbol {
 
     public DataType getDataType() {
         return dataType;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (type == Type.Const) sb.append("Const");
+        else if (((VarSymbol)this).isStatic()) sb.append("Static");
+        if (dataType instanceof IntType) sb.append("Int");
+        else if (dataType instanceof ArrayType) sb.append("IntArray"); // 这里偷了个懒
+        return sb.toString();
     }
 }
