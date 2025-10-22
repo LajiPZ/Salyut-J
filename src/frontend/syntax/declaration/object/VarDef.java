@@ -71,31 +71,35 @@ public class VarDef extends ASTNode {
         } else {
             if (initVal != null) initVal.visit();
             // 注：这里只处理全局变量的初值，局部变量的初值在代码生成时处理
-            if (Tabulator.isGlobalDef()) {
-                if (indexExps.isEmpty()) {
-                    if (initVal == null) {
-                        symbol.setInitType(new ValInitType(0, type.toDataType()));
+            try {
+                if (Tabulator.isGlobalDef()) {
+                    if (indexExps.isEmpty()) {
+                        if (initVal == null) {
+                            symbol.setInitType(new ValInitType(0, type.toDataType()));
+                        } else {
+                            symbol.setInitType(new ValInitType(initVal.getSingleExp().calc(), type.toDataType()));
+                        }
                     } else {
-                        symbol.setInitType(new ValInitType(initVal.getSingleExp().calc(), type.toDataType()));
-                    }
-                } else {
-                    if (initVal != null) {
-                        symbol.setInitType(
-                            ArrayInitType.createArrayInitType(
-                                ((ArrayType) dataType).getIndexList(),
-                                initVal.convert(),
-                                type.toDataType()
-                            )
-                        );
-                    } else {
-                        symbol.setInitType(
-                            new ArrayInitType(
-                                ((ArrayType) dataType).getIndexList(),
-                                type.toDataType()
-                            )
-                        );
+                        if (initVal != null) {
+                            symbol.setInitType(
+                                ArrayInitType.createArrayInitType(
+                                    ((ArrayType) dataType).getIndexList(),
+                                    initVal.convert(),
+                                    type.toDataType()
+                                )
+                            );
+                        } else {
+                            symbol.setInitType(
+                                new ArrayInitType(
+                                    ((ArrayType) dataType).getIndexList(),
+                                    type.toDataType()
+                                )
+                            );
+                        }
                     }
                 }
+            } catch (Exception e) {
+                // e.g. getint()
             }
             this.varSymbol = symbol;
         }

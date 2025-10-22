@@ -37,6 +37,10 @@ public class FuncSymbol extends Symbol {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append(super.getScopeCnt());
+        sb.append(" ");
+        sb.append(super.getIdent());
+        sb.append(" ");
         if (type instanceof VoidType) sb.append("Void");
         else if (type instanceof IntType) sb.append("Int");
         sb.append("Func");

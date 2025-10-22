@@ -66,14 +66,18 @@ public class ConstDef extends ASTNode {
             );
         } else {
             initVal.visit();
-            if (indexExps.isEmpty()) {
-                symbol.setInitType(new ValInitType(initVal.singleCalc(), dataType));
-            } else {
-                symbol.setInitType(ArrayInitType.createArrayInitType(
-                    ((ArrayType)dataType).getIndexList(),
-                    initVal,
-                    type.toDataType() // TODO: 应该没有必要, 再从dataType找下去
-                ));
+            try {
+                if (indexExps.isEmpty()) {
+                    symbol.setInitType(new ValInitType(initVal.singleCalc(), dataType));
+                } else {
+                    symbol.setInitType(ArrayInitType.createArrayInitType(
+                        ((ArrayType)dataType).getIndexList(),
+                        initVal,
+                        type.toDataType() // TODO: 应该没有必要, 再从dataType找下去
+                    ));
+                }
+            } catch (Exception e) {
+                // 为什么？考虑getInt()
             }
             this.constSymbol = symbol;
         }

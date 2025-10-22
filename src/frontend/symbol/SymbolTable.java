@@ -22,4 +22,8 @@ public class SymbolTable {
     public ValSymbol getSymbol(String ident) {
         return valSymbols.get(ident);
     }
+
+    public int getId() {
+        return id;
+    }
 }

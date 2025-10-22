@@ -17,7 +17,7 @@ import frontend.token.Token;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class FuncFParam extends ASTNode {
@@ -30,7 +30,7 @@ public class FuncFParam extends ASTNode {
         this.type = type;
         this.ident = ident;
         if (isArray) {
-            this.indexList = new ArrayList<>();
+            this.indexList = new LinkedList<>();
         } else {
             this.indexList = null;
         }
@@ -58,8 +58,8 @@ public class FuncFParam extends ASTNode {
                 errors.add(
                     new ErrorEntry(ErrorType.MissingRBracket, "]", tokenStream.getPrevToken().getFileLoc())
                 );
-                funcFParam.addIndexExp(null);
             }
+            funcFParam.addIndexExp(null);
             /* 多维数组，暂时不会发生
             while (tokenStream.checkPoll(TokenType.LeftBracket)) {
                 funcFParam.addIndexExp(ConstExp.parse(tokenStream, errors));
