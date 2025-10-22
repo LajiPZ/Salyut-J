@@ -79,7 +79,7 @@ public class VarDef extends ASTNode {
                         symbol.setInitType(new ValInitType(initVal.getSingleExp().calc(), type.toDataType()));
                     }
                 } else {
-                    if (initVal == null) {
+                    if (initVal != null) {
                         symbol.setInitType(
                             ArrayInitType.createArrayInitType(
                                 ((ArrayType) dataType).getIndexList(),

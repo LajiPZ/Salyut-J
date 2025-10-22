@@ -1,5 +1,6 @@
 package frontend.syntax.statement;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.syntax.logical.CondExp;
@@ -42,9 +43,11 @@ public class ForBlockStmt extends Stmt {
 
     @Override
     public void visit() {
+        Tabulator.intoLoop();
         if (initStmt != null) initStmt.visit();
         if (condExp != null) condExp.visit();
         if (thenStmt != null) thenStmt.visit();
         stmt.visit();
+        Tabulator.exitLoop();
     }
 }

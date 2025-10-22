@@ -102,58 +102,6 @@ abstract public class Stmt extends ASTNode {
         return true;
     }
 
-    public void visit() {
-        switch (this.type) {
-            case Assign: {
-                AssignStmt assignStmt = (AssignStmt) this;
-                assignStmt.visit();
-                break;
-            }
-            case Exp: {
-                ExpStmt expStmt = (ExpStmt) this;
-                expStmt.visit();
-                break;
-            }
-            case Block: {
-                BlockStmt blockStmt = (BlockStmt) this;
-                Tabulator.intoNewScope();
-                blockStmt.visit();
-                Tabulator.exitScope();
-                break;
-            }
-            case If: {
-                IfStmt ifStmt = (IfStmt) this;
-                ifStmt.visit();
-                break;
-            }
-            case For: {
-                ForBlockStmt forBlockStmt = (ForBlockStmt) this;
-                Tabulator.intoLoop();
-                forBlockStmt.visit();
-                Tabulator.exitLoop();
-                break;
-            }
-            case Break: {
-                BreakStmt breakStmt = (BreakStmt) this;
-                breakStmt.visit();
-                break;
-            }
-            case Continue: {
-                ContinueStmt continueStmt = (ContinueStmt) this;
-                continueStmt.visit();
-                break;
-            }
-            case Return: {
-                ReturnStmt returnStmt = (ReturnStmt) this;
-                returnStmt.visit();
-                break;
-            }
-            case Printf: {
-                PrintfStmt printfStmt = (PrintfStmt) this;
-                printfStmt.visit();
-                break;
-            }
-        }
-    }
+    abstract public void visit();
 
 }

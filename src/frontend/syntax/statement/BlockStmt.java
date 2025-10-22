@@ -1,5 +1,6 @@
 package frontend.syntax.statement;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.syntax.block.Block;
 import frontend.token.TokenStream;
@@ -20,6 +21,8 @@ public class BlockStmt extends Stmt {
 
     @Override
     public void visit() {
+        Tabulator.intoNewScope();
         block.visit();
+        Tabulator.exitScope();
     }
 }
