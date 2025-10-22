@@ -53,5 +53,10 @@ public class ReturnStmt extends Stmt {
         } else {
             Tabulator.setActualReturnType(Tabulator.FuncReturnType.Void);
         }
+        if (!Tabulator.returnTypeMatches()) {
+            Tabulator.recordError(
+                new ErrorEntry(ErrorType.ReturnTypeMismatch, label.getFileLoc())
+            );
+        }
     }
 }

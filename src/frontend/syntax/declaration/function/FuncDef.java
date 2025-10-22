@@ -34,6 +34,10 @@ public class FuncDef extends ASTNode {
         this.fParams = fParams;
     }
 
+    public Token getEndToken() {
+        return block.getEndToken();
+    }
+
     public static FuncDef parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         FuncType type = FuncType.parse(tokenStream, errors);
         Token ident = tokenStream.next(TokenType.Ident);
@@ -74,16 +78,10 @@ public class FuncDef extends ASTNode {
             Tabulator.intoNewScope();
             if (fParams != null) fParams.visit(funcSymbol);
             block.visit();
-            if (!Tabulator.returnTypeMatches()) {
-                if (type.getType().equals(FuncType.Type.Void)) {
-                    Tabulator.recordError(
-                        new ErrorEntry(ErrorType.ReturnTypeMismatch, ident.getFileLoc())
-                    );
-                } else {
-                    Tabulator.recordError(
-                        new ErrorEntry(ErrorType.MissingReturn, ident.getFileLoc())
-                    );
-                }
+            if (!Tabulator.returnTypeMatches() && !type.getType().equals(FuncType.Type.Void)) {
+                Tabulator.recordError(
+                    new ErrorEntry(ErrorType.MissingReturn, this.getEndToken().getFileLoc())
+                );
             }
             Tabulator.exitScope();
         }

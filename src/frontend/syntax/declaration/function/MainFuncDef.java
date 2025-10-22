@@ -26,6 +26,10 @@ public class MainFuncDef extends ASTNode {
         this.block = block;
     }
 
+    public Token getEndToken() {
+        return block.getEndToken();
+    }
+
     public static MainFuncDef parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         tokenStream.next(TokenType.Int);
         MainFuncDef mainFuncDef = new MainFuncDef(tokenStream.next(TokenType.Main));
@@ -59,7 +63,7 @@ public class MainFuncDef extends ASTNode {
             block.visit();
             if (!Tabulator.returnTypeMatches()) {
                 Tabulator.recordError(
-                    new ErrorEntry(ErrorType.ReturnTypeMismatch, ident.getFileLoc())
+                    new ErrorEntry(ErrorType.MissingReturn, this.getEndToken().getFileLoc())
                 );
             }
             Tabulator.exitScope();

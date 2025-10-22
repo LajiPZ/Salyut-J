@@ -1,5 +1,6 @@
 package frontend.syntax.statement;
 
+import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.syntax.logical.CondExp;
@@ -52,7 +53,11 @@ public class IfStmt extends Stmt {
     public void visit() {
         condExp.visit();
         stmt.visit();
-        if (elseStmt != null) elseStmt.visit();
+        Tabulator.setActualReturnType(Tabulator.FuncReturnType.Void); // 由此解决控制流引起的问题
+        if (elseStmt != null) {
+            elseStmt.visit();
+            Tabulator.setActualReturnType(Tabulator.FuncReturnType.Void); // 同上
+        }
     }
 
 }

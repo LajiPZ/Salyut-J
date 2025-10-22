@@ -1,7 +1,7 @@
 package frontend.syntax.block;
 
-import frontend.Tabulator;
 import frontend.error.ErrorEntry;
+import frontend.token.Token;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
 
@@ -10,6 +10,7 @@ import java.util.List;
 
 public class Block {
     private ArrayList<BlockItem> items;
+    private Token endToken;
 
     public Block() {
         this.items = new ArrayList<>();
@@ -17,6 +18,14 @@ public class Block {
 
     public void addItem(BlockItem item) {
         this.items.add(item);
+    }
+
+    public void setEndToken(Token endToken) {
+        this.endToken = endToken;
+    }
+
+    public Token getEndToken() {
+        return endToken;
     }
 
     public static Block parse(TokenStream tokenStream, List<ErrorEntry> errors) {
@@ -27,7 +36,7 @@ public class Block {
                 BlockItem.parse(tokenStream, errors)
             );
         }
-        tokenStream.next(TokenType.RightBrace);
+        block.setEndToken(tokenStream.next(TokenType.RightBrace));
         tokenStream.logParse("<Block>");
         return block;
     }
