@@ -1,5 +1,6 @@
 package frontend.syntax;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.syntax.declaration.function.FuncDef;
 import frontend.syntax.declaration.function.MainFuncDef;
@@ -29,7 +30,6 @@ public class CompileUnit extends ASTNode {
         funcDefs.add(funcDef);
     }
 
-
     public static CompileUnit parse(TokenStream tokenStream, List<ErrorEntry> errors) {
         CompileUnit compileUnit = new CompileUnit();
         // int main()
@@ -54,6 +54,16 @@ public class CompileUnit extends ASTNode {
             funcDef.visit();
         }
         mainFuncDef.visit();
+    }
+
+    public void build(IrBuilder builder) {
+        for (Decl decl : decls) {
+            decl.build(builder);
+        }
+        for (FuncDef funcDef : funcDefs) {
+            funcDef.build(builder);
+        }
+        mainFuncDef.build(builder);
     }
 
 }

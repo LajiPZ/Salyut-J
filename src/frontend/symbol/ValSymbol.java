@@ -1,5 +1,6 @@
 package frontend.symbol;
 
+import frontend.llvm.value.Value;
 import frontend.symbol.datatype.ArrayType;
 import frontend.symbol.datatype.DataType;
 import frontend.symbol.datatype.IntType;
@@ -15,6 +16,8 @@ public class ValSymbol extends Symbol {
     private InitType initType = null;
     private Type type;
     private DataType dataType;
+
+    private Value value; // LLVM
 
     public ValSymbol(String ident, Type type, DataType dataType, int scopeCnt) {
         super(ident, scopeCnt);
@@ -37,6 +40,10 @@ public class ValSymbol extends Symbol {
     public DataType getDataType() {
         return dataType;
     }
+
+    public void setValue(Value value) { this.value = value; }
+
+    public Value getValue() { return value; }
 
     @Override
     public String toString() {

@@ -1,5 +1,6 @@
 package frontend.syntax.declaration.object;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
 import frontend.token.TokenStream;
@@ -42,5 +43,9 @@ public class Decl extends ASTNode {
         } else {
             ((VarDecl)value).visit();
         }
+    }
+
+    public void build(IrBuilder builder) {
+
     }
 }

@@ -1,9 +1,12 @@
 package frontend.syntax.declaration.function;
 
+import frontend.IrBuilder;
 import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.llvm.value.Function;
 import frontend.symbol.FuncSymbol;
+import frontend.symbol.datatype.DataType;
 import frontend.symbol.datatype.IntType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.block.Block;
@@ -69,4 +72,24 @@ public class MainFuncDef extends ASTNode {
             Tabulator.exitScope();
         }
     }
+
+    public void build(IrBuilder builder) {
+        // Basically identical to that in FuncDef
+        Function func = builder.registerFunction(
+            this.getName(),
+            this.getDataType(),
+            List.of() // no args for main
+        );
+        block.build(builder);
+
+    }
+
+    public String getName() {
+        return ident.getValue();
+    }
+
+    public DataType getDataType() {
+        return symbol.getType();
+    }
+
 }

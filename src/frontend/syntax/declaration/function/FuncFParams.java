@@ -32,4 +32,8 @@ public class FuncFParams extends ASTNode {
             funcFParam.visit(funcSymbol);
         }
     }
+
+    public List<FuncFParam> getParams() {
+        return funcFParams;
+    }
 }

@@ -88,4 +88,8 @@ public class FuncFParam extends ASTNode {
             this.paramSymbol = symbol;
         }
     }
+
+    public VarSymbol getSymbol() {
+        return paramSymbol;
+    }
 }

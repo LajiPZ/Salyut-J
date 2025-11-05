@@ -1,8 +1,10 @@
+import frontend.IrBuilder;
 import frontend.Lexer;
 import frontend.Parser;
 import frontend.Tabulator;
 import frontend.error.ErrorComparator;
 import frontend.error.ErrorEntry;
+import frontend.llvm.IrModule;
 import frontend.syntax.CompileUnit;
 import frontend.token.TokenStream;
 import settings.Settings;
@@ -52,8 +54,8 @@ public class Executor {
         }
 
         // 3. Intermediate code generation
-
-
+        IrBuilder irBuilder = new IrBuilder(compileUnit);
+        IrModule irModule = irBuilder.build();
 
 
         // 4. Optimization
