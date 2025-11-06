@@ -5,4 +5,9 @@ public class VoidType extends DataType{
     public boolean compatibleWith(DataType dt) {
         return dt instanceof VoidType;
     }
+
+    @Override
+    public String toString() {
+        return "void";
+    }
 }

@@ -4,19 +4,19 @@ import frontend.datatype.DataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Function extends Value {
     private final List<BBlock> bBlocks;
     private final List<Value> params;
     private boolean isExtern = false;
 
-    private int counter;
+    // TODO: valCounter
 
     public Function(String name, DataType type) {
         super(name, type);
         this.bBlocks = new ArrayList<>();
         this.params = new ArrayList<>();
-        this.counter = 0;
     }
 
     public Value addParam(DataType type) {
@@ -41,4 +41,18 @@ public class Function extends Value {
         bBlocks.add(bBlock);
     }
 
+
+
+    @Override
+    public String toString() {
+        // 输出函数定义，external函数此处不关心
+        return "define dso_local " +
+                getType() +
+                " @" + getName() +
+                "(" +
+                params.stream().map(Value::toString).collect(Collectors.joining(", ")) +
+                ") {\n" +
+                bBlocks.stream().map(Value::toString).collect(Collectors.joining("\n")) +
+                "}\n";
+    }
 }

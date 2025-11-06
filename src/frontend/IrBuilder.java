@@ -1,10 +1,13 @@
 package frontend;
 
+import frontend.datatype.PointerType;
 import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Function;
 import frontend.llvm.value.GlobalVariable;
 import frontend.llvm.IrModule;
 import frontend.llvm.value.Value;
+import frontend.llvm.value.instruction.IAllocate;
+import frontend.llvm.value.instruction.IStore;
 import frontend.llvm.value.instruction.Inst;
 import frontend.symbol.VarSymbol;
 import frontend.datatype.DataType;
@@ -61,7 +64,7 @@ public class IrBuilder {
         }
 
         // 2. 创建初始块，处理参数
-        BBlock blk = new BBlock();
+        BBlock blk = new BBlock(func);
         func.addBBlock(blk);
         insertPoint = blk;
 
@@ -70,9 +73,24 @@ public class IrBuilder {
         // 为什么？考虑函数内要修改这个参数值的情况，我们传入的参数值在调用后是不变的...
         for (FuncFParam fParam : params) {
             Value valIn = fParam.getSymbol().getValue();
-            // TODO
+            Value pointer = insertInst(
+                    new IAllocate(
+                        new PointerType(fParam.getSymbol().getDataType())
+                    )
+            );
+            insertInst(
+                    new IStore(valIn, pointer)
+            );
+
+            fParam.getSymbol().setValue(pointer);
+            fParam.getSymbol().setFromParam();
         }
+
         return func;
+    }
+
+    public BBlock getInsertPoint() {
+        return insertPoint;
     }
 
     public Inst insertInst(Inst inst) {
@@ -80,6 +98,8 @@ public class IrBuilder {
     }
 
     public Inst insertInst(BBlock targetBBlk, Inst inst) {
-
+        // TODO: 处理已有的Terminator？
+        targetBBlk.addInstruction(inst);
+        return inst;
     }
 }

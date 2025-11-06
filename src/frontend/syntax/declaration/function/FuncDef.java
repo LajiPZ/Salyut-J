@@ -5,6 +5,8 @@ import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.llvm.value.Function;
+import frontend.llvm.value.instruction.IReturn;
+import frontend.llvm.value.instruction.ITerminator;
 import frontend.symbol.FuncSymbol;
 import frontend.datatype.DataType;
 import frontend.datatype.IntType;
@@ -98,15 +100,16 @@ public class FuncDef extends ASTNode {
             this.getParams()
         );
         block.build(builder);
+        // TODO: new block
         if (
             this.type.getType() == FuncType.Type.Void &&
-
+            !(builder.getInsertPoint().getLastInstruction() instanceof ITerminator)
         ) {
             builder.insertInst(
-
+                new IReturn()
             );
         }
-        // TODO: function counter
+        // TODO: function valCounter
     }
 
     public String getName() {

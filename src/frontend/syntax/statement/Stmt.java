@@ -1,5 +1,6 @@
 package frontend.syntax.statement;
 
+import frontend.IrBuilder;
 import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
@@ -104,4 +105,5 @@ abstract public class Stmt extends ASTNode {
 
     abstract public void visit();
 
+    abstract public void build(IrBuilder builder);
 }

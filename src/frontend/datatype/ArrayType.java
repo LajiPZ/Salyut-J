@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ArrayType extends DataType{
+public class ArrayType extends DataType {
 
     private DataType baseType;
     private int size;
@@ -53,4 +53,8 @@ public class ArrayType extends DataType{
         return other instanceof ArrayType && ((ArrayType)other).getBaseType().compatibleWith(baseType);
     }
 
+    @Override
+    public String toString() {
+        return "[" + size + " x " + baseType.toString() + "]";
+    }
 }

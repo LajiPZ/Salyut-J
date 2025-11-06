@@ -9,7 +9,7 @@ public class Value {
     public static Counter counter = new Counter(); // 用于生成局部value的编号，取一次加一个
 
     public Value(DataType type) {
-        this("%" + Value.getCounter(), type);
+        this("%" + counter.get(), type);
     }
 
     public Value(String name, DataType type) {
@@ -26,5 +26,8 @@ public class Value {
     }
     // TODO: uses
 
-
+    @Override
+    public String toString() {
+        return type.toString() + " " +  name;
+    }
 }

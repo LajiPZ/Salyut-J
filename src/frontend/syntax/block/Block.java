@@ -1,5 +1,6 @@
 package frontend.syntax.block;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -44,6 +45,12 @@ public class Block {
     public void visit() {
         for (BlockItem item : items) {
             item.visit();
+        }
+    }
+
+    public void build(IrBuilder builder) {
+        for (BlockItem item : items) {
+            item.build(builder);
         }
     }
 }

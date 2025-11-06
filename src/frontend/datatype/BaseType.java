@@ -15,4 +15,9 @@ abstract public class BaseType extends DataType {
     public boolean compatibleWith(DataType dt) {
         return dt instanceof BaseType && ((BaseType) dt).getWidth() == width;
     }
+
+    @Override
+    public String toString() {
+        return "i" + width;
+    }
 }

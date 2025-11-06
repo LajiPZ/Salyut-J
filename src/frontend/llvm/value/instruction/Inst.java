@@ -20,5 +20,13 @@ abstract public class Inst extends Value {
         this.operands = new ArrayList<>();
     }
 
+    public void addOperand(Value operand) {
+        this.operands.add(operand);
+    }
+
+    public Value getOperand(int index) {
+        return this.operands.get(index);
+    }
+
     abstract public String toLLVM();
 }

@@ -15,4 +15,9 @@ public class PointerType extends DataType {
     public boolean compatibleWith(DataType dt) {
         return dt instanceof PointerType && ((PointerType) dt).getBaseType().compatibleWith(base);
     }
+
+    @Override
+    public String toString() {
+        return base.toString() + "*";
+    }
 }

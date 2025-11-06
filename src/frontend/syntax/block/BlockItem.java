@@ -1,5 +1,6 @@
 package frontend.syntax.block;
 
+import frontend.IrBuilder;
 import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
@@ -52,6 +53,14 @@ final public class BlockItem extends ASTNode {
         } else {
             stmt.visit();
             if (!(stmt instanceof ReturnStmt)) Tabulator.revokeReturn(); // this is dumb
+        }
+    }
+
+    public void build(IrBuilder builder) {
+        if (type == Type.Decl) {
+            decl.build(builder);
+        } else {
+            stmt.build(builder);
         }
     }
 }
