@@ -2,9 +2,8 @@ package frontend;
 
 import frontend.error.ErrorEntry;
 import frontend.symbol.*;
-import frontend.symbol.datatype.DataType;
-import frontend.symbol.datatype.IntType;
-import frontend.symbol.datatype.init.InitType;
+import frontend.datatype.DataType;
+import frontend.datatype.IntType;
 import frontend.syntax.CompileUnit;
 
 import java.io.BufferedWriter;

@@ -1,6 +1,6 @@
 package frontend.syntax.expression;
 
-import frontend.symbol.datatype.DataType;
+import frontend.datatype.DataType;
 
 public class UnaryPrimaryExp extends UnaryExp {
     private final PrimaryExp exp;

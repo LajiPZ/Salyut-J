@@ -2,8 +2,8 @@ package frontend.syntax.expression;
 
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
-import frontend.symbol.datatype.DataType;
-import frontend.symbol.datatype.IntType;
+import frontend.datatype.DataType;
+import frontend.datatype.IntType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.misc.LVal;
 import frontend.syntax.misc.Number;

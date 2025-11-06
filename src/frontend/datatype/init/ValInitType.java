@@ -1,6 +1,6 @@
-package frontend.symbol.datatype.init;
+package frontend.datatype.init;
 
-import frontend.symbol.datatype.DataType;
+import frontend.datatype.DataType;
 
 public class ValInitType extends InitType {
     private int value;

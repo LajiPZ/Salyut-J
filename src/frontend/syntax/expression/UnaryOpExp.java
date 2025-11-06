@@ -1,6 +1,6 @@
 package frontend.syntax.expression;
 
-import frontend.symbol.datatype.DataType;
+import frontend.datatype.DataType;
 
 // I can't come up with a better name for it...
 public class UnaryOpExp extends UnaryExp{

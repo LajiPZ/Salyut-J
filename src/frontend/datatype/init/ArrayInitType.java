@@ -1,6 +1,6 @@
-package frontend.symbol.datatype.init;
+package frontend.datatype.init;
 
-import frontend.symbol.datatype.DataType;
+import frontend.datatype.DataType;
 import frontend.syntax.declaration.object.ConstInitVal;
 import frontend.syntax.expression.Exp;
 

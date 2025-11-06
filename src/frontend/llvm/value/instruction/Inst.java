@@ -1,7 +1,7 @@
 package frontend.llvm.value.instruction;
 
 import frontend.llvm.value.Value;
-import frontend.symbol.datatype.DataType;
+import frontend.datatype.DataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,5 +20,5 @@ abstract public class Inst extends Value {
         this.operands = new ArrayList<>();
     }
 
-
+    abstract public String toLLVM();
 }

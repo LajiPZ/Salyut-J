@@ -1,11 +1,11 @@
 package frontend.symbol;
 
 import frontend.llvm.value.Value;
-import frontend.symbol.datatype.ArrayType;
-import frontend.symbol.datatype.DataType;
-import frontend.symbol.datatype.IntType;
-import frontend.symbol.datatype.PointerType;
-import frontend.symbol.datatype.init.InitType;
+import frontend.datatype.ArrayType;
+import frontend.datatype.DataType;
+import frontend.datatype.IntType;
+import frontend.datatype.PointerType;
+import frontend.datatype.init.InitType;
 
 public class ValSymbol extends Symbol {
     public enum Type {

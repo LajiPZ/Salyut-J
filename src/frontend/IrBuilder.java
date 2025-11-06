@@ -7,12 +7,9 @@ import frontend.llvm.IrModule;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.instruction.Inst;
 import frontend.symbol.VarSymbol;
-import frontend.symbol.datatype.DataType;
+import frontend.datatype.DataType;
 import frontend.syntax.CompileUnit;
-import frontend.syntax.declaration.function.FuncDef;
 import frontend.syntax.declaration.function.FuncFParam;
-import frontend.syntax.declaration.function.FuncFParams;
-import frontend.syntax.declaration.function.MainFuncDef;
 
 import java.util.ArrayList;
 import java.util.HashMap;

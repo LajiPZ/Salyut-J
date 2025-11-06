@@ -1,4 +1,4 @@
-package frontend.symbol.datatype;
+package frontend.datatype;
 
 public class PointerType extends DataType {
     private DataType base;

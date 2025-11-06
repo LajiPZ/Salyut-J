@@ -1,6 +1,6 @@
 package frontend.llvm.value;
 
-import frontend.symbol.datatype.DataType;
+import frontend.datatype.DataType;
 
 import java.util.ArrayList;
 import java.util.List;

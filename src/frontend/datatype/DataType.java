@@ -1,4 +1,4 @@
-package frontend.symbol.datatype;
+package frontend.datatype;
 
 abstract public class DataType {
 

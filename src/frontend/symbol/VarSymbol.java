@@ -1,7 +1,6 @@
 package frontend.symbol;
 
-import frontend.symbol.datatype.DataType;
-import frontend.symbol.datatype.init.InitType;
+import frontend.datatype.DataType;
 
 public class VarSymbol extends ValSymbol {
     private boolean isStatic = false;

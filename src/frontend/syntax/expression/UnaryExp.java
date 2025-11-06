@@ -2,7 +2,7 @@ package frontend.syntax.expression;
 
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
-import frontend.symbol.datatype.DataType;
+import frontend.datatype.DataType;
 import frontend.syntax.ASTNode;
 import frontend.syntax.misc.FuncRParams;
 import frontend.token.Token;

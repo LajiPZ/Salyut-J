@@ -1,7 +1,6 @@
 package frontend.symbol;
 
-import frontend.symbol.datatype.DataType;
-import frontend.symbol.datatype.init.InitType;
+import frontend.datatype.DataType;
 
 public class ConstSymbol extends ValSymbol {
     public ConstSymbol(String ident, DataType dataType, int scopeCnt) {

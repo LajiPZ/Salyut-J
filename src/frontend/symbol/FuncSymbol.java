@@ -1,8 +1,8 @@
 package frontend.symbol;
 
-import frontend.symbol.datatype.DataType;
-import frontend.symbol.datatype.IntType;
-import frontend.symbol.datatype.VoidType;
+import frontend.datatype.DataType;
+import frontend.datatype.IntType;
+import frontend.datatype.VoidType;
 
 import java.util.ArrayList;
 import java.util.List;

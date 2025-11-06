@@ -1,6 +1,6 @@
 package frontend.llvm.value;
 
-import frontend.symbol.datatype.DataType;
+import frontend.datatype.DataType;
 import utils.Counter;
 
 public class Value {
@@ -17,7 +17,13 @@ public class Value {
         this.type = type;
     }
 
+    public String getName() {
+        return name;
+    }
 
+    public DataType getType() {
+        return type;
+    }
     // TODO: uses
 
 
