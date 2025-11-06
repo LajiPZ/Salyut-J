@@ -102,4 +102,8 @@ public class IrBuilder {
         targetBBlk.addInstruction(inst);
         return inst;
     }
+
+    public Function getFunction(String name) {
+
+    }
 }

@@ -1,6 +1,8 @@
 package frontend.syntax.expression;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
+import frontend.llvm.value.Value;
 import frontend.syntax.ASTNode;
 import frontend.token.TokenStream;
 
@@ -30,5 +32,9 @@ public class ConstExp extends ASTNode {
 
     public int calc() {
         return addExp.calc();
+    }
+
+    public Value build(IrBuilder builder) {
+        return addExp.build(builder);
     }
 }

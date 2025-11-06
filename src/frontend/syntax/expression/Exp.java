@@ -1,7 +1,9 @@
 package frontend.syntax.expression;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.datatype.DataType;
+import frontend.llvm.value.Value;
 import frontend.syntax.ASTNode;
 import frontend.token.TokenStream;
 
@@ -34,5 +36,9 @@ final public class Exp extends ASTNode {
 
     public DataType calcType() {
         return addExp.calcType();
+    }
+
+    public Value build(IrBuilder builder) {
+        return addExp.build(builder);
     }
 }

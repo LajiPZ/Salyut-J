@@ -1,7 +1,11 @@
 package frontend.syntax.expression;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.datatype.DataType;
+import frontend.llvm.value.Value;
+import frontend.llvm.value.instruction.ICalc;
+import frontend.llvm.value.instruction.Operator;
 import frontend.syntax.ASTNode;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -64,5 +68,22 @@ final public class AddExp extends ASTNode {
 
     public DataType calcType() {
         return LMulExp.calcType();
+    }
+
+    public Value build(IrBuilder builder) {
+        Value val = LMulExp.build(builder);
+        for (int i = 0; i < operators.size(); i++) {
+            Value operand = RMulExps.get(i).build(builder);
+            // TODO: 可能引用了一个指针？
+            switch (operators.get(i)) {
+                case ADD -> builder.insertInst(
+                    new ICalc(Operator.ADD, val, operand)
+                );
+                case SUB -> builder.insertInst(
+                    new ICalc(Operator.SUB, val, operand)
+                );
+            }
+        }
+        return val;
     }
 }

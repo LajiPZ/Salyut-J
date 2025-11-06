@@ -1,5 +1,6 @@
 package frontend.syntax.statement;
 
+import frontend.IrBuilder;
 import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.syntax.block.Block;
@@ -24,5 +25,10 @@ public class BlockStmt extends Stmt {
         Tabulator.intoNewScope();
         block.visit();
         Tabulator.exitScope();
+    }
+
+    @Override
+    public void build(IrBuilder builder) {
+        block.build(builder);
     }
 }

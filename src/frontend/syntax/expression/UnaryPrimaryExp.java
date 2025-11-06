@@ -1,6 +1,8 @@
 package frontend.syntax.expression;
 
+import frontend.IrBuilder;
 import frontend.datatype.DataType;
+import frontend.llvm.value.Value;
 
 public class UnaryPrimaryExp extends UnaryExp {
     private final PrimaryExp exp;
@@ -20,5 +22,9 @@ public class UnaryPrimaryExp extends UnaryExp {
 
     public DataType calcType() {
         return exp.calcType();
+    }
+
+    public Value build(IrBuilder builder) {
+        return exp.build(builder);
     }
 }

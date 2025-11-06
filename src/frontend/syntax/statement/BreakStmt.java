@@ -1,5 +1,6 @@
 package frontend.syntax.statement;
 
+import frontend.IrBuilder;
 import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
@@ -34,5 +35,10 @@ public class BreakStmt extends Stmt {
                 new ErrorEntry(ErrorType.BreakContinueOutsideLoop, label.getFileLoc())
             );
         }
+    }
+    
+    @Override
+    public void build(IrBuilder builder) {
+
     }
 }

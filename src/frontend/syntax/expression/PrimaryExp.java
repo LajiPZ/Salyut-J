@@ -1,9 +1,11 @@
 package frontend.syntax.expression;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.datatype.DataType;
 import frontend.datatype.IntType;
+import frontend.llvm.value.Value;
 import frontend.syntax.ASTNode;
 import frontend.syntax.misc.LVal;
 import frontend.syntax.misc.Number;
@@ -96,4 +98,7 @@ public class PrimaryExp extends ASTNode {
         return null;
     }
 
+    public Value build(IrBuilder builder) {
+        // todo
+    }
 }

@@ -1,8 +1,10 @@
 package frontend.syntax.expression;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.datatype.DataType;
+import frontend.llvm.value.Value;
 import frontend.syntax.ASTNode;
 import frontend.syntax.misc.FuncRParams;
 import frontend.token.Token;
@@ -60,4 +62,6 @@ public abstract class UnaryExp extends ASTNode {
     abstract public int calc();
 
     abstract public DataType calcType();
+
+    abstract public Value build(IrBuilder builder);
 }

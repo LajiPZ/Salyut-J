@@ -1,8 +1,13 @@
 package frontend.syntax.expression;
 
+import frontend.IrBuilder;
 import frontend.Tabulator;
+import frontend.datatype.VoidType;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.llvm.value.Value;
+import frontend.llvm.value.instruction.ICalc;
+import frontend.llvm.value.instruction.ICall;
 import frontend.symbol.FuncSymbol;
 import frontend.datatype.DataType;
 import frontend.syntax.misc.FuncRParams;
@@ -57,5 +62,16 @@ public class UnaryCallExp extends UnaryExp {
 
     public DataType calcType() {
         return funcSymbol.getType();
+    }
+
+    @Override
+    public Value build(IrBuilder builder) {
+        Value ret = builder.insertInst(
+            new ICall(
+                builder.getFunction(ident.getValue()),
+                params.build(builder)
+            )
+        );
+        return funcSymbol.getType() instanceof VoidType ? null : ret;
     }
 }
