@@ -1,8 +1,12 @@
 package frontend.syntax.statement;
 
-import frontend.Tabulator;
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.llvm.value.BBlock;
+import frontend.llvm.value.Value;
+import frontend.llvm.tools.ValueConverter;
+import frontend.llvm.value.instruction.IBranch;
 import frontend.syntax.logical.CondExp;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -58,4 +62,50 @@ public class IfStmt extends Stmt {
         }
     }
 
+    public void build(IrBuilder builder) {
+        Value cond = ValueConverter.toBoolean(condExp.build(builder));
+        BBlock blockBefore = builder.getInsertPoint();
+        BBlock thenBBlk = builder.newBBlock(false);
+        stmt.build(builder);
+        BBlock thenEndBBlk = builder.getInsertPoint();
+        BBlock mergeBBlk;
+        if (elseStmt != null) {
+            BBlock elseBBlk = builder.newBBlock(false);
+            elseStmt.build(builder);
+            BBlock elseEndBBlk = builder.getInsertPoint();
+            mergeBBlk = builder.newBBlock(false);
+            builder.insertInst(
+                    blockBefore,
+                    new IBranch(
+                            cond,thenBBlk, elseBBlk
+                    )
+            );
+            builder.insertInst(
+                    thenEndBBlk,
+                    new IBranch(
+                            mergeBBlk
+                    )
+            );
+            builder.insertInst(
+                    elseEndBBlk,
+                    new IBranch(
+                            mergeBBlk
+                    )
+            );
+        } else {
+            mergeBBlk = builder.newBBlock(false);
+            builder.insertInst(
+                    blockBefore,
+                    new IBranch(
+                            cond, thenBBlk, mergeBBlk
+                    )
+            );
+            builder.insertInst(
+                    thenEndBBlk,
+                    new IBranch(
+                            mergeBBlk
+                    )
+            );
+        }
+    }
 }

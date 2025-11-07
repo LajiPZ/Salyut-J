@@ -28,5 +28,13 @@ abstract public class Inst extends Value {
         return this.operands.get(index);
     }
 
+    public void replaceOperand(int index, Value operand) {
+        this.operands.set(index, operand);
+    }
+
+    public List<Value> getOperands() {
+        return this.operands;
+    }
+
     abstract public String toLLVM();
 }

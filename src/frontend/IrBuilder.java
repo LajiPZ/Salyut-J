@@ -1,30 +1,19 @@
 package frontend;
 
 import frontend.datatype.PointerType;
-import frontend.llvm.value.BBlock;
-import frontend.llvm.value.Function;
-import frontend.llvm.value.GlobalVariable;
+import frontend.llvm.tools.LoopInfo;
+import frontend.llvm.value.*;
 import frontend.llvm.IrModule;
-import frontend.llvm.value.Value;
-import frontend.llvm.value.instruction.IAllocate;
-import frontend.llvm.value.instruction.IStore;
-import frontend.llvm.value.instruction.Inst;
-import frontend.symbol.Symbol;
+import frontend.llvm.tools.ValueConverter;
+import frontend.llvm.value.instruction.*;
 import frontend.symbol.ValSymbol;
 import frontend.symbol.VarSymbol;
 import frontend.datatype.DataType;
 import frontend.syntax.CompileUnit;
 import frontend.syntax.declaration.function.FuncFParam;
-import frontend.syntax.expression.Exp;
 import frontend.syntax.misc.LVal;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collector;
-
-import static java.util.stream.Nodes.collect;
+import java.util.*;
 
 /**
  * IrBuilder is used to build the LLVM IR top, that is, IrModule,
@@ -45,10 +34,13 @@ public class IrBuilder {
     private BBlock insertPoint;
     private Function currentFunction;
 
+    private Stack<LoopInfo> loopStack;
+
     public IrBuilder(CompileUnit compileUnit) {
         this.compileUnit = compileUnit;
         this.globalVariableList = new ArrayList<>();
         this.functionMap = new HashMap<>();
+        this.loopStack = new Stack<>();
     }
 
     public IrModule build() {
@@ -96,6 +88,19 @@ public class IrBuilder {
         return func;
     }
 
+    public BBlock newBBlock(boolean fallThrough) {
+        BBlock bBlock = new BBlock(currentFunction);
+        currentFunction.addBBlock(bBlock);
+        // TODO: 为什么？
+        if (fallThrough && !(insertPoint.getLastInstruction() instanceof ITerminator)) {
+            insertInst(
+                    new IBranch(bBlock)
+            );
+        }
+        insertPoint = bBlock;
+        return bBlock;
+    }
+
     public BBlock getInsertPoint() {
         return insertPoint;
     }
@@ -119,7 +124,12 @@ public class IrBuilder {
     }
 
     public Value callGep(ValSymbol val, List<Value> idxList) {
-        Value
+        Value current = val.isFromParam() ?
+                insertInst(new ILoad(val.getValue())) :
+                val.getValue();
+        Value retPtr = insertInst(
+                new IGep(current, idxList.get(0), )
+        )
     }
 
     public void doAssign(LVal left, Value right) {
@@ -131,9 +141,31 @@ public class IrBuilder {
                 exp.build(this)
             ).toList());
         }
-        // TODO: 类型转换
+        right = ValueConverter.toBaseType(pointer, right);
         insertInst(
             new IStore(right, pointer)
         );
+    }
+
+    public void fillBranchTarget(BBlock falseBBlk, List<BBlock> trueBBlks, IrBuilder builder) {
+        BBlock mergeBlk = builder.newBBlock(false);
+        builder.insertInst(falseBBlk, new IBranch(mergeBlk));
+        for (BBlock trueBBlk : trueBBlks) {
+            if (trueBBlk.getLastInstruction() instanceof IBranch branch) {
+                branch.fillNullTarget(mergeBlk);
+            }
+        }
+    }
+
+    public void intoLoop(BBlock condBBlk) {
+        loopStack.add(new LoopInfo(condBBlk));
+    }
+
+    public LoopInfo getCurrentLoop() {
+        return loopStack.lastElement();
+    }
+
+    public void exitLoop() {
+        loopStack.pop();
     }
 }

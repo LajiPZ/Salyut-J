@@ -4,6 +4,7 @@ import frontend.IrBuilder;
 import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.llvm.value.instruction.IBranch;
 import frontend.token.Token;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
@@ -39,6 +40,11 @@ public class BreakStmt extends Stmt {
     
     @Override
     public void build(IrBuilder builder) {
-
+        builder.getCurrentLoop().addBreak(
+                (IBranch) builder.insertInst(
+                        new IBranch(null)
+                )
+        );
+        builder.newBBlock(false); // 跳转后开新块...
     }
 }

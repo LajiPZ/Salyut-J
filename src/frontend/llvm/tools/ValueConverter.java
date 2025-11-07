@@ -1,9 +1,9 @@
-package frontend.llvm.value;
+package frontend.llvm.tools;
 
 import frontend.datatype.BooleanType;
 import frontend.datatype.DataType;
-import frontend.datatype.IntType;
 import frontend.datatype.PointerType;
+import frontend.llvm.value.Value;
 import frontend.llvm.value.constant.IntConstant;
 import frontend.llvm.value.instruction.ICompare;
 import frontend.llvm.value.instruction.IConvert;

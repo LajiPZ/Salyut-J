@@ -58,4 +58,8 @@ public class ValSymbol extends Symbol {
         else if (dataType instanceof ArrayType || dataType instanceof PointerType) sb.append("IntArray"); // 这里偷了个懒
         return sb.toString();
     }
+
+    public boolean isFromParam() {
+        return isFuncParam;
+    }
 }
