@@ -9,15 +9,22 @@ import frontend.llvm.value.Value;
 import frontend.llvm.value.instruction.IAllocate;
 import frontend.llvm.value.instruction.IStore;
 import frontend.llvm.value.instruction.Inst;
+import frontend.symbol.Symbol;
+import frontend.symbol.ValSymbol;
 import frontend.symbol.VarSymbol;
 import frontend.datatype.DataType;
 import frontend.syntax.CompileUnit;
 import frontend.syntax.declaration.function.FuncFParam;
+import frontend.syntax.expression.Exp;
+import frontend.syntax.misc.LVal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+
+import static java.util.stream.Nodes.collect;
 
 /**
  * IrBuilder is used to build the LLVM IR top, that is, IrModule,
@@ -104,6 +111,29 @@ public class IrBuilder {
     }
 
     public Function getFunction(String name) {
+        if (externalFunctionMap.containsKey(name)) {
+            return externalFunctionMap.get(name);
+        } else {
+            return functionMap.get(name);
+        }
+    }
 
+    public Value callGep(ValSymbol val, List<Value> idxList) {
+        Value
+    }
+
+    public void doAssign(LVal left, Value right) {
+        Value pointer;
+        if (left.getIndexList().isEmpty()) {
+            pointer = left.getValSymbol().getValue();
+        } else {
+            pointer = callGep(left.getValSymbol(), left.getIndexList().stream().map(exp ->
+                exp.build(this)
+            ).toList());
+        }
+        // TODO: 类型转换
+        insertInst(
+            new IStore(right, pointer)
+        );
     }
 }

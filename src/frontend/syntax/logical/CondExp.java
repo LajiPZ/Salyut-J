@@ -1,6 +1,8 @@
 package frontend.syntax.logical;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
+import frontend.llvm.value.Value;
 import frontend.syntax.ASTNode;
 import frontend.token.TokenStream;
 
@@ -25,5 +27,9 @@ final public class CondExp extends ASTNode {
 
     public void visit() {
         lOrExp.visit();
+    }
+
+    public Value build(IrBuilder builder) {
+        return lOrExp.build(builder);
     }
 }

@@ -7,6 +7,12 @@ public enum Operator {
     MUL("mul"),
     DIV("sdiv"),
     MOD("srem"),
+    EQ(""),
+    NE(""),
+    LT(""),
+    GT(""),
+    LE(""),
+    GE("")
     ;
 
     private String operation;

@@ -103,4 +103,12 @@ public class LVal extends ASTNode {
         }
         return dataType;
     }
+
+    public List<Exp> getIndexList() {
+        return indexList;
+    }
+
+    public ValSymbol getValSymbol() {
+        return valSymbol;
+    }
 }

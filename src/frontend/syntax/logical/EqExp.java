@@ -1,6 +1,10 @@
 package frontend.syntax.logical;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
+import frontend.llvm.value.Value;
+import frontend.llvm.value.instruction.ICompare;
+import frontend.llvm.value.instruction.Operator;
 import frontend.syntax.ASTNode;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -48,4 +52,19 @@ final public class EqExp extends ASTNode {
         }
     }
 
+    public Value build(IrBuilder builder) {
+        Value val = LRelExp.build(builder);
+        for (int i = 0; i < operators.size(); i++) {
+            Value right = RRelExps.get(i).build(builder);
+            switch (operators.get(i)) {
+                case EQ -> val = builder.insertInst(
+                    new ICompare(Operator.EQ, val, right)
+                );
+                case NE -> val = builder.insertInst(
+                    new ICompare(Operator.NE, val, right)
+                );
+            }
+        }
+        return val;
+    }
 }

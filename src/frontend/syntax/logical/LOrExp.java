@@ -1,6 +1,8 @@
 package frontend.syntax.logical;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
+import frontend.llvm.value.Value;
 import frontend.syntax.ASTNode;
 import frontend.token.TokenStream;
 import frontend.token.TokenType;
@@ -32,6 +34,12 @@ final public class LOrExp extends ASTNode {
     public void visit() {
         for (LAndExp lAndExp : lAndExps) {
             lAndExp.visit();
+        }
+    }
+
+    Value build(IrBuilder builder) {
+        if (lAndExps.size() == 1) {
+            return lAndExps.get(0).build(builder);
         }
     }
 }

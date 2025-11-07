@@ -1,6 +1,10 @@
 package frontend.syntax.logical;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
+import frontend.llvm.value.Value;
+import frontend.llvm.value.instruction.ICompare;
+import frontend.llvm.value.instruction.Operator;
 import frontend.syntax.ASTNode;
 import frontend.syntax.expression.AddExp;
 import frontend.token.Token;
@@ -51,4 +55,25 @@ final public class RelationExp extends ASTNode {
         }
     }
 
+    public Value build(IrBuilder builder) {
+        Value val = LAddExp.build(builder);
+        for (int i = 0; i < operators.size(); i++) {
+            Value right = RAddExps.get(i).build(builder);
+            switch (operators.get(i)) {
+                case LT -> val = builder.insertInst(
+                    new ICompare(Operator.LT, val, right)
+                );
+                case GT -> val = builder.insertInst(
+                    new ICompare(Operator.GT, val, right)
+                );
+                case LE -> val = builder.insertInst(
+                    new ICompare(Operator.LE, val, right)
+                );
+                case GE -> val = builder.insertInst(
+                    new ICompare(Operator.GE, val, right)
+                );
+            }
+        }
+        return val;
+    }
 }

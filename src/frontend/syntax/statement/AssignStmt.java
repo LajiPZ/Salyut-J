@@ -1,5 +1,6 @@
 package frontend.syntax.statement;
 
+import frontend.IrBuilder;
 import frontend.syntax.expression.Exp;
 import frontend.syntax.misc.LVal;
 
@@ -17,5 +18,9 @@ public class AssignStmt extends Stmt {
     public void visit() {
         lval.visit(true);
         exp.visit();
+    }
+
+    public void build(IrBuilder builder) {
+        builder.doAssign(lval,exp.build(builder));
     }
 }

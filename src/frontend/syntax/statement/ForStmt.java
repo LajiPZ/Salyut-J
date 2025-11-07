@@ -1,5 +1,6 @@
 package frontend.syntax.statement;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.syntax.ASTNode;
 import frontend.syntax.expression.Exp;
@@ -43,6 +44,12 @@ final public class ForStmt extends ASTNode {
         for (int i = 0; i < lVals.size(); i++) {
             lVals.get(i).visit(true);
             exps.get(i).visit();
+        }
+    }
+
+    public void build(IrBuilder builder) {
+        for (int i = 0; i < lVals.size(); i++) {
+            builder.doAssign(lVals.get(i), exps.get(i).build(builder));
         }
     }
 }

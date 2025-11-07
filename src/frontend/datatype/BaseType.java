@@ -1,6 +1,6 @@
 package frontend.datatype;
 
-public class BaseType extends DataType {
+abstract public class BaseType extends DataType {
 
     private int width;
 
