@@ -1,11 +1,15 @@
 package frontend.syntax.expression;
 
 import frontend.IrBuilder;
+import frontend.datatype.ArrayType;
+import frontend.datatype.PointerType;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.datatype.DataType;
 import frontend.datatype.IntType;
 import frontend.llvm.value.Value;
+import frontend.llvm.value.constant.IntConstant;
+import frontend.llvm.value.instruction.ILoad;
 import frontend.syntax.ASTNode;
 import frontend.syntax.misc.LVal;
 import frontend.syntax.misc.Number;
@@ -99,6 +103,64 @@ public class PrimaryExp extends ASTNode {
     }
 
     public Value build(IrBuilder builder) {
-        // todo
+        switch (type) {
+            case Number -> {
+                return new IntConstant(((Number) value).getValue());
+            }
+            case Exp -> {
+                return ((Exp)value).build(builder);
+            }
+            case LVal -> {
+                // 此时，已经声明的变量都是指针，因此不需要任何转换
+                LVal lval = (LVal) value;
+                if (lval.getIndexList().isEmpty()) {
+                    if (lval.getValSymbol().getDataType() instanceof ArrayType) {
+                        // e.g.int a[2] = {0}; int *b = a; not likely to happen though
+                        return builder.callGep(
+                            lval.getValSymbol(),
+                            List.of(new IntConstant(0))
+                        );
+                    } else {
+                        return builder.insertInst(
+                            new ILoad(lval.getValSymbol().getValue())
+                        );
+                    }
+                } else {
+                    Value pointer = builder.callGep(
+                        lval.getValSymbol(),
+                        lval.getIndexList().stream().map(
+                            exp -> exp.build(builder)
+                        ).toList()
+                    );
+                    DataType realType;
+                    int dim = 0;
+
+                    // 看返回值还是数组
+                    if (lval.getValSymbol().getDataType() instanceof PointerType) {
+                        // e.g. 形参里的数组
+                        dim++;
+                        realType = ((PointerType)lval.getValSymbol().getDataType()).getBaseType();
+                    } else {
+                        realType = lval.getValSymbol().getDataType();
+                    }
+                    while (realType instanceof ArrayType) {
+                        dim++;
+                        realType = ((ArrayType)realType).getBaseType();
+                    }
+
+                    if (dim == lval.getIndexList().size()) {
+                        return builder.insertInst(
+                            new ILoad(pointer)
+                        );
+                    } else {
+                        // int a[1][1]; int (*b)[1] = a[1];
+                        return pointer;
+                    }
+                }
+            }
+            default -> {
+                throw new RuntimeException("Unexpected type: " + type);
+            }
+        }
     }
 }

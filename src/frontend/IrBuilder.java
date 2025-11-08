@@ -116,6 +116,7 @@ public class IrBuilder {
     }
 
     public Function getFunction(String name) {
+        // 先找外部函数，再找内部函数
         if (externalFunctionMap.containsKey(name)) {
             return externalFunctionMap.get(name);
         } else {
@@ -128,8 +129,15 @@ public class IrBuilder {
                 insertInst(new ILoad(val.getValue())) :
                 val.getValue();
         Value retPtr = insertInst(
-                new IGep(current, idxList.get(0), )
-        )
+                new IGep(current, idxList.get(0), val.isFromParam())
+        );
+        // 多维数组
+        for (int i = 1; i < idxList.size(); i++) {
+            retPtr = insertInst(
+                new IGep(retPtr, idxList.get(i), val.isFromParam())
+            );
+        }
+        return retPtr;
     }
 
     public void doAssign(LVal left, Value right) {
@@ -155,6 +163,10 @@ public class IrBuilder {
                 branch.fillNullTarget(mergeBlk);
             }
         }
+    }
+
+    public Function getCurrentFunction() {
+        return currentFunction;
     }
 
     public void intoLoop(BBlock condBBlk) {

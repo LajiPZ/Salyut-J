@@ -2,6 +2,7 @@ package frontend.llvm.tools;
 
 import frontend.datatype.BooleanType;
 import frontend.datatype.DataType;
+import frontend.datatype.IntType;
 import frontend.datatype.PointerType;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.constant.IntConstant;
@@ -16,6 +17,10 @@ final public class ValueConverter {
         } else {
             return new IConvert(target, val);
         }
+    }
+
+    public static Value toInteger(Value val) {
+        return to(new IntType(), val);
     }
 
     public static Value toBoolean(Value val) {

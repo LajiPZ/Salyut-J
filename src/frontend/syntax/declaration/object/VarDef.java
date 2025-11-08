@@ -1,8 +1,15 @@
 package frontend.syntax.declaration.object;
 
+import frontend.IrBuilder;
 import frontend.Tabulator;
+import frontend.datatype.PointerType;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.llvm.tools.ValueConverter;
+import frontend.llvm.value.Value;
+import frontend.llvm.value.constant.IntConstant;
+import frontend.llvm.value.instruction.IAllocate;
+import frontend.llvm.value.instruction.IStore;
 import frontend.symbol.VarSymbol;
 import frontend.datatype.ArrayType;
 import frontend.datatype.DataType;
@@ -101,6 +108,54 @@ public class VarDef extends ASTNode {
                 // e.g. getint()
             }
             this.varSymbol = symbol;
+        }
+    }
+
+    public void build(IrBuilder builder, BType type, boolean isStatic) {
+        varSymbol.setValue(
+            builder.insertInst(
+                new IAllocate(new PointerType(varSymbol.getDataType()))
+            )
+        );
+        if (initVal == null) {
+            return;
+        }
+        if (initVal.getType() == InitVal.Type.Single) {
+            Value pointer = varSymbol.getValue();
+            Value val = ValueConverter.toBaseType(
+                pointer,
+                initVal.getSingleExp().build(builder)
+            );
+            builder.insertInst(
+                new IStore(
+                    val,
+                    pointer
+                )
+            );
+        } else {
+            // 如法炮制
+            // TODO： 这里只支持一维数组的初始化！
+            List<InitVal> initializers = initVal.getSubInitVals();
+            int length = indexExps.get(0).calc();
+            for (int i = 0; i < length; i++) {
+                Value pointer = builder.callGep(
+                    varSymbol,
+                    List.of(new IntConstant(i))
+                );
+                Value val;
+                if (i < initializers.size()) {
+                    val = initializers.get(i).getSingleExp().build(builder);
+                } else {
+                    val = new IntConstant(0);
+                }
+
+                builder.insertInst(
+                    new IStore(
+                        ValueConverter.toBaseType(pointer,val),
+                        pointer
+                    )
+                );
+            }
         }
     }
 }

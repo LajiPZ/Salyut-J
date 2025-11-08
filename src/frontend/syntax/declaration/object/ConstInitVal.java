@@ -74,4 +74,8 @@ public class ConstInitVal extends ASTNode {
     public List<ConstInitVal> getSubInitVals() {
         return subInitVals;
     }
+
+    public Type getType() {
+        return type;
+    }
 }

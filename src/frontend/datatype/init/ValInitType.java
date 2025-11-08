@@ -1,6 +1,8 @@
 package frontend.datatype.init;
 
 import frontend.datatype.DataType;
+import frontend.llvm.value.Value;
+import frontend.llvm.value.constant.IntConstant;
 
 public class ValInitType extends InitType {
     private int value;
@@ -15,4 +17,7 @@ public class ValInitType extends InitType {
         return value;
     }
 
+    public Value toValue() {
+        return new IntConstant(value, dataType);
+    }
 }

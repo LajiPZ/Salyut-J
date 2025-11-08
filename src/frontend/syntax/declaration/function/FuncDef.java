@@ -99,8 +99,8 @@ public class FuncDef extends ASTNode {
             this.getDataType(),
             this.getParams()
         );
+        builder.newBBlock(true);
         block.build(builder);
-        // TODO: new BBlock
         if (
             this.type.getType() == FuncType.Type.Void &&
             !(builder.getInsertPoint().getLastInstruction() instanceof ITerminator)

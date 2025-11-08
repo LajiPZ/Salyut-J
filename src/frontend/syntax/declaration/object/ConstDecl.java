@@ -1,5 +1,6 @@
 package frontend.syntax.declaration.object;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.syntax.ASTNode;
@@ -41,6 +42,12 @@ public class ConstDecl extends ASTNode {
     public void visit() {
         for (ConstDef constDef : constDefs) {
             constDef.visit(type);
+        }
+    }
+
+    public void build(IrBuilder builder) {
+        for (ConstDef constDef : constDefs) {
+            constDef.build(builder, type);
         }
     }
 }

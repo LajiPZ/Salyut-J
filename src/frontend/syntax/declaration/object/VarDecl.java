@@ -1,5 +1,6 @@
 package frontend.syntax.declaration.object;
 
+import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.syntax.ASTNode;
@@ -43,6 +44,12 @@ public class VarDecl extends ASTNode {
     public void visit() {
         for (VarDef varDef : varDefs) {
             varDef.visit(type, isStatic);
+        }
+    }
+
+    public void build(IrBuilder builder) {
+        for (VarDef varDef : varDefs) {
+            varDef.build(builder, type, isStatic);
         }
     }
 }

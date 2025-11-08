@@ -3,6 +3,7 @@ package frontend.syntax.expression;
 import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
 import frontend.datatype.DataType;
+import frontend.llvm.tools.ValueConverter;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.instruction.ICalc;
 import frontend.llvm.value.instruction.Operator;
@@ -74,7 +75,8 @@ final public class AddExp extends ASTNode {
         Value val = LMulExp.build(builder);
         for (int i = 0; i < operators.size(); i++) {
             Value operand = RMulExps.get(i).build(builder);
-            // TODO: 可能引用了一个指针？
+            val = ValueConverter.toInteger(val);
+            operand = ValueConverter.toInteger(operand);
             switch (operators.get(i)) {
                 case ADD -> builder.insertInst(
                     new ICalc(Operator.ADD, val, operand)

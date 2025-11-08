@@ -80,8 +80,8 @@ public class MainFuncDef extends ASTNode {
             this.getDataType(),
             List.of() // no args for main
         );
+        builder.newBBlock(true);
         block.build(builder);
-
     }
 
     public String getName() {

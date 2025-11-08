@@ -1,8 +1,12 @@
 package frontend.syntax.statement;
 
+import frontend.IrBuilder;
 import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
+import frontend.llvm.value.Value;
+import frontend.llvm.value.instruction.IConvert;
+import frontend.llvm.value.instruction.IReturn;
 import frontend.syntax.expression.Exp;
 import frontend.token.Token;
 import frontend.token.TokenStream;
@@ -60,5 +64,29 @@ public class ReturnStmt extends Stmt {
             );
         }
         Tabulator.foundReturn();
+    }
+
+    @Override
+    public void build(IrBuilder builder) {
+        if (expr != null) {
+            Value ret = expr.build(builder);
+            if (!ret.getType().equals(
+                builder.getCurrentFunction().getType()
+            )) {
+                ret = builder.insertInst(
+                    new IConvert(
+                        builder.getCurrentFunction().getType(),
+                        ret
+                    )
+                );
+            }
+            builder.insertInst(
+                new IReturn(ret)
+            );
+        } else {
+            builder.insertInst(
+                new IReturn()
+            );
+        }
     }
 }

@@ -79,4 +79,12 @@ public class InitVal extends ASTNode {
             return constInitVal;
         }
     }
+
+    public Type getType() {
+        return type;
+    }
+
+    public List<InitVal> getSubInitVals() {
+        return subInitVals;
+    }
 }

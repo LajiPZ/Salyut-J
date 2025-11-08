@@ -2,9 +2,11 @@ package frontend.syntax.expression;
 
 import frontend.IrBuilder;
 import frontend.datatype.DataType;
+import frontend.llvm.tools.ValueConverter;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.constant.IntConstant;
 import frontend.llvm.value.instruction.ICalc;
+import frontend.llvm.value.instruction.ICompare;
 import frontend.llvm.value.instruction.Operator;
 
 // I can't come up with a better name for it...
@@ -46,21 +48,31 @@ public class UnaryOpExp extends UnaryExp{
 
     public Value build(IrBuilder builder) {
         Value val = exp.build(builder);
-        // TODO: 转换类型？
         switch (op) {
             case PLUS -> {
                 return val;
             }
-            // TODO: const
             case MINUS -> {
-                return new ICalc(
-                    Operator.SUB,
-                    IntConstant.zero,
-                    val
+                return builder.insertInst(
+                    new ICalc(
+                        Operator.SUB,
+                        IntConstant.zero,
+                        ValueConverter.toInteger(val)
+                    )
                 );
             }
             case NOT -> {
-                // TODO
+                return ValueConverter.toBoolean(
+                    builder.insertInst(
+                        new ICompare(
+                            Operator.EQ,
+                           new IntConstant(0, val.getType()), val
+                        )
+                    )
+                );
+            }
+            default -> {
+                throw new Error("Unsupported op in calc(): " + op);
             }
         }
     }
