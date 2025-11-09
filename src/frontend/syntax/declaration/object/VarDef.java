@@ -2,21 +2,23 @@ package frontend.syntax.declaration.object;
 
 import frontend.IrBuilder;
 import frontend.Tabulator;
+import frontend.datatype.BooleanType;
 import frontend.datatype.PointerType;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.llvm.tools.ValueConverter;
+import frontend.llvm.value.BBlock;
 import frontend.llvm.value.GlobalVariable;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.constant.IntConstant;
-import frontend.llvm.value.instruction.IAllocate;
-import frontend.llvm.value.instruction.IStore;
+import frontend.llvm.value.instruction.*;
 import frontend.symbol.VarSymbol;
 import frontend.datatype.ArrayType;
 import frontend.datatype.DataType;
 import frontend.datatype.init.ArrayInitType;
 import frontend.datatype.init.ValInitType;
 import frontend.syntax.ASTNode;
+import frontend.syntax.block.Block;
 import frontend.syntax.declaration.BType;
 import frontend.syntax.expression.ConstExp;
 import frontend.token.Token;
@@ -25,6 +27,7 @@ import frontend.token.TokenType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class VarDef extends ASTNode {
     private Token ident;
@@ -124,12 +127,68 @@ public class VarDef extends ASTNode {
             return;
         }
 
-        varSymbol.setValue(
-            builder.insertInst(
-                new IAllocate(new PointerType(varSymbol.getDataType()))
-            )
-        );
+        // 变量定义部分
+        if (isStatic) {
+            String valName = "@" + "_static_" + varSymbol.getIdent() + "_" + builder.getCurrentFunction().getName() + "_" + varSymbol.getScopeCnt();
+            varSymbol.setValue(
+                new Value(valName, new PointerType(varSymbol.getDataType()))
+            );
+            String ctrlName = valName + "_" + "ctrl";
+            varSymbol.setStaticCtrl(
+                new Value(ctrlName, new PointerType(new BooleanType()))
+            );
+            if (indexExps.isEmpty()) {
+                builder.addGlobalVariable(
+                    new GlobalVariable(valName, varSymbol.getDataType(), new IntConstant(0, varSymbol.getDataType()))
+                );
+            } else {
+                // TODO：应该也只支持一维数组
+                // 这个问题在GlobalVar那边， 通过输出zeroinitializer解决
+                Map<Integer, Value> dummy = null;
+                builder.addGlobalVariable(
+                    new GlobalVariable(valName, varSymbol.getDataType(), dummy)
+                );
+            }
+            builder.addGlobalVariable(
+                new GlobalVariable(ctrlName, new BooleanType(), new IntConstant(0, new BooleanType()))
+            );
+        } else {
+            varSymbol.setValue(
+                builder.insertInst(
+                    new IAllocate(new PointerType(varSymbol.getDataType()))
+                )
+            );
+        }
+
+        // 变量赋值部分；
+        Inst condBranch = null; // 方便后面填后续块
+        if (isStatic) {
+            // static仅赋值一次，需要做一个条件分支出来
+            BBlock blockBefore = builder.getInsertPoint();
+            BBlock initBlk = builder.newBBlock(false);
+            Value ctrl = builder.insertInst(
+                new ILoad(
+                    varSymbol.getStaticCtrl()
+                )
+            );
+            Value cond = builder.insertInst(
+                new ICompare(
+                    Operator.EQ,
+                    ctrl,
+                    IntConstant.logicZero
+                )
+            );
+            condBranch = new IBranch(
+                cond, initBlk, null
+            );
+            blockBefore.addInstruction(condBranch);
+        }
+
         if (initVal == null) {
+            if (isStatic) {
+                BBlock blkAfter = builder.newBBlock(true);
+                ((IBranch)condBranch).fillNullTarget(blkAfter);
+            }
             return;
         }
         if (initVal.getType() == InitVal.Type.Single) {
@@ -168,6 +227,10 @@ public class VarDef extends ASTNode {
                     )
                 );
             }
+        }
+        if (isStatic) {
+            BBlock blkAfter = builder.newBBlock(true);
+            ((IBranch)condBranch).fillNullTarget(blkAfter);
         }
     }
 }
