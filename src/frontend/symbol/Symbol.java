@@ -9,11 +9,11 @@ public class Symbol {
         this.scopeCnt = scopeCnt;
     }
 
-    protected String getIdent() {
+    public String getIdent() {
         return ident;
     }
 
-    protected int getScopeCnt() {
+    public int getScopeCnt() {
         return scopeCnt;
     }
 

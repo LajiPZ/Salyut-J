@@ -45,7 +45,11 @@ public class Decl extends ASTNode {
         }
     }
 
-    public void build(IrBuilder builder) {
-
+    public void build(IrBuilder builder, boolean isGlobal) {
+        if (this.type == Type.ConstDecl) {
+            ((ConstDecl)value).build(builder, isGlobal);
+        } else {
+            ((VarDecl)value).build(builder, isGlobal);
+        }
     }
 }

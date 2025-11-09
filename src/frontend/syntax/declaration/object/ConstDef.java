@@ -6,6 +6,7 @@ import frontend.datatype.PointerType;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.llvm.tools.ValueConverter;
+import frontend.llvm.value.GlobalVariable;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.constant.IntConstant;
 import frontend.llvm.value.instruction.IAllocate;
@@ -89,7 +90,17 @@ public class ConstDef extends ASTNode {
         }
     }
 
-    public void build(IrBuilder builder, BType type) {
+    public void build(IrBuilder builder, BType type, boolean isGlobal) {
+        if (isGlobal) {
+            // 全局变量的定义，右侧一定是常量表达式
+            constSymbol.setValue(
+                new Value("@" + constSymbol.getIdent(), new PointerType(constSymbol.getDataType()))
+            );
+            builder.addGlobalVariable(
+                GlobalVariable.create(constSymbol)
+            );
+            return;
+        }
         // 和普通变量逻辑基本一致，不过不用考虑左值计算和static
         constSymbol.setValue(
             builder.insertInst(

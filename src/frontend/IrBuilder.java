@@ -180,4 +180,8 @@ public class IrBuilder {
     public void exitLoop() {
         loopStack.pop();
     }
+
+    public void addGlobalVariable(GlobalVariable item) {
+        globalVariableList.add(item);
+    }
 }

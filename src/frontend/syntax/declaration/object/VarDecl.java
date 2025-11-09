@@ -47,9 +47,9 @@ public class VarDecl extends ASTNode {
         }
     }
 
-    public void build(IrBuilder builder) {
+    public void build(IrBuilder builder, boolean isGlobal) {
         for (VarDef varDef : varDefs) {
-            varDef.build(builder, type, isStatic);
+            varDef.build(builder, type, isStatic, isGlobal);
         }
     }
 }

@@ -1,6 +1,8 @@
 package frontend.datatype.init;
 
 import frontend.datatype.DataType;
+import frontend.llvm.value.Value;
+import frontend.llvm.value.constant.IntConstant;
 import frontend.syntax.declaration.object.ConstInitVal;
 import frontend.syntax.expression.Exp;
 
@@ -51,5 +53,13 @@ public class ArrayInitType extends InitType {
             index += indexList.get(i-1).calc() * currentLen;
         }
         return elements.getOrDefault(index, 0); // 此处为全局初始化值，所以给0
+    }
+
+    public Map<Integer, Value> toValue() {
+        Map<Integer, Value> values = new HashMap<>();
+        for (Map.Entry<Integer, Integer> entry : elements.entrySet()) {
+            values.put(entry.getKey(), new IntConstant(entry.getValue(), dataType));
+        }
+        return values;
     }
 }

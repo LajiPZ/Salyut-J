@@ -6,6 +6,7 @@ import frontend.datatype.PointerType;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.llvm.tools.ValueConverter;
+import frontend.llvm.value.GlobalVariable;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.constant.IntConstant;
 import frontend.llvm.value.instruction.IAllocate;
@@ -111,7 +112,18 @@ public class VarDef extends ASTNode {
         }
     }
 
-    public void build(IrBuilder builder, BType type, boolean isStatic) {
+    public void build(IrBuilder builder, BType type, boolean isStatic, boolean isGlobal) {
+        if (isGlobal) {
+            // 全局变量的定义，右侧一定是常量表达式
+            varSymbol.setValue(
+                new Value("@" + varSymbol.getIdent(), new PointerType(varSymbol.getDataType()))
+            );
+            builder.addGlobalVariable(
+                GlobalVariable.create(varSymbol)
+            );
+            return;
+        }
+
         varSymbol.setValue(
             builder.insertInst(
                 new IAllocate(new PointerType(varSymbol.getDataType()))

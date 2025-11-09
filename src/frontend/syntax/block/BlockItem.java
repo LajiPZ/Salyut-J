@@ -58,7 +58,7 @@ final public class BlockItem extends ASTNode {
 
     public void build(IrBuilder builder) {
         if (type == Type.Decl) {
-            decl.build(builder);
+            decl.build(builder, false);
         } else {
             stmt.build(builder);
         }

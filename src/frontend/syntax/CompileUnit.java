@@ -58,7 +58,7 @@ public class CompileUnit extends ASTNode {
 
     public void build(IrBuilder builder) {
         for (Decl decl : decls) {
-            decl.build(builder);
+            decl.build(builder, true);
         }
         for (FuncDef funcDef : funcDefs) {
             funcDef.build(builder);

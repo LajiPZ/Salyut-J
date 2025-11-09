@@ -45,9 +45,9 @@ public class ConstDecl extends ASTNode {
         }
     }
 
-    public void build(IrBuilder builder) {
+    public void build(IrBuilder builder, boolean isGlobal) {
         for (ConstDef constDef : constDefs) {
-            constDef.build(builder, type);
+            constDef.build(builder, type, isGlobal);
         }
     }
 }
