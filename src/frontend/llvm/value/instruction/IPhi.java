@@ -13,4 +13,10 @@ public class IPhi extends Inst {
         addOperand(source);
         addOperand(value);
     }
+
+
+    @Override
+    public String toLLVM() {
+        return "";
+    }
 }

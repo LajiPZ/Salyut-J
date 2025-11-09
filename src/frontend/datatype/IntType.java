@@ -6,4 +6,8 @@ public class IntType extends BaseType {
         super(32);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof IntType;
+    }
 }

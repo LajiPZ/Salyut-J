@@ -57,4 +57,9 @@ public class ArrayType extends DataType {
     public String toString() {
         return "[" + size + " x " + baseType.toString() + "]";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ArrayType && ((ArrayType) obj).getBaseType().equals(baseType) && ((ArrayType) obj).size == size;
+    }
 }

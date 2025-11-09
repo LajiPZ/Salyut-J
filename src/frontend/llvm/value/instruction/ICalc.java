@@ -14,6 +14,8 @@ public class ICalc extends Inst {
 
     @Override
     public String toLLVM() {
-        return ""; // TODO
+        return getName() + " = " + operator.getOperation() + " " +
+            getType() + " " + getOperand(0).getName() + ", " +
+            getOperand(1).getName();
     }
 }

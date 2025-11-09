@@ -35,4 +35,18 @@ public class IBranch extends ITerminator {
             }
         }
     }
+
+    @Override
+    public String toLLVM() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("br ");
+        if (isConditinal()) {
+            sb.append(getOperand(0).getName()).append(", ");
+            sb.append("label %").append(getOperand(1).getName()).append(", ");
+            sb.append("label %").append(getOperand(2).getName());
+        } else {
+            sb.append("label %").append(getOperand(0).getName());
+        }
+        return sb.toString();
+    }
 }

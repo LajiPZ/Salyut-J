@@ -2,6 +2,7 @@ package frontend.syntax.logical;
 
 import frontend.IrBuilder;
 import frontend.error.ErrorEntry;
+import frontend.llvm.tools.ValueConverter;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.instruction.ICompare;
 import frontend.llvm.value.instruction.Operator;
@@ -54,8 +55,10 @@ final public class EqExp extends ASTNode {
 
     public Value build(IrBuilder builder) {
         Value val = LRelExp.build(builder);
+        val = ValueConverter.toInteger(val);
         for (int i = 0; i < operators.size(); i++) {
             Value right = RRelExps.get(i).build(builder);
+            right = ValueConverter.toInteger(right);
             switch (operators.get(i)) {
                 case EQ -> val = builder.insertInst(
                     new ICompare(Operator.EQ, val, right)

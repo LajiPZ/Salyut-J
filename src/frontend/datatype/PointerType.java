@@ -20,4 +20,9 @@ public class PointerType extends DataType {
     public String toString() {
         return base.toString() + "*";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof PointerType && ((PointerType) obj).getBaseType().equals(base);
+    }
 }

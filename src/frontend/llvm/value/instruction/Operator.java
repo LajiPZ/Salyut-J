@@ -7,17 +7,21 @@ public enum Operator {
     MUL("mul"),
     DIV("sdiv"),
     MOD("srem"),
-    EQ(""),
-    NE(""),
-    LT(""),
-    GT(""),
-    LE(""),
-    GE("")
+    EQ("icmp eq"),
+    NE("icmp ne"),
+    LT("icmp slt"),
+    GT("icmp sgt"),
+    LE("icmp sle"),
+    GE("icmp sgt")
     ;
 
     private String operation;
 
     Operator(String operation) {
         this.operation = operation;
+    }
+
+    public String getOperation() {
+        return operation;
     }
 }

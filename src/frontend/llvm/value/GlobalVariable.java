@@ -9,20 +9,29 @@ import frontend.symbol.VarSymbol;
 
 import java.util.Map;
 
-
 public class GlobalVariable extends Value {
+    private enum Type {
+        Single, Multi
+    }
+
     private Value init;
     private Map<Integer, Value> initList;
     private ValSymbol symbol;
+    private Type type;
+
 
     public GlobalVariable(String name, DataType dataType, Value init) {
+        // Init = IntConst..
         super(name, dataType);
         this.init = init;
+        this.type = Type.Single;
     }
 
     public GlobalVariable(String name, DataType dataType, Map<Integer, Value> initList) {
+        // Init = null / Map<Int, IntConst>...
         super(name, dataType);
         this.initList = initList;
+        this.type = Type.Multi;
     }
 
     private static GlobalVariable create(ValSymbol symbol) {
@@ -51,4 +60,11 @@ public class GlobalVariable extends Value {
         return result;
     }
 
+    public String toLLVM() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("@").append(getName()).append(" = dso_local global ");
+        if (type == Type.Single) {
+            sb.append(init);
+        }
+    }
 }

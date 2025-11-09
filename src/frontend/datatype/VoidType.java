@@ -10,4 +10,9 @@ public class VoidType extends DataType{
     public String toString() {
         return "void";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof VoidType;
+    }
 }

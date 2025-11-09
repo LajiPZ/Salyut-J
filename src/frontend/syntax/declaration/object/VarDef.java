@@ -129,9 +129,9 @@ public class VarDef extends ASTNode {
 
         // 变量定义部分
         if (isStatic) {
-            String valName = "@" + "_static_" + varSymbol.getIdent() + "_" + builder.getCurrentFunction().getName() + "_" + varSymbol.getScopeCnt();
+            String valName = "_static_" + varSymbol.getIdent() + "_" + builder.getCurrentFunction().getName() + "_" + varSymbol.getScopeCnt();
             varSymbol.setValue(
-                new Value(valName, new PointerType(varSymbol.getDataType()))
+                new Value("@" + valName, new PointerType(varSymbol.getDataType()))
             );
             String ctrlName = valName + "_" + "ctrl";
             varSymbol.setStaticCtrl(
