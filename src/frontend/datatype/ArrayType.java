@@ -47,6 +47,9 @@ public class ArrayType extends DataType {
         return baseType;
     }
 
+    public int getSize() {
+        return size;
+    }
 
     @Override
     public boolean compatibleWith(DataType other) {

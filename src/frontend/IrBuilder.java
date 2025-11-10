@@ -1,6 +1,6 @@
 package frontend;
 
-import frontend.datatype.PointerType;
+import frontend.datatype.*;
 import frontend.llvm.tools.LoopInfo;
 import frontend.llvm.value.*;
 import frontend.llvm.IrModule;
@@ -8,7 +8,6 @@ import frontend.llvm.tools.ValueConverter;
 import frontend.llvm.value.instruction.*;
 import frontend.symbol.ValSymbol;
 import frontend.symbol.VarSymbol;
-import frontend.datatype.DataType;
 import frontend.syntax.CompileUnit;
 import frontend.syntax.declaration.function.FuncFParam;
 import frontend.syntax.misc.LVal;
@@ -23,8 +22,11 @@ import java.util.*;
  */
 
 public class IrBuilder {
-    private static Map<String, Function> externalFunctionMap = Map.ofEntries(
-
+    private static Map<String, Function> externalFunctionMap = Map.of(
+        "getint", Function.extern("getint", new IntType()),
+        "putint", Function.extern("putint", new VoidType(), new IntType()),
+        "putch", Function.extern("putch", new VoidType(), new IntType()),
+        "putstr", Function.extern("putstr", new VoidType(), new PointerType(new CharType()))
     );
 
     private CompileUnit compileUnit;

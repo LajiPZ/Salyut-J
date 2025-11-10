@@ -59,6 +59,10 @@ public class ValSymbol extends Symbol {
         return sb.toString();
     }
 
+    public void setFromParam() {
+        isFuncParam = true;
+    }
+
     public boolean isFromParam() {
         return isFuncParam;
     }

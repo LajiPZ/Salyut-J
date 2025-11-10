@@ -5,6 +5,7 @@ import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.llvm.value.Function;
+import frontend.llvm.value.Value;
 import frontend.llvm.value.instruction.IReturn;
 import frontend.llvm.value.instruction.ITerminator;
 import frontend.symbol.FuncSymbol;
@@ -109,7 +110,7 @@ public class FuncDef extends ASTNode {
                 new IReturn()
             );
         }
-        // TODO: function valCounter
+        func.saveCurrentValCounter(Value.counter.reset());
     }
 
     public String getName() {

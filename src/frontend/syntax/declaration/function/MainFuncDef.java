@@ -5,6 +5,7 @@ import frontend.Tabulator;
 import frontend.error.ErrorEntry;
 import frontend.error.ErrorType;
 import frontend.llvm.value.Function;
+import frontend.llvm.value.Value;
 import frontend.symbol.FuncSymbol;
 import frontend.datatype.DataType;
 import frontend.datatype.IntType;
@@ -82,6 +83,7 @@ public class MainFuncDef extends ASTNode {
         );
         builder.newBBlock(true);
         block.build(builder);
+        func.saveCurrentValCounter(Value.counter.reset());
     }
 
     public String getName() {

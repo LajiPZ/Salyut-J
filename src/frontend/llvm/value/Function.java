@@ -11,7 +11,17 @@ public class Function extends Value {
     private final List<Value> params;
     private boolean isExtern = false;
 
-    // TODO: valCounter
+    private int valCounter;
+
+    public int resumeValCounter() {
+        int prev = this.valCounter;
+        this.valCounter = 0;
+        return prev;
+    }
+
+    public void saveCurrentValCounter(int counter) {
+        this.valCounter = counter;
+    }
 
     public Function(String name, DataType type) {
         super(name, type);
@@ -41,7 +51,9 @@ public class Function extends Value {
         bBlocks.add(bBlock);
     }
 
-
+    public List<Value> getParams() {
+        return params;
+    }
 
     @Override
     public String toString() {

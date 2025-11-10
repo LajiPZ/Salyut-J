@@ -56,7 +56,9 @@ public class Executor {
         // 3. Intermediate code generation
         IrBuilder irBuilder = new IrBuilder(compileUnit);
         IrModule irModule = irBuilder.build();
-
+        if (Settings.PrintConfig.printIR) {
+           irModule.printIR(Settings.FilePath.IROut);
+        }
 
         // 4. Optimization
 

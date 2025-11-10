@@ -67,7 +67,7 @@ public class GlobalVariable extends Value {
         if (type == Type.Single) {
             sb.append(init);
         } else {
-            sb.append(ArrayInitStr.getInitStr(initList));
+            sb.append(ArrayInitStr.getInitStr(getType(), initList));
         }
         return sb.toString();
     }
