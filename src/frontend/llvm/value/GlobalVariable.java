@@ -3,6 +3,7 @@ package frontend.llvm.value;
 import frontend.datatype.DataType;
 import frontend.datatype.init.ArrayInitType;
 import frontend.datatype.init.ValInitType;
+import frontend.llvm.tools.ArrayInitStr;
 import frontend.symbol.ConstSymbol;
 import frontend.symbol.ValSymbol;
 import frontend.symbol.VarSymbol;
@@ -65,6 +66,9 @@ public class GlobalVariable extends Value {
         sb.append("@").append(getName()).append(" = dso_local global ");
         if (type == Type.Single) {
             sb.append(init);
+        } else {
+            sb.append(ArrayInitStr.getInitStr(initList));
         }
+        return sb.toString();
     }
 }
