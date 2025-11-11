@@ -36,7 +36,7 @@ public class IrModule {
                 ).append(")\n");
         }
         for (GlobalVariable globalVariable : globalVariableList) {
-            stringBuilder.append(globalVariable.toLLVM() + ",");
+            stringBuilder.append(globalVariable.toLLVM() + "\n");
         }
         for (Function function : functionMap.values()) {
             stringBuilder.append(function.toString()).append("\n");

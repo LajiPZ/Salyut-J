@@ -74,6 +74,7 @@ final public class LAndExp extends ASTNode {
             phi.addSourcePair(bBlock, IntConstant.logicZero);
         }
         phi.addSourcePair(currentBlock, IntConstant.logicOne);
+        builder.insertInst(phi);
         return phi;
     }
 }

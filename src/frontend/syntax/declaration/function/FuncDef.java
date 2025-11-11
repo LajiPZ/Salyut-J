@@ -122,6 +122,6 @@ public class FuncDef extends ASTNode {
     }
 
     public List<FuncFParam> getParams() {
-        return fParams.getParams();
+        return (fParams == null) ? List.of() : fParams.getParams();
     }
 }

@@ -58,9 +58,10 @@ final public class RelationExp extends ASTNode {
 
     public Value build(IrBuilder builder) {
         Value val = LAddExp.build(builder);
-        val = ValueConverter.toInteger(val);
+
         for (int i = 0; i < operators.size(); i++) {
             Value right = RAddExps.get(i).build(builder);
+            val = ValueConverter.toInteger(val);
             right = ValueConverter.toInteger(right);
             switch (operators.get(i)) {
                 case LT -> val = builder.insertInst(

@@ -78,10 +78,10 @@ final public class AddExp extends ASTNode {
             val = ValueConverter.toInteger(val);
             operand = ValueConverter.toInteger(operand);
             switch (operators.get(i)) {
-                case ADD -> builder.insertInst(
+                case ADD -> val = builder.insertInst(
                     new ICalc(Operator.ADD, val, operand)
                 );
-                case SUB -> builder.insertInst(
+                case SUB -> val = builder.insertInst(
                     new ICalc(Operator.SUB, val, operand)
                 );
             }

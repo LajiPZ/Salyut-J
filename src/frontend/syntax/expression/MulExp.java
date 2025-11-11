@@ -82,13 +82,13 @@ final public class MulExp extends ASTNode {
             val = ValueConverter.toInteger(val);
             operand = ValueConverter.toInteger(operand);
             switch (operators.get(i)) {
-                case MUL -> builder.insertInst(
+                case MUL -> val = builder.insertInst(
                     new ICalc(Operator.MUL, val, operand)
                 );
-                case DIV -> builder.insertInst(
+                case DIV -> val = builder.insertInst(
                     new ICalc(Operator.DIV, val, operand)
                 );
-                case MOD -> builder.insertInst(
+                case MOD -> val = builder.insertInst(
                     new ICalc(Operator.MOD, val, operand)
                 );
             }

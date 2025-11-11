@@ -43,6 +43,7 @@ public class IrBuilder {
         this.globalVariableList = new ArrayList<>();
         this.functionMap = new HashMap<>();
         this.loopStack = new Stack<>();
+        ValueConverter.setBuilderComm(this::insertInst);
     }
 
     public IrModule build() {

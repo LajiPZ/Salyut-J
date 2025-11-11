@@ -55,9 +55,9 @@ final public class EqExp extends ASTNode {
 
     public Value build(IrBuilder builder) {
         Value val = LRelExp.build(builder);
-        val = ValueConverter.toInteger(val);
         for (int i = 0; i < operators.size(); i++) {
             Value right = RRelExps.get(i).build(builder);
+            val = ValueConverter.toInteger(val);
             right = ValueConverter.toInteger(right);
             switch (operators.get(i)) {
                 case EQ -> val = builder.insertInst(

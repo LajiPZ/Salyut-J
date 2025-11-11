@@ -13,6 +13,7 @@ import frontend.datatype.DataType;
 import frontend.syntax.misc.FuncRParams;
 import frontend.token.Token;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class UnaryCallExp extends UnaryExp {
@@ -69,7 +70,7 @@ public class UnaryCallExp extends UnaryExp {
         Value ret = builder.insertInst(
             new ICall(
                 builder.getFunction(ident.getValue()),
-                params.build(builder)
+                (params == null) ? List.of() : params.build(builder)
             )
         );
         return funcSymbol.getType() instanceof VoidType ? null : ret;

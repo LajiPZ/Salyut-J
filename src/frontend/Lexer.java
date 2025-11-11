@@ -200,6 +200,7 @@ final public class Lexer {
                 // Handle \"
                 int nextChar2 = reader.peek();
                 if (nextChar2 == '\"') {
+                    str.deleteCharAt(str.length() - 1); // remove '\'
                     str.append((char)reader.read());
                 }
             } else if (nextChar == '"') {
@@ -207,7 +208,8 @@ final public class Lexer {
             }
             nextChar = reader.peek();
         }
-        addToken(TokenType.StringConst, str.toString(), startLoc);
+        // 去掉""
+        addToken(TokenType.StringConst, str.toString().substring(1, str.length() - 1), startLoc);
     }
 
     private void scanSymbol() throws IOException {

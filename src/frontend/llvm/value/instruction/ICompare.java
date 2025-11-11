@@ -16,7 +16,7 @@ public class ICompare extends Inst {
 
     @Override
     public String toLLVM() {
-        return getName() + " = " + op.getOperation() + " " + getOperand(0).getType() +
+        return getName() + " = " + op.getOperation() + " " + getOperand(0).getType() + " " +
             getOperand(0).getName() + ", " + getOperand(1).getName();
     }
 }

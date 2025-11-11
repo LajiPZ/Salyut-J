@@ -165,7 +165,6 @@ public class VarDef extends ASTNode {
         if (isStatic) {
             // static仅赋值一次，需要做一个条件分支出来
             BBlock blockBefore = builder.getInsertPoint();
-            BBlock initBlk = builder.newBBlock(false);
             Value ctrl = builder.insertInst(
                 new ILoad(
                     varSymbol.getStaticCtrl()
@@ -178,6 +177,7 @@ public class VarDef extends ASTNode {
                     IntConstant.logicZero
                 )
             );
+            BBlock initBlk = builder.newBBlock(false);
             condBranch = new IBranch(
                 cond, initBlk, null
             );
@@ -186,6 +186,11 @@ public class VarDef extends ASTNode {
 
         if (initVal == null) {
             if (isStatic) {
+                builder.insertInst(
+                    new IStore(
+                        IntConstant.logicOne, varSymbol.getStaticCtrl()
+                    )
+                );
                 BBlock blkAfter = builder.newBBlock(true);
                 ((IBranch)condBranch).fillNullTarget(blkAfter);
             }
@@ -229,6 +234,11 @@ public class VarDef extends ASTNode {
             }
         }
         if (isStatic) {
+            builder.insertInst(
+                new IStore(
+                    IntConstant.logicOne, varSymbol.getStaticCtrl()
+                )
+            );
             BBlock blkAfter = builder.newBBlock(true);
             ((IBranch)condBranch).fillNullTarget(blkAfter);
         }

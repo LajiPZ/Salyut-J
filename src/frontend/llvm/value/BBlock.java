@@ -23,13 +23,13 @@ public class BBlock extends Value {
     }
 
     public Inst getLastInstruction() {
-        return instructions.get(instructions.size() - 1);
+        return instructions.isEmpty() ? null : instructions.get(instructions.size() - 1);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\t").append(getName()).append(":");
+        sb.append("\t").append(getName()).append(":\n");
         for (Inst inst : instructions) {
             sb.append("\t\t").append(inst.toLLVM()).append("\n");
         }

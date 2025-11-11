@@ -73,6 +73,7 @@ final public class LOrExp extends ASTNode {
             phi.addSourcePair(bBlock, IntConstant.logicOne);
         }
         phi.addSourcePair(currentBlock, IntConstant.logicZero);
+        builder.insertInst(phi);
         return phi;
     }
 }

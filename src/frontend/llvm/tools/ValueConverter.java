@@ -8,14 +8,23 @@ import frontend.llvm.value.Value;
 import frontend.llvm.value.constant.IntConstant;
 import frontend.llvm.value.instruction.ICompare;
 import frontend.llvm.value.instruction.IConvert;
+import frontend.llvm.value.instruction.Inst;
 import frontend.llvm.value.instruction.Operator;
 
+import java.util.function.Function;
+
 final public class ValueConverter {
+    private static Function<Inst, Value> builderComm;
+
+    public static void setBuilderComm(Function<Inst, Value> builderComm) {
+        ValueConverter.builderComm = builderComm;
+    }
+
     public static Value to(DataType target, Value val) {
         if (val.getType().equals(target)) {
             return val;
         } else {
-            return new IConvert(target, val);
+            return builderComm.apply(new IConvert(target, val));
         }
     }
 
@@ -27,11 +36,11 @@ final public class ValueConverter {
         if (val.getType() instanceof BooleanType) {
             return val;
         } else {
-            return new ICompare(
+            return builderComm.apply(new ICompare(
                 Operator.NE,
                 val,
                 new IntConstant(0, val.getType())
-            );
+            ));
         }
     }
 
