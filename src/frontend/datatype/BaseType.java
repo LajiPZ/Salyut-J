@@ -25,4 +25,9 @@ abstract public class BaseType extends DataType {
     public boolean equals(Object obj) {
         return obj instanceof BaseType && ((BaseType) obj).getWidth() == width;
     }
+
+    @Override
+    public int getSize() {
+        return width;
+    }
 }

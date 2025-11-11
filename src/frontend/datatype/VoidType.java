@@ -15,4 +15,9 @@ public class VoidType extends DataType{
     public boolean equals(Object obj) {
         return obj instanceof VoidType;
     }
+
+    @Override
+    public int getSize() {
+        return 0;
+    }
 }

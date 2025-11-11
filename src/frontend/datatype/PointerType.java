@@ -25,4 +25,9 @@ public class PointerType extends DataType {
     public boolean equals(Object obj) {
         return obj instanceof PointerType && ((PointerType) obj).getBaseType().equals(base);
     }
+
+    @Override
+    public int getSize() {
+        return 4; // 32-bit addr
+    }
 }

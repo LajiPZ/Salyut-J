@@ -14,6 +14,10 @@ public class Pair<K,V> {
         return value1;
     }
 
+    public V getValue2() {
+        return value2;
+    }
+
     @Override
     public String toString() {
         return "<" + value1.toString() + "," + value2.toString() + ">";

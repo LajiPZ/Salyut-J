@@ -9,11 +9,11 @@ import java.util.List;
 public class ArrayType extends DataType {
 
     private DataType baseType;
-    private int size;
+    private int length;
 
     public ArrayType(DataType baseType, int size) {
         this.baseType = baseType;
-        this.size = size;
+        this.length = size;
     }
 
     /**
@@ -35,11 +35,11 @@ public class ArrayType extends DataType {
     public List<Integer> getIndexList() {
         if (baseType instanceof ArrayType) {
             LinkedList<Integer> list = new LinkedList<>();
-            list.add(size);
+            list.add(length);
             list.addAll(((ArrayType)baseType).getIndexList());
             return list;
         } else {
-            return Collections.singletonList(size);
+            return Collections.singletonList(length);
         }
     }
 
@@ -47,8 +47,12 @@ public class ArrayType extends DataType {
         return baseType;
     }
 
+    public int getLength() {
+        return length;
+    }
+
     public int getSize() {
-        return size;
+        return length * baseType.getSize();
     }
 
     @Override
@@ -58,11 +62,11 @@ public class ArrayType extends DataType {
 
     @Override
     public String toString() {
-        return "[" + size + " x " + baseType.toString() + "]";
+        return "[" + length + " x " + baseType.toString() + "]";
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ArrayType && ((ArrayType) obj).getBaseType().equals(baseType) && ((ArrayType) obj).size == size;
+        return obj instanceof ArrayType && ((ArrayType) obj).getBaseType().equals(baseType) && ((ArrayType) obj).length == length;
     }
 }
