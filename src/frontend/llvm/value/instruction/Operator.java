@@ -12,7 +12,7 @@ public enum Operator {
     LT("icmp slt"),
     GT("icmp sgt"),
     LE("icmp sle"),
-    GE("icmp sgt")
+    GE("icmp sge")
     ;
 
     private String operation;

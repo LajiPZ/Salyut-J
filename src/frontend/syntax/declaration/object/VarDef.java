@@ -18,7 +18,6 @@ import frontend.datatype.DataType;
 import frontend.datatype.init.ArrayInitType;
 import frontend.datatype.init.ValInitType;
 import frontend.syntax.ASTNode;
-import frontend.syntax.block.Block;
 import frontend.syntax.declaration.BType;
 import frontend.syntax.expression.ConstExp;
 import frontend.token.Token;
@@ -135,7 +134,7 @@ public class VarDef extends ASTNode {
             );
             String ctrlName = valName + "_" + "ctrl";
             varSymbol.setStaticCtrl(
-                new Value(ctrlName, new PointerType(new BooleanType()))
+                new Value("@" + ctrlName, new PointerType(new BooleanType()))
             );
             if (indexExps.isEmpty()) {
                 builder.addGlobalVariable(
@@ -198,7 +197,7 @@ public class VarDef extends ASTNode {
         }
         if (initVal.getType() == InitVal.Type.Single) {
             Value pointer = varSymbol.getValue();
-            Value val = ValueConverter.toBaseType(
+            Value val = ValueConverter.toPtrBaseType(
                 pointer,
                 initVal.getSingleExp().build(builder)
             );
@@ -227,7 +226,7 @@ public class VarDef extends ASTNode {
 
                 builder.insertInst(
                     new IStore(
-                        ValueConverter.toBaseType(pointer,val),
+                        ValueConverter.toPtrBaseType(pointer,val),
                         pointer
                     )
                 );

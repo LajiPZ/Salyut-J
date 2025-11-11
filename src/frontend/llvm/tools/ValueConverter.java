@@ -44,7 +44,7 @@ final public class ValueConverter {
         }
     }
 
-    public static Value toBaseType(Value pointer, Value val) {
+    public static Value toPtrBaseType(Value pointer, Value val) {
         assert pointer.getType() instanceof PointerType : "You should use a pointer";
         return to(
             ((PointerType)(pointer.getType())).getBaseType(),

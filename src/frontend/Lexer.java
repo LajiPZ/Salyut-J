@@ -83,6 +83,10 @@ final public class Lexer {
             entry("[", TokenType.LeftBracket), entry("]", TokenType.RightBracket),
             entry("{", TokenType.LeftBrace), entry("}", TokenType.RightBrace)
         );
+
+        public static final Map<Character, Character> escapeChar = Map.ofEntries(
+            entry('n', '\n'), entry('"', '\"')
+        );
     }
 
     private Reader reader;
@@ -197,11 +201,13 @@ final public class Lexer {
         while (nextChar != -1) {
             str.append((char)reader.read());
             if (nextChar == '\\') {
-                // Handle \"
+                // Handle escape characters
                 int nextChar2 = reader.peek();
-                if (nextChar2 == '\"') {
+                if (TokenTypeMaps.escapeChar.containsKey((char)nextChar2)) {
                     str.deleteCharAt(str.length() - 1); // remove '\'
-                    str.append((char)reader.read());
+                    str.append(TokenTypeMaps.escapeChar.get((char)reader.read()));
+                } else {
+                    throw new RuntimeException("Unexpected escape char");
                 }
             } else if (nextChar == '"') {
                 break;

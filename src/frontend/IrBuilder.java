@@ -113,7 +113,11 @@ public class IrBuilder {
     }
 
     public Inst insertInst(BBlock targetBBlk, Inst inst) {
-        // TODO: 处理已有的Terminator？
+        // 处理已有的Terminator；
+        // 考虑if里有return的情况，return后的branch显然没用，如果保留的话，会导致块号乱掉
+        if (targetBBlk.getLastInstruction() instanceof ITerminator) {
+            return inst;
+        }
         targetBBlk.addInstruction(inst);
         return inst;
     }
@@ -152,7 +156,7 @@ public class IrBuilder {
                 exp.build(this)
             ).toList());
         }
-        right = ValueConverter.toBaseType(pointer, right);
+        right = ValueConverter.toPtrBaseType(pointer, right);
         insertInst(
             new IStore(right, pointer)
         );

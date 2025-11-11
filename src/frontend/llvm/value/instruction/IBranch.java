@@ -41,7 +41,7 @@ public class IBranch extends ITerminator {
         StringBuilder sb = new StringBuilder();
         sb.append("br ");
         if (isConditinal()) {
-            sb.append(getOperand(0).getName()).append(", ");
+            sb.append(getOperand(0)).append(", ");
             sb.append("label %").append(getOperand(1).getName()).append(", ");
             sb.append("label %").append(getOperand(2).getName());
         } else {

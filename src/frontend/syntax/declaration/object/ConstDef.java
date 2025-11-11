@@ -109,7 +109,7 @@ public class ConstDef extends ASTNode {
         );
         if (initVal.getType() == ConstInitVal.Type.Single) {
             Value pointer = constSymbol.getValue();
-            Value val = ValueConverter.toBaseType(
+            Value val = ValueConverter.toPtrBaseType(
                 pointer,
                 ((ValInitType)constSymbol.getInitType()).toValue()
             );
