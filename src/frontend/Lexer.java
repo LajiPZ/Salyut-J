@@ -193,7 +193,6 @@ final public class Lexer {
     }
 
     private void scanString() throws IOException {
-        // TODO: IMHO, apart from \", escape characters should be dealt with at parser, not here...
         StringBuilder str = new StringBuilder();
         str.append((char) reader.read());
         Pair<Integer, Integer> startLoc = reader.getLocation();

@@ -23,6 +23,14 @@ public class IrModule {
         this.externalFunctionMap = externalFunctionMap;
     }
 
+    public List<GlobalVariable> getGlobalVariableList() {
+        return globalVariableList;
+    }
+
+    public List<Function> getFunctions() {
+        return functionMap.values().stream().toList();
+    }
+
     public void printIR(String fileName) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
         StringBuilder stringBuilder = new StringBuilder();

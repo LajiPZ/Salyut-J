@@ -8,6 +8,7 @@ import frontend.symbol.ConstSymbol;
 import frontend.symbol.ValSymbol;
 import frontend.symbol.VarSymbol;
 
+import java.util.List;
 import java.util.Map;
 
 public class GlobalVariable extends Value {
@@ -59,6 +60,10 @@ public class GlobalVariable extends Value {
         GlobalVariable result = create((ValSymbol) symbol);
         result.symbol = symbol;
         return result;
+    }
+
+    public List<Integer> getInitList() {
+
     }
 
     public String toLLVM() {
