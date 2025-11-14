@@ -26,6 +26,10 @@ public class BBlock extends Value {
         return instructions.isEmpty() ? null : instructions.get(instructions.size() - 1);
     }
 
+    public ArrayList<Inst> getInstructions() {
+        return instructions;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

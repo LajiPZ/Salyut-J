@@ -55,6 +55,10 @@ public class Function extends Value {
         return params;
     }
 
+    public List<BBlock> getBBlocks() {
+        return bBlocks;
+    }
+
     @Override
     public String toString() {
         // 输出函数定义，external函数此处不关心

@@ -22,7 +22,7 @@ public class MipsModule {
             ).collect(Collectors.toCollection(LinkedList::new))
         );
         for (Function func : module.getFunctions()) {
-            MipsFunction mFunc = MipsFunction.build(func);
+            MipsFunction mFunc = MipsFunction.build(func, functionMap);
             functions.add(mFunc);
             functionMap.put(func, mFunc);
             if (func.getName().equals("main")) {

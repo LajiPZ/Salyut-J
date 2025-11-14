@@ -1,4 +1,26 @@
 package backend.mips.instruction;
 
-public class Jump {
+import backend.mips.MipsBlock;
+import backend.mips.operand.Operand;
+
+public class Jump extends Instruction{
+    public enum Op {
+        j, jar, jr
+    }
+
+    private Op op;
+    private Operand regTarget;
+    private MipsBlock blkTarget;
+
+    public Jump(Op op, Operand regTarget) {
+        this.op = op;
+        this.regTarget = regTarget;
+        this.blkTarget = null;
+    }
+
+    public Jump(Op op, MipsBlock blkTarget) {
+        this.op = op;
+        this.blkTarget = blkTarget;
+        this.regTarget = null;
+    }
 }
