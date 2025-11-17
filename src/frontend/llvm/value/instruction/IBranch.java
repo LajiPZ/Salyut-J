@@ -36,6 +36,18 @@ public class IBranch extends ITerminator {
         }
     }
 
+    public BBlock getUncondTarget() {
+        return (BBlock) getOperand(0);
+    }
+
+    public BBlock getTrueTarget() {
+        return (BBlock) getOperand(1);
+    }
+
+    public BBlock getFalseTarget() {
+        return (BBlock) getOperand(2);
+    }
+
     @Override
     public String toLLVM() {
         StringBuilder sb = new StringBuilder();

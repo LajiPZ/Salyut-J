@@ -20,4 +20,11 @@ public class AReg extends PReg {
     public static final AReg sp = new AReg(29, "$sp");
     public static final AReg fp = new AReg(30, "$fp");
     public static final AReg ra = new AReg(31, "$ra");
+
+    public static final AReg[] a = new AReg[] {
+        new AReg(4, "$a0"),
+        new AReg(5, "$a1"),
+        new AReg(6, "$a2"),
+        new AReg(7, "$a3")
+    };
 }

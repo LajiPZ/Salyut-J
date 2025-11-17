@@ -16,12 +16,16 @@ public class IConvert extends Inst {
     public String toLLVM() {
         StringBuilder sb = new StringBuilder();
         sb.append(getName()).append(" = ");
-        if (((BaseType)getType()).getWidth() < ((BaseType)getOperand(0).getType()).getWidth()) {
+        if (getType().getSize() < getOperand(0).getType().getSize()) {
             sb.append("trunc ");
         } else {
             sb.append("zext ");
         }
         sb.append(getOperand(0)).append(" to ").append(getType());
         return sb.toString();
+    }
+
+    public boolean isTruncating() {
+        return getType().getSize() < getOperand(0).getType().getSize();
     }
 }

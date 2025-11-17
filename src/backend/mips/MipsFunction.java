@@ -33,6 +33,10 @@ public class MipsFunction {
         blocks.add(block);
     }
 
+    public MipsBlock getEntry() {
+        return entry;
+    }
+
     public static MipsFunction build(Function func, Map<Function, MipsFunction> functionMap) {
         MipsBlock entry = new MipsBlock(func.getName() + ".entry");
         MipsBlock exit = new MipsBlock(func.getName() + ".exit");
@@ -50,7 +54,11 @@ public class MipsFunction {
         entry.addInstruction(
             new Calc(Calc.Op.addiu, AReg.fp, AReg.sp, new Immediate(0))
         );
-        builder.addParameters(func.getParams());
+
+        entry.addInstruction(
+            builder.addParameters(func.getParams())
+        );
+
 
         mipsFunction.addBlock(entry);
         for (BBlock bblock : func.getBBlocks()) {

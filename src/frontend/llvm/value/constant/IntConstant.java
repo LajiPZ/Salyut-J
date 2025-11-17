@@ -19,6 +19,10 @@ public class IntConstant extends Value {
         this.value = value;
     }
 
+    public int getValue() {
+        return value;
+    }
+
     public final static IntConstant zero = new IntConstant(0);
     public final static IntConstant logicZero = new IntConstant(0, new BooleanType());
     public final static IntConstant logicOne = new IntConstant(1, new BooleanType());

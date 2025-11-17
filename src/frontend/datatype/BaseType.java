@@ -8,6 +8,10 @@ abstract public class BaseType extends DataType {
         this.width = width;
     }
 
+    /**
+     * 获取类型的位宽（bits）
+     * @return
+     */
     public int getWidth() {
         return width;
     }
@@ -28,6 +32,6 @@ abstract public class BaseType extends DataType {
 
     @Override
     public int getSize() {
-        return width;
+        return (width + 7) / 8;
     }
 }

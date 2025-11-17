@@ -7,4 +7,8 @@ public class Immediate extends Operand {
     public Immediate(int value) {
         this.value = value;
     }
+
+    public Immediate(String valueLabel) {
+        this.value = valueLabel;
+    }
 }

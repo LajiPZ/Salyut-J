@@ -20,6 +20,10 @@ public class ICall extends Inst {
         }
     }
 
+    public Function getFunction() {
+        return function;
+    }
+
     @Override
     public String toLLVM() {
         StringBuilder sb = new StringBuilder();

@@ -5,7 +5,7 @@ import backend.mips.operand.Operand;
 
 public class Jump extends Instruction{
     public enum Op {
-        j, jar, jr
+        j, jal, jr
     }
 
     private Op op;

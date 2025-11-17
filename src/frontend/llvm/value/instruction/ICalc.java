@@ -12,6 +12,10 @@ public class ICalc extends Inst {
         addOperand(val2);
     }
 
+    public Operator getOp() {
+        return operator;
+    }
+
     @Override
     public String toLLVM() {
         return getName() + " = " + operator.getOperation() + " " +

@@ -14,6 +14,10 @@ public class ICompare extends Inst {
         this.op = op;
     }
 
+    public Operator getOp() {
+        return op;
+    }
+
     @Override
     public String toLLVM() {
         return getName() + " = " + op.getOperation() + " " + getOperand(0).getType() + " " +

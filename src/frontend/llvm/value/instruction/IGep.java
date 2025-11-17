@@ -24,6 +24,9 @@ public class IGep extends Inst {
         addOperand(offset);
     }
 
+    public boolean isFromArgs() {
+        return fromArgs;
+    }
 
     @Override
     public String toLLVM() {

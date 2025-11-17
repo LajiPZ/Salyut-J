@@ -4,7 +4,7 @@ import backend.mips.operand.Operand;
 
 public class Load extends Mem {
 
-    public Load(Align align, Operand src, Operand base, Operand offset) {
-        super(align, src, base, offset);
+    public Load(Align align, Operand res, Operand base, Operand offset) {
+        super(align, res, base, offset);
     }
 }

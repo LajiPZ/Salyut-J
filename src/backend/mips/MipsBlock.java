@@ -2,16 +2,20 @@ package backend.mips;
 
 import backend.mips.instruction.Instruction;
 import frontend.llvm.value.BBlock;
-import frontend.llvm.value.Value;
 import frontend.llvm.value.instruction.Inst;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MipsBlock {
-
     private String name;
     private ArrayList<Instruction> instructions;
+
+    // Control flow...
+    private Set<MipsBlock> predecessors = new HashSet<>();
+    private Set<MipsBlock> successors = new HashSet<>();
 
     public MipsBlock(String name) {
         this.name = name;
@@ -27,7 +31,12 @@ public class MipsBlock {
     }
 
     public MipsBlock(BBlock block) {
-        // TODO
+        this(".L" + block.getName());
+    }
+
+    public static void addEdge(MipsBlock from, MipsBlock to) {
+        from.successors.add(to);
+        to.predecessors.add(from);
     }
 
     public static MipsBlock build(BBlock block, MipsBuilder builder) {
@@ -36,5 +45,9 @@ public class MipsBlock {
             mipsBlock.addInstruction(Instruction.build(inst, mipsBlock, builder));
         }
         return mipsBlock;
+    }
+
+    public boolean isMainEntry() {
+        return name.equals("main.entry");
     }
 }
