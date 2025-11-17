@@ -1,4 +1,4 @@
 package backend.mips.instruction;
 
-public class Syscall {
+public class Syscall extends Instruction {
 }

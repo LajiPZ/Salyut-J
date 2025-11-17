@@ -24,14 +24,31 @@ public class ICallBuilder extends InstBuilder {
             || functionName.equals("getint")
             || functionName.equals("putint")
         ) {
-            return buildReservedCall();
+            return buildReservedCall(inst, builder);
         } else {
             return buildFuncCall(inst, block, builder);
         }
     }
 
-    private static List<Instruction> buildReservedCall() {
-        // TODO
+    private static List<Instruction> buildReservedCall(Inst inst, MipsBuilder builder) {
+        ICall call = (ICall) inst;
+        // putstr我们没用，所以只用考虑这三个
+        if (call.getFunction().getName().equals("putch") && call.getOperand(0) instanceof IntConstant intConstant) {
+            // 加入buffer，等待输出
+            builder.appendOutputBuffer((char) intConstant.getValue());
+            return List.of();
+        }
+        if (call.getFunction().getName().equals("putch")) {
+            return buildSyscallWrite(11, call.getOperand(0), builder);
+        }
+        if (call.getFunction().getName().equals("putint")) {
+            return buildSyscallWrite(1, call.getOperand(0), builder);
+        }
+        if (call.getFunction().getName().equals("getint")) {
+            VReg reg = builder.getVRegFromValue(call);
+            return buildSyscallRead(5, reg);
+        }
+        throw new RuntimeException("Unknown function: " + call.getFunction().getName());
     }
 
     private static List<Instruction> buildFuncCall(Inst inst, MipsBlock block, MipsBuilder builder) {
@@ -83,6 +100,32 @@ public class ICallBuilder extends InstBuilder {
             return reg;
         }
         return builder.getVRegFromValue(value);
+    }
+
+    private static List<Instruction> buildSyscallRead(int syscall, VReg reg) {
+        return List.of(
+            new Calc(Calc.Op.addiu, AReg.v0, AReg.zero, new Immediate(syscall)),
+            new Syscall(),
+            new Calc(Calc.Op.addiu, reg, AReg.v0, new Immediate(0))
+        );
+    }
+
+    private static List<Instruction> buildSyscallWrite(int syscall, Value value, MipsBuilder builder) {
+        Instruction load;
+        if (value instanceof IntConstant intConstant) {
+            load = new Calc(
+                Calc.Op.addiu, AReg.a[0], AReg.zero, new Immediate(intConstant.getValue())
+            );
+        } else {
+            load = new Calc(
+                Calc.Op.addiu, AReg.a[0], builder.getVRegFromValue(value), new Immediate(0)
+            );
+        }
+        return List.of(
+            load,
+            new Calc(Calc.Op.addiu, AReg.v0, AReg.zero, new Immediate(syscall)),
+            new Syscall()
+        );
     }
 
 

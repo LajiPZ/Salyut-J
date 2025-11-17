@@ -37,11 +37,11 @@ public class MipsFunction {
         return entry;
     }
 
-    public static MipsFunction build(Function func, Map<Function, MipsFunction> functionMap) {
+    public static MipsFunction build(Function func, MipsModule top) {
         MipsBlock entry = new MipsBlock(func.getName() + ".entry");
         MipsBlock exit = new MipsBlock(func.getName() + ".exit");
 
-        MipsBuilder builder = new MipsBuilder(functionMap, func.getBBlocks(), entry, exit);
+        MipsBuilder builder = new MipsBuilder(top, func.getBBlocks(), entry, exit);
         MipsFunction mipsFunction = new MipsFunction(func.getName());
         mipsFunction.setKeyBlocks(entry, exit);
 

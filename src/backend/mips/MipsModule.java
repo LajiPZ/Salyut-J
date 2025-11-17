@@ -22,7 +22,7 @@ public class MipsModule {
             ).collect(Collectors.toCollection(LinkedList::new))
         );
         for (Function func : module.getFunctions()) {
-            MipsFunction mFunc = MipsFunction.build(func, functionMap);
+            MipsFunction mFunc = MipsFunction.build(func, this);
             functions.add(mFunc);
             functionMap.put(func, mFunc);
             if (func.getName().equals("main")) {
@@ -30,6 +30,14 @@ public class MipsModule {
             }
         }
         return this;
+    }
+
+    public Map<Function, MipsFunction> getFunctionMap() {
+        return functionMap;
+    }
+
+    public void addGlobalVariable(MipsGlobalVariable variable) {
+        globalVariables.add(variable);
     }
 
 }

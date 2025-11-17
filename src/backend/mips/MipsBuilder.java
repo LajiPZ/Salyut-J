@@ -1,17 +1,19 @@
 package backend.mips;
 
-import backend.mips.instruction.Calc;
-import backend.mips.instruction.Instruction;
-import backend.mips.instruction.Load;
-import backend.mips.instruction.Mem;
+import backend.mips.instruction.*;
 import backend.mips.operand.AReg;
 import backend.mips.operand.Immediate;
 import backend.mips.operand.VReg;
+import frontend.datatype.CharType;
 import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Function;
 import frontend.llvm.value.Value;
+import frontend.llvm.value.constant.IntConstant;
+import frontend.llvm.value.instruction.ICall;
 import frontend.llvm.value.instruction.Inst;
+import utils.Counter;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,14 +26,16 @@ public class MipsBuilder {
     private Map<Function, MipsFunction> functionMap;
     private Map<Value, VReg> valueMap;
     private MipsBlock exitBlock;
+    private MipsModule top;
 
-    public MipsBuilder(Map<Function, MipsFunction> functionMap, List<BBlock> bblocks, MipsBlock entry, MipsBlock exit) {
+    public MipsBuilder(MipsModule top, List<BBlock> bblocks, MipsBlock entry, MipsBlock exit) {
         bblocks.forEach(bblock -> {
             blockMap.put(bblock, new MipsBlock(bblock));
         });
 
-        this.functionMap = functionMap;
+        this.functionMap = top.getFunctionMap();
         this.exitBlock = exit;
+        this.top = top;
 
         MipsBlock.addEdge(entry, getMipsBlock(bblocks.get(0)));
 
@@ -121,5 +125,52 @@ public class MipsBuilder {
 
     public MipsBlock getExitBlock() {
         return exitBlock;
+    }
+
+    private StringBuilder outputBuffer = new StringBuilder();
+    private static Counter stringCounter = new Counter();
+    private static HashMap<String, String> strTagMap = new HashMap<>();
+
+    /**
+     * 输出先前已缓存的输出字符串
+     * @param inst
+     * @return
+     */
+    public List<Instruction> preRun(Inst inst) {
+        if (inst instanceof ICall call) {
+            if (call.getFunction().getName().equals("putch") && call.getOperand(0) instanceof IntConstant) {
+                // 在Build ICall的时候处理
+                return List.of();
+            }
+        }
+        if (outputBuffer.isEmpty()) {
+            // 其他类型指令；没有待输出，则什么都不用做
+            return List.of();
+        }
+        String content = outputBuffer.toString();
+        String tag;
+        if (strTagMap.containsKey(content)) {
+            tag = strTagMap.get(content);
+        } else {
+            tag = "str." + stringCounter.get();
+            strTagMap.put(content, tag);
+            top.addGlobalVariable(
+                new MipsGlobalVariable(
+                    new CharType(),
+                    tag,
+                    content
+                )
+            );
+        }
+        outputBuffer = new StringBuilder();
+        return List.of(
+            new LoadAddr(new Immediate(tag), AReg.a[0]),
+            new Calc(Calc.Op.addiu, AReg.v0, AReg.zero, new Immediate(4)),
+            new Syscall()
+        );
+    }
+
+    public void appendOutputBuffer(char chr) {
+        outputBuffer.append(chr);
     }
 }

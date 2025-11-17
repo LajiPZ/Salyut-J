@@ -94,7 +94,6 @@ public class IrBuilder {
     public BBlock newBBlock(boolean fallThrough) {
         BBlock bBlock = new BBlock(currentFunction);
         currentFunction.addBBlock(bBlock);
-        // TODO: 为什么？
         if (fallThrough && !(insertPoint.getLastInstruction() instanceof ITerminator)) {
             insertInst(
                     new IBranch(bBlock)
