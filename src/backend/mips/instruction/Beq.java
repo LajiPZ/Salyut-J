@@ -3,7 +3,7 @@ package backend.mips.instruction;
 import backend.mips.MipsBlock;
 import backend.mips.operand.Operand;
 
-public class Beq extends Instruction {
+public class Beq extends Branch {
     public enum Op {
         beq, bne
     }
@@ -17,5 +17,12 @@ public class Beq extends Instruction {
         this.left = left;
         this.right = right;
         this.target = target;
+    }
+
+    @Override
+    public void replaceBranchTarget(MipsBlock oldBlock, MipsBlock newBlock) {
+        if (target == oldBlock) {
+            target = newBlock;
+        }
     }
 }

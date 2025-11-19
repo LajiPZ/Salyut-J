@@ -1,3 +1,4 @@
+import backend.mips.MipsModule;
 import frontend.IrBuilder;
 import frontend.Lexer;
 import frontend.Parser;
@@ -66,6 +67,9 @@ public class Executor {
 
 
         // 5. Target code generation
+        MipsModule mipsModule = new MipsModule();
+        mipsModule.buildFromIR(irModule);
+        mipsModule.runPostBuildProcessing();
 
 
         if (Settings.PrintConfig.printError) {

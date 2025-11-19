@@ -3,7 +3,7 @@ package backend.mips.instruction;
 import backend.mips.MipsBlock;
 import backend.mips.operand.Operand;
 
-public class Jump extends Instruction{
+public class Jump extends Branch {
     public enum Op {
         j, jal, jr
     }
@@ -22,5 +22,12 @@ public class Jump extends Instruction{
         this.op = op;
         this.blkTarget = blkTarget;
         this.regTarget = null;
+    }
+
+    @Override
+    public void replaceBranchTarget(MipsBlock oldBlk, MipsBlock newBlk) {
+        if (blkTarget == oldBlk) {
+            blkTarget = newBlk;
+        }
     }
 }

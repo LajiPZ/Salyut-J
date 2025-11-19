@@ -24,4 +24,24 @@ public class Phi extends Instruction {
         operands.add(operand);
         sources.add(source);
     }
+
+    public List<Operand> getOperands() {
+        return operands;
+    }
+
+    public int getOperandCount() {
+        return operands.size();
+    }
+
+    public Operand getOperand(int index) {
+        return operands.get(index);
+    }
+
+    public MipsBlock getSource(int index) {
+        return sources.get(index);
+    }
+
+    public Operand getRes() {
+        return res;
+    }
 }

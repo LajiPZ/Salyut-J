@@ -15,7 +15,7 @@ public class MipsModule {
     private Map<Function, MipsFunction> functionMap = new HashMap();
     private MipsFunction mainFunction;
 
-    public MipsModule buildFromIR(IrModule module) {
+    public void buildFromIR(IrModule module) {
         globalVariables.addAll(
             module.getGlobalVariableList().stream().map(
                 MipsGlobalVariable::build
@@ -29,7 +29,19 @@ public class MipsModule {
                 mainFunction = mFunc;
             }
         }
-        return this;
+    }
+
+    public void runPostBuildProcessing() {
+        runRemovePhi();
+        runAllocatePReg();
+    }
+
+    private void runRemovePhi() {
+
+    }
+
+    private void runAllocatePReg() {
+
     }
 
     public Map<Function, MipsFunction> getFunctionMap() {

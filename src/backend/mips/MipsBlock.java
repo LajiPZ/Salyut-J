@@ -1,13 +1,12 @@
 package backend.mips;
 
+import backend.mips.instruction.Branch;
 import backend.mips.instruction.Instruction;
+import backend.mips.instruction.Phi;
 import frontend.llvm.value.BBlock;
 import frontend.llvm.value.instruction.Inst;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class MipsBlock {
     private String name;
@@ -30,6 +29,15 @@ public class MipsBlock {
         this.instructions.addAll(instructions);
     }
 
+    public void insertBeforeLastInstruction(Instruction instruction) {
+        int index = this.instructions.size() - 1;
+        this.instructions.add(index, instruction);
+    }
+
+    public List<Instruction> getInstructions() {
+        return instructions;
+    }
+
     public MipsBlock(BBlock block) {
         this(".L" + block.getName());
     }
@@ -37,6 +45,31 @@ public class MipsBlock {
     public static void addEdge(MipsBlock from, MipsBlock to) {
         from.successors.add(to);
         to.predecessors.add(from);
+    }
+
+    public static void removeEdge(MipsBlock from, MipsBlock to) {
+        from.successors.remove(to);
+        to.predecessors.remove(from);
+    }
+
+    public Set<MipsBlock> getPredecessors() {
+        return predecessors;
+    }
+
+    public Set<MipsBlock> getSuccessors() {
+        return successors;
+    }
+
+    public void replaceAllBranchTarget(MipsBlock oldBlk, MipsBlock newBlk) {
+        for (Instruction instruction : instructions) {
+            if (instruction instanceof Branch branch) {
+                branch.replaceBranchTarget(oldBlk, newBlk);
+            }
+        }
+    }
+
+    public void removeAllPhi() {
+        instructions.removeIf(instruction -> instruction instanceof Phi);
     }
 
     public static MipsBlock build(BBlock block, MipsBuilder builder) {

@@ -33,6 +33,10 @@ public class MipsFunction {
         blocks.add(block);
     }
 
+    public List<MipsBlock> getBlocks() {
+        return blocks;
+    }
+
     public MipsBlock getEntry() {
         return entry;
     }

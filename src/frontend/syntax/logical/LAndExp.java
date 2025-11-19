@@ -65,7 +65,7 @@ final public class LAndExp extends ASTNode {
             bBlocks.add(currentBlock);
             currentBlock = nextBBlk;
         }
-        // 此时，currentBlk为求值为零对应的路径，其余blk对应都是求值为1的路径
+        // 此时，currentBlk为求值为零对应的路径，最后blk对应是求值为1的路径
         // 随后，各路径汇入一个bblk,继续后续编译
         // 利用Phi即可求解
         builder.fillBranchTarget(currentBlock, bBlocks, builder);
