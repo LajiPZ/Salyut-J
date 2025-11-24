@@ -137,6 +137,7 @@ public class VReg2PReg {
                     if (!local.contains(use)) liveAfter.add(use);
                 }
             }
+            // TODO：这里有没有问题？
         }
         globalConflictGraph = graph;
     }
@@ -468,10 +469,31 @@ public class VReg2PReg {
                 Instruction instruction = block.getInstructions().get(i);
                 live.removeAll(instruction.getDefVRegs());
                 live.addAll(instruction.getUseVRegs());
-                if (endTimeI.get(instruction) > finishTime) { // TODO: precedes
-
+                if (startTimeI.get(instruction) > finishTime) { // 考虑finishTimeI就是finishTime
+                    if (live.size() - liveThrough.size() >= numberRegisters) { // 类似着色，只对局部变量数超出可用寄存器的情况进行处理
+                        Iterator<VReg> it = new HashSet<>(live).iterator();
+                        while (it.hasNext()) {
+                            VReg vReg = it.next();
+                            if(!inLocalGraph.get(vReg)) {
+                                // 此处原文仍然有问题；此处live包含局部和全局变量
+                                // 我们此时仅对局部变量，且仍在局部图内的进行分配
+                                continue;
+                            }
+                            if (endTimeR.get(vReg) < finishTime) { // later than; startTime/endTime不重合，不用考虑等号
+                                continue;
+                            }
+                            if (startTimeR.get(vReg) > beginTime) { // precedes
+                                continue;
+                            }
+                            colorMap.put(vReg, colorMap.get(t));
+                            // 此时，t已经被分配了PReg,vReg也没有被移出图，所以不用做任何事情
+                            finishTime = startTimeR.get(vReg);
+                            break;
+                        }
+                    }
                 }
             }
+            numberRegisters--;
         }
 
         private void onePassAllocate() {
