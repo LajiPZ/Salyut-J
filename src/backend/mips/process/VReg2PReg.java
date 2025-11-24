@@ -3,10 +3,12 @@ package backend.mips.process;
 import backend.mips.MipsBlock;
 import backend.mips.MipsFunction;
 import backend.mips.instruction.Instruction;
+import backend.mips.operand.AReg;
 import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 import backend.mips.utils.BlockLivingData;
 import backend.mips.utils.UndirectedGraph;
+import backend.mips.utils.spillLoc.SpillLoc;
 
 import java.util.*;
 
@@ -17,8 +19,16 @@ import java.util.*;
 public class VReg2PReg {
 
     static class Config {
+        // 本设计中，全局和局部的可用寄存器均一致
+        // 溢出所用寄存器也通过局部变量分配完成，不需要预留寄存器处理溢出变量
         static final List<PReg> availPRegs = List.of(
-
+            AReg.t[0], AReg.t[1], AReg.t[2], AReg.t[3],
+            AReg.t[4], AReg.t[5], AReg.t[6], AReg.t[7],
+            AReg.s[0], AReg.s[1], AReg.s[2], AReg.s[3],
+            AReg.s[4], AReg.s[5], AReg.s[6], AReg.s[7],
+            AReg.v1, AReg.t[8], AReg.t[9],
+            AReg.gp,  // group pointer我们没用到，也可以来
+            AReg.k0, AReg.k1
         );
     }
 
@@ -44,6 +54,23 @@ public class VReg2PReg {
         for (MipsBlock block : function.getBlocks()) {
             new LocalVReg2PReg(block).localAllocation();
         }
+        refill();
+    }
+
+    public SpillLoc getSpillLoc(VReg vReg) {
+
+    }
+
+    public Instruction getSpillLoad(VReg dest, SpillLoc src) {
+
+    }
+
+    public Instruction getSpillStore(VReg src, SpillLoc dest) {
+
+    }
+
+    private void refill() {
+        // TODO
     }
 
     /**
@@ -137,7 +164,6 @@ public class VReg2PReg {
                     if (!local.contains(use)) liveAfter.add(use);
                 }
             }
-            // TODO：这里有没有问题？
         }
         globalConflictGraph = graph;
     }
@@ -162,7 +188,6 @@ public class VReg2PReg {
      * 构建全局变量着色顺序的栈。
      */
     private Stack<VReg> buildGlobalAllocStack(HashMap<Integer, HashSet<VReg>> bucketMap) {
-        // TODO: bucket可能有问题
         HashMap<VReg, Integer> priorityMap = computePriority();
         HashSet<VReg> nodes = new HashSet<>(globalConflictGraph.getVertices());
         HashMap<VReg, Integer> neighborsLeft = new HashMap<>();
@@ -206,7 +231,7 @@ public class VReg2PReg {
                 if (inGlobalGraph.get(reg)) {
                     bucketMap.get(neighborsLeft.get(reg)).remove(reg);
                     neighborsLeft.compute(reg, (k,v) -> v == null ? null : v - 1); // just to eliminate warnings...
-                    bucketMap.get(neighborsLeft.get(reg)).add(reg);
+                    bucketMap.computeIfAbsent(neighborsLeft.get(reg), k -> new HashSet<>()).add(reg);
                 }
             }
         }
@@ -223,7 +248,7 @@ public class VReg2PReg {
                 }
             }
             if (unavailablePRegs.size() == Config.availPRegs.size()) {
-                // 地址在实际替换为pReg时做
+                // TODO: 分配溢出地址
                 spilledVRegs.add(t);
             } else {
                 PReg color = choosePReg(t, unavailablePRegs);
@@ -266,11 +291,20 @@ public class VReg2PReg {
         HashMap<VReg, Integer> priorityMap = new HashMap<>();
         for (MipsBlock block : function.getBlocks()) {
             for (Instruction instruction : block.getInstructions()) {
-                // TODO
+                HashSet<VReg> vRegs = new HashSet<>();
+                // 此处认为，point为指令；毕竟操作数可以相同
+                vRegs.addAll(instruction.getDefVRegs());
+                vRegs.addAll(instruction.getUseVRegs());
+                for (VReg vReg : vRegs) {
+                    priorityMap.computeIfAbsent(vReg, k -> 0);
+                    priorityMap.put(vReg, priorityMap.get(vReg) + 1);
+                }
             }
         }
         return priorityMap;
     }
+
+
 
     private class LocalVReg2PReg {
         private MipsBlock block;
@@ -334,7 +368,56 @@ public class VReg2PReg {
         }
 
         private void insertGlobalSpill() {
-
+            HashSet<VReg> insertStore = new HashSet<>(spilledVRegs);
+            HashSet<VReg> insertLoad = new HashSet<>();
+            for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
+                Instruction instruction = block.getInstructions().get(i);
+                for (VReg t : instruction.getDefVRegs()) {
+                    if (spilledVRegs.contains(t)) {
+                        if (insertStore.contains(t)) {
+                            insertStore.remove(t);
+                            // insert store T, memory(T) after I
+                            block.insertAfter(
+                                getSpillStore(t, getSpillLoc(t)),
+                                instruction
+                            );
+                        }
+                        insertLoad.remove(t);
+                    }
+                }
+                for (VReg t : instruction.getUseVRegs()) {
+                    if (spilledVRegs.contains(t)) {
+                        insertLoad.add(t);
+                    }
+                }
+            }
+            HashMap<VReg, VReg> newNameMap = new HashMap<>();
+            for (Instruction instruction : block.getInstructions()) {
+                for (VReg t : instruction.getUseVRegs()) {
+                    if (spilledVRegs.contains(t)) {
+                        if (!newNameMap.containsKey(t)) {
+                            newNameMap.put(t, new VReg());
+                        }
+                        if (insertLoad.contains(t)) {
+                            insertLoad.remove(t);
+                            // insert load memory(T) => newName(t) before I
+                            block.insertBefore(
+                                getSpillLoad(newNameMap.get(t), getSpillLoc(t)),
+                                instruction
+                            );
+                        }
+                        instruction.replaceOperand(t, newNameMap.get(t));
+                    }
+                }
+                for (VReg t : instruction.getDefVRegs()) {
+                    if (spilledVRegs.contains(t)) {
+                        if (!newNameMap.containsKey(t)) {
+                            newNameMap.put(t, new VReg());
+                        }
+                        instruction.replaceOperand(t, newNameMap.get(t));
+                    }
+                }
+            }
         }
 
         private void localClassify() {
@@ -406,6 +489,7 @@ public class VReg2PReg {
             for (VReg t : live) {
                 startTimeR.put(t, timeCount);
                 for (VReg u : live) {
+                    // TODO: IMHO this is redundant
                     if (u != t) {
                         localConflictGraph.addVertex(u);
                         localConflictGraph.addVertex(t);
@@ -474,9 +558,9 @@ public class VReg2PReg {
                         Iterator<VReg> it = new HashSet<>(live).iterator();
                         while (it.hasNext()) {
                             VReg vReg = it.next();
-                            if(!inLocalGraph.get(vReg)) {
-                                // 此处原文仍然有问题；此处live包含局部和全局变量
-                                // 我们此时仅对局部变量，且仍在局部图内的进行分配
+                            if (colorMap.containsKey(vReg) || !inLocalGraph.get(vReg)) {
+                                // 较原文的修正
+                                // 分配过了（e.g. 全局变量，未被分配的一定是局部变量），或者已经从图里取出到栈内，就不应分配
                                 continue;
                             }
                             if (endTimeR.get(vReg) < finishTime) { // later than; startTime/endTime不重合，不用考虑等号
@@ -486,7 +570,7 @@ public class VReg2PReg {
                                 continue;
                             }
                             colorMap.put(vReg, colorMap.get(t));
-                            // 此时，t已经被分配了PReg,vReg也没有被移出图，所以不用做任何事情
+                            // 此时，t已经被分配了PReg,vReg本来也没有被移出图，所以不用做任何事情
                             finishTime = startTimeR.get(vReg);
                             break;
                         }
@@ -508,8 +592,34 @@ public class VReg2PReg {
                 inLocalGraph.put(t, true);
             }
             freeRegisters.removeAll(globalRegisters);
-            HashSet<VReg> live = new HashSet<>(liveEnd);
-            // TODO...
+            HashSet<VReg> live = new HashSet<>(liveEnd); // 以liveEnd初始化，旨在屏蔽掉那些已完成分配的全局变量
+            for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
+                Instruction instruction = block.getInstructions().get(i);
+                for (VReg t : instruction.getDefVRegs()) {
+                    live.remove(t);
+                    if (!instruction.getUseVRegs().contains(t) && !globalRegisters.contains(colorMap.get(t))) {
+                        // 第二个条件，是为了忽略通过liveStart共用分配好的结果
+                        freeRegisters.add(colorMap.get(t));
+                    }
+                }
+                for (VReg t : instruction.getUseVRegs()) {
+                    if (!live.contains(t)) {
+                        live.add(t);
+                        // 修正了原文逻辑，这里只对没入栈的分配
+                        // 再次，没被分配寄存器的一定是局部变量，不用担心全局变量混进来
+                        if (!colorMap.containsKey(t) && inLocalGraph.get(t)) {
+                            if (freeRegisters.isEmpty()) {
+                                localSpillRegister(live, block, instruction, freeRegisters);
+                            }
+                            PReg s = freeRegisters.iterator().next();
+                            freeRegisters.remove(s);
+                            colorMap.put(t, s);
+                            assignedPRegs.add(s);
+                            // inLocalGraph.put(t, true);
+                        }
+                    }
+                }
+            }
         }
 
         private void giveStackedVRegsColor() {
@@ -527,11 +637,61 @@ public class VReg2PReg {
             }
         }
 
-        private void localSpillRegister() {
+        private void localSpillRegister(Set<VReg> live, MipsBlock block, Instruction instruction, Set<PReg> freeRegisters) {
+            // live中的此时都已经被分配PReg
+            int earliest = 0;
+            Instruction lastUseDef = null;
+            VReg target = null;
+            for (VReg vReg : live) {
+                int prev = endTimeI.get(block.getInstructions().get(0));
+                Instruction prevInst = null;
+                loop: for (Instruction instr : block.getInstructions()) {
+                    if (instr.equals(instruction)) {
+                        break;
+                    }
+                    for (VReg u : instr.getDefVRegs()) {
+                        if (u.equals(vReg)) {
+                            prev = endTimeI.get(instr);
+                            prevInst = instr;
+                            continue loop;
+                        }
+                    }
+                    for (VReg u : instr.getUseVRegs()) {
+                        if (u.equals(vReg)) {
+                            prev = endTimeI.get(instr);
+                            prevInst = instr;
+                            continue loop;
+                        }
+                    }
+                }
+                if (prev > earliest) {
+                    earliest = prev;
+                    lastUseDef = prevInst;
+                    target = vReg;
+                }
+            }
+            // TODO: allocate memory for target
+            // 此时不用担心溢出地址释放的问题，因为从后往前，这个地址必定不会被释放
 
+            // insert load MEMORY(target), target after I
+            block.insertAfter(
+                getSpillLoad(target, getSpillLoc(target)),
+                instruction
+            );
+            VReg newName = new VReg();
+            inLocalGraph.put(newName, true);
+            // insert store newName, memory(target) after prevUse
+            block.insertAfter(
+                getSpillStore(newName, getSpillLoc(target)),
+                lastUseDef
+            );
+            int loc = lastUseDef == null ? -1 : block.getInstructions().indexOf(lastUseDef);
+            for (; loc >= 0; loc--) {
+                Instruction instr = block.getInstructions().get(loc);
+                instr.replaceOperand(target, newName);
+            }
+            // 原文似乎把insert笔误成了delete...
+            freeRegisters.add(colorMap.get(target));
         }
     }
-
-
-
 }

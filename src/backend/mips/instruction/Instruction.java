@@ -3,6 +3,7 @@ package backend.mips.instruction;
 import backend.mips.MipsBlock;
 import backend.mips.MipsBuilder;
 import backend.mips.instBuilder.InstBuilder;
+import backend.mips.operand.Operand;
 import backend.mips.operand.VReg;
 import frontend.llvm.value.instruction.Inst;
 
@@ -27,4 +28,6 @@ abstract public class Instruction {
 
     abstract public Set<VReg> getDefVRegs();
     abstract public Set<VReg> getUseVRegs();
+
+    abstract public void replaceOperand(Operand prevOperand, Operand newOperand);
 }

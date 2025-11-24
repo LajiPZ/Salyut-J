@@ -1,5 +1,7 @@
 package backend.mips;
 
+import backend.mips.process.RemovePhi;
+import backend.mips.process.VReg2PReg;
 import frontend.llvm.IrModule;
 import frontend.llvm.value.Function;
 
@@ -37,11 +39,15 @@ public class MipsModule {
     }
 
     private void runRemovePhi() {
-
+        for (MipsFunction func : functions) {
+            new RemovePhi(func).run();
+        }
     }
 
     private void runAllocatePReg() {
-
+        for (MipsFunction func : functions) {
+            new VReg2PReg(func).run();
+        }
     }
 
     public Map<Function, MipsFunction> getFunctionMap() {

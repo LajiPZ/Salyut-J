@@ -29,6 +29,16 @@ public class MipsBlock {
         this.instructions.addAll(instructions);
     }
 
+    public void insertBefore(Instruction inst,Instruction target) {
+        int index = this.instructions.indexOf(target);
+        this.instructions.add(index, inst);
+    }
+
+    public void insertAfter(Instruction inst,Instruction target) {
+        int index = target == null ? 0 : this.instructions.indexOf(target) + 1;
+        this.instructions.add(index, inst);
+    }
+
     public void insertBeforeLastInstruction(Instruction instruction) {
         int index = this.instructions.size() - 1;
         this.instructions.add(index, instruction);

@@ -1,4 +1,4 @@
 package backend.mips.operand;
 
-public class Operand {
+abstract public class Operand {
 }

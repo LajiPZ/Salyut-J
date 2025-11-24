@@ -1,5 +1,5 @@
 package backend.mips.operand;
 
-public class PReg extends Operand {
+abstract public class PReg extends Operand {
     // Physical registers
 }

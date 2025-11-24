@@ -27,4 +27,19 @@ public class AReg extends PReg {
         new AReg(6, "$a2"),
         new AReg(7, "$a3")
     };
+
+    public static final AReg[] t = new AReg[] {
+        new AReg(8, "$t0"), new AReg(9, "$t1"),
+        new AReg(10, "$t2"), new AReg(11, "$t3"),
+        new AReg(12, "$t4"), new AReg(13, "$t5"),
+        new AReg(14, "$t6"), new AReg(15, "$t7"),
+        new AReg(24, "$t8"), new AReg(25, "$t9")
+    };
+
+    public static final AReg[] s = new AReg[] {
+        new AReg(16, "$s0"), new AReg(17, "$s1"),
+        new AReg(18, "$s2"), new AReg(19, "$s3"),
+        new AReg(20, "$s4"), new AReg(21, "$s5"),
+        new AReg(22, "$s6"), new AReg(23, "$s7")
+    };
 }
