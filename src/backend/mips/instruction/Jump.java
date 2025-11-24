@@ -2,8 +2,12 @@ package backend.mips.instruction;
 
 import backend.mips.MipsBlock;
 import backend.mips.operand.Operand;
+import backend.mips.operand.VReg;
+
+import java.util.Set;
 
 public class Jump extends Branch {
+
     public enum Op {
         j, jal, jr
     }
@@ -29,5 +33,16 @@ public class Jump extends Branch {
         if (blkTarget == oldBlk) {
             blkTarget = newBlk;
         }
+    }
+
+    @Override
+    public Set<VReg> getDefVRegs() {
+        return Set.of();
+    }
+
+    @Override
+    public Set<VReg> getUseVRegs() {
+        if (regTarget != null) return Set.of((VReg) regTarget);
+        return Set.of();
     }
 }

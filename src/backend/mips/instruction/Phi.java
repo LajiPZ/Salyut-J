@@ -2,9 +2,11 @@ package backend.mips.instruction;
 
 import backend.mips.MipsBlock;
 import backend.mips.operand.Operand;
+import backend.mips.operand.VReg;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 // Intermediate inst;
 // would be replaced in Phi elimination
@@ -43,5 +45,15 @@ public class Phi extends Instruction {
 
     public Operand getRes() {
         return res;
+    }
+
+    @Override
+    public Set<VReg> getDefVRegs() {
+        throw new RuntimeException("Phi shouldn't in PRegAlloc");
+    }
+
+    @Override
+    public Set<VReg> getUseVRegs() {
+        throw new RuntimeException("Phi shouldn't in PRegAlloc");
     }
 }

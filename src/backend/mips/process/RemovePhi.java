@@ -14,10 +14,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-// TODO: 注意，这个实现忽略了Phi的“并行复制”属性
+// TODO: 注意，这个实现忽略了Phi的“并行复制”属性，省去分配多的PReg之虞
 // 为什么可行？
 // 因为LLVM IR是SSA，此时我们只是将一个结果写到了IPhi对应的新VReg里
-// 且这个VReg不会用于给任何变量赋值，故没有任何影响！
+// 且我们只在条件短路时用了IPhi，这个VReg不会用于给任何变量赋值，故没有任何影响！
 
 public class RemovePhi {
     private MipsFunction function;

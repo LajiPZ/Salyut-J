@@ -82,6 +82,7 @@ public class VarDef extends ASTNode {
             // 注：这里只处理全局变量的初值，局部变量的初值在代码生成时处理
             try {
                 if (Tabulator.isGlobalDef()) {
+                    // TODO: 从C而非C++的角度，又或者，定义里“编译期间可知”的定义，这么处理是否合理？
                     if (indexExps.isEmpty()) {
                         if (initVal == null) {
                             symbol.setInitType(new ValInitType(0, type.toDataType()));
@@ -115,6 +116,7 @@ public class VarDef extends ASTNode {
     }
 
     public void build(IrBuilder builder, BType type, boolean isStatic, boolean isGlobal) {
+        // TODO: 从C而非C++的角度，又或者，定义里“编译期间可知”的定义，这么处理是否合理？
         if (isGlobal) {
             // 全局变量的定义，右侧一定是常量表达式
             varSymbol.setValue(

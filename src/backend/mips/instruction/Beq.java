@@ -2,8 +2,12 @@ package backend.mips.instruction;
 
 import backend.mips.MipsBlock;
 import backend.mips.operand.Operand;
+import backend.mips.operand.VReg;
+
+import java.util.Set;
 
 public class Beq extends Branch {
+
     public enum Op {
         beq, bne
     }
@@ -25,4 +29,15 @@ public class Beq extends Branch {
             target = newBlock;
         }
     }
+
+    @Override
+    public Set<VReg> getDefVRegs() {
+        return Set.of();
+    }
+
+    @Override
+    public Set<VReg> getUseVRegs() {
+        return Set.of((VReg) left, (VReg) right);
+    }
+
 }

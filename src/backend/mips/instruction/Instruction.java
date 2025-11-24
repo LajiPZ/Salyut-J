@@ -3,10 +3,12 @@ package backend.mips.instruction;
 import backend.mips.MipsBlock;
 import backend.mips.MipsBuilder;
 import backend.mips.instBuilder.InstBuilder;
+import backend.mips.operand.VReg;
 import frontend.llvm.value.instruction.Inst;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 abstract public class Instruction {
 
@@ -22,4 +24,7 @@ abstract public class Instruction {
         );
         return instructions;
     }
+
+    abstract public Set<VReg> getDefVRegs();
+    abstract public Set<VReg> getUseVRegs();
 }
