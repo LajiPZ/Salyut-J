@@ -8,4 +8,8 @@ public class CP1SpillLoc extends SpillLoc {
     public CP1SpillLoc(CP1Reg reg) {
         this.reg = reg;
     }
+
+    public CP1Reg getReg() {
+        return reg;
+    }
 }

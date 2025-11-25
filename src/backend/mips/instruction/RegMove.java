@@ -8,12 +8,13 @@ import java.util.Set;
 public class RegMove extends Instruction {
 
     public enum Op {
-        mfhi, mflo, mfc1, SEP,
-        mthi, mtlo ,mtc1,
+        mfhi, mflo, SEP,
+        mthi, mtlo,
     }
 
     private Op op;
     private Operand operand;
+
 
     public RegMove(Op op, Operand operand) {
         assert op != Op.SEP;

@@ -45,4 +45,8 @@ public class Jump extends Branch {
         if (regTarget != null) return Set.of((VReg) regTarget);
         return Set.of();
     }
+
+    public boolean isCall() {
+        return op == Op.jal;
+    }
 }

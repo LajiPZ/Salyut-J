@@ -24,6 +24,10 @@ public class MipsFunction {
         this.stackSize = stackSize;
     }
 
+    public void enlargeStackSize(int by) {
+        stackSize += by;
+    }
+
     public void setKeyBlocks(MipsBlock entry, MipsBlock exit) {
         this.entry = entry;
         this.exit = exit;
@@ -41,6 +45,10 @@ public class MipsFunction {
         return entry;
     }
 
+    public MipsBlock getExit() {
+        return exit;
+    }
+
     public static MipsFunction build(Function func, MipsModule top) {
         MipsBlock entry = new MipsBlock(func.getName() + ".entry");
         MipsBlock exit = new MipsBlock(func.getName() + ".exit");
@@ -50,7 +58,7 @@ public class MipsFunction {
         mipsFunction.setKeyBlocks(entry, exit);
 
         if (!func.getName().equals("main")) {
-            // 保存调用者的frame pointer；存到被调用函数的栈内
+            // 保存调用者的frame pointer；存到被调用函数（此函数）的栈内
             entry.addInstruction(
                 new Store(Mem.Align.w, AReg.fp, AReg.sp, new Immediate(-4))
             );
@@ -84,5 +92,15 @@ public class MipsFunction {
         );
 
         return mipsFunction;
+    }
+
+    public static boolean isCaller(MipsFunction function) {
+        for (MipsBlock block : function.getBlocks()) {
+            for (Instruction inst : block.getInstructions()) {
+                if (inst instanceof Jump jump && jump.isCall()) {
+                    return true;
+                }
+            }
+        }
     }
 }

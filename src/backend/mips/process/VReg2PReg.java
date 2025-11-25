@@ -2,12 +2,12 @@ package backend.mips.process;
 
 import backend.mips.MipsBlock;
 import backend.mips.MipsFunction;
-import backend.mips.instruction.Instruction;
-import backend.mips.operand.AReg;
-import backend.mips.operand.PReg;
-import backend.mips.operand.VReg;
+import backend.mips.instruction.*;
+import backend.mips.operand.*;
 import backend.mips.utils.BlockLivingData;
 import backend.mips.utils.UndirectedGraph;
+import backend.mips.utils.spillLoc.CP1SpillLoc;
+import backend.mips.utils.spillLoc.MemSpillLoc;
 import backend.mips.utils.spillLoc.SpillLoc;
 
 import java.util.*;
@@ -44,6 +44,9 @@ public class VReg2PReg {
         for (MipsBlock block : function.getBlocks()) {
             livingDataMap.put(block, new BlockLivingData<>());
         }
+        if (MipsFunction.isCaller(function)) {
+            this.assignedPRegs.add(AReg.ra);
+        }
     }
 
     public void run() {
@@ -57,20 +60,87 @@ public class VReg2PReg {
         refill();
     }
 
-    public SpillLoc getSpillLoc(VReg vReg) {
+    private final HashSet<CP1Reg> availCP1RegForSpill = new HashSet<>(Arrays.asList(CP1Reg.f));
+    private HashMap<VReg, SpillLoc> spillLocMap = new HashMap<>();
+    private int currentOffset = 0; // 从$sp往上，依次是spilledReg、保存寄存器
 
+    public void allocateSpillLoc(VReg vReg) {
+        if (availCP1RegForSpill.isEmpty()) {
+            function.enlargeStackSize(4);
+            spillLocMap.put(
+                vReg,
+                new MemSpillLoc(currentOffset)
+            );
+            currentOffset += 4;
+        } else {
+            CP1Reg cp1Reg = availCP1RegForSpill.iterator().next();
+            availCP1RegForSpill.remove(cp1Reg);
+            spillLocMap.put(
+                vReg,
+                new CP1SpillLoc(cp1Reg)
+            );
+        }
+    }
+
+    public void releaseSpillLoc(SpillLoc spillLoc) {
+        if (spillLoc instanceof CP1SpillLoc cp1SpillLoc) {
+            availCP1RegForSpill.add(cp1SpillLoc.getReg());
+        }
+    }
+
+    public SpillLoc getSpillLoc(VReg vReg) {
+        return spillLocMap.get(vReg);
     }
 
     public Instruction getSpillLoad(VReg dest, SpillLoc src) {
-
+        if (src instanceof CP1SpillLoc cp1Loc) {
+            return new CP1RegMove(
+                CP1RegMove.Op.mfc1, dest, cp1Loc.getReg()
+            );
+        } else {
+            return new Load(
+                Mem.Align.w,
+                dest,
+                AReg.sp,
+                new Immediate(((MemSpillLoc) src).getOffset())
+            );
+        }
     }
 
     public Instruction getSpillStore(VReg src, SpillLoc dest) {
-
+        if (dest instanceof CP1SpillLoc cp1Loc) {
+            return new CP1RegMove(
+                CP1RegMove.Op.mtc1, src, cp1Loc.getReg()
+            );
+        } else {
+            return new Store(
+                Mem.Align.w,
+                src,
+                AReg.sp,
+                new Immediate(((MemSpillLoc) dest).getOffset())
+            );
+        }
     }
 
     private void refill() {
-        // TODO
+        // 1. refill
+        for (MipsBlock block : function.getBlocks()) {
+            for (Instruction instruction : block.getInstructions()) {
+                instruction.fillPReg(colorMap);
+            }
+        }
+
+        // 2. store/recover the allocated registers
+        function.enlargeStackSize(4 * assignedPRegs.size());
+        for (PReg pReg : assignedPRegs) {
+            function.getEntry().addInstruction(
+                new Store(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset))
+            );
+            function.getExit().insertAfter(null,
+                new Load(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset))
+            );
+            currentOffset += 4;
+        }
     }
 
     /**
@@ -248,7 +318,7 @@ public class VReg2PReg {
                 }
             }
             if (unavailablePRegs.size() == Config.availPRegs.size()) {
-                // TODO: 分配溢出地址
+                allocateSpillLoc(t);
                 spilledVRegs.add(t);
             } else {
                 PReg color = choosePReg(t, unavailablePRegs);
@@ -580,6 +650,8 @@ public class VReg2PReg {
             numberRegisters--;
         }
 
+        private HashMap<Instruction, SpillLoc> releaseSpillLocMap = new HashMap<>();
+
         private void onePassAllocate() {
             // 对于那些仍然留在图中的VReg
             HashSet<PReg> globalRegisters = new HashSet<>();
@@ -595,6 +667,10 @@ public class VReg2PReg {
             HashSet<VReg> live = new HashSet<>(liveEnd); // 以liveEnd初始化，旨在屏蔽掉那些已完成分配的全局变量
             for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
                 Instruction instruction = block.getInstructions().get(i);
+                if (releaseSpillLocMap.containsKey(instruction)) {
+                    SpillLoc spillLoc = releaseSpillLocMap.get(instruction);
+                    releaseSpillLoc(spillLoc);
+                }
                 for (VReg t : instruction.getDefVRegs()) {
                     live.remove(t);
                     if (!instruction.getUseVRegs().contains(t) && !globalRegisters.contains(colorMap.get(t))) {
@@ -670,21 +746,25 @@ public class VReg2PReg {
                     target = vReg;
                 }
             }
-            // TODO: allocate memory for target
-            // 此时不用担心溢出地址释放的问题，因为从后往前，这个地址必定不会被释放
 
+            allocateSpillLoc(target);
+            SpillLoc spillLoc = getSpillLoc(target);
             // insert load MEMORY(target), target after I
             block.insertAfter(
-                getSpillLoad(target, getSpillLoc(target)),
+                getSpillLoad(target, spillLoc),
                 instruction
             );
             VReg newName = new VReg();
             inLocalGraph.put(newName, true);
             // insert store newName, memory(target) after prevUse
             block.insertAfter(
-                getSpillStore(newName, getSpillLoc(target)),
+                getSpillStore(newName, spillLoc),
                 lastUseDef
             );
+
+            // 考虑到我们是倒着做onePassAllocate的，遍历到lastUseDef时，溢出位置刚好释放
+            releaseSpillLocMap.put(lastUseDef, spillLoc);
+
             int loc = lastUseDef == null ? -1 : block.getInstructions().indexOf(lastUseDef);
             for (; loc >= 0; loc--) {
                 Instruction instr = block.getInstructions().get(loc);

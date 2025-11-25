@@ -120,6 +120,8 @@ public class MipsBuilder {
     }
 
     public static int argsOffset(int index) {
+        // 1.栈从高地址到低地址增长
+        // 为何要+2？ fp + 自身空间
         return (2 + index - AReg.a.length) * -4;
     }
 

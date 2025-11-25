@@ -4,11 +4,13 @@ import backend.mips.MipsBlock;
 import backend.mips.MipsBuilder;
 import backend.mips.instBuilder.InstBuilder;
 import backend.mips.operand.Operand;
+import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 import frontend.llvm.value.instruction.Inst;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 abstract public class Instruction {
@@ -30,4 +32,15 @@ abstract public class Instruction {
     abstract public Set<VReg> getUseVRegs();
 
     abstract public void replaceOperand(Operand prevOperand, Operand newOperand);
+
+    abstract public void fillPReg(Map<VReg, PReg> colorMap);
+
+    protected Operand fillPReg(Operand prev, Map<VReg, PReg> colorMap) {
+        if (prev instanceof VReg vReg) {
+            if (colorMap.containsKey(vReg)) {
+                return colorMap.get(vReg);
+            }
+        }
+        return prev;
+    }
 }

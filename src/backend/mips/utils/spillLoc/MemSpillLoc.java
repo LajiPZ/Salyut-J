@@ -6,4 +6,8 @@ public class MemSpillLoc extends SpillLoc {
     public MemSpillLoc(int offset) {
         this.offset = offset;
     }
+
+    public int getOffset() {
+        return offset;
+    }
 }
