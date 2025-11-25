@@ -1,15 +1,19 @@
 package frontend.llvm.value;
 
+import frontend.datatype.ArrayType;
 import frontend.datatype.DataType;
 import frontend.datatype.init.ArrayInitType;
 import frontend.datatype.init.ValInitType;
 import frontend.llvm.tools.ArrayInitStr;
+import frontend.llvm.value.constant.IntConstant;
 import frontend.symbol.ConstSymbol;
 import frontend.symbol.ValSymbol;
 import frontend.symbol.VarSymbol;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class GlobalVariable extends Value {
     private enum Type {
@@ -63,7 +67,17 @@ public class GlobalVariable extends Value {
     }
 
     public List<Integer> getInitList() {
+        if (type == Type.Single) {
+            return List.of(((IntConstant) init).getValue());
+        } else {
+            return initMaptoList(initList);
+        }
+    }
 
+    public List<Integer> initMaptoList(Map<Integer, Value> initList) {
+        return IntStream.range(0, ((ArrayType) getType()).getLength())
+            .map(i -> ((IntConstant) initList.getOrDefault(i, new IntConstant(0))).getValue())
+            .boxed().collect(Collectors.toList());
     }
 
     public String toLLVM() {

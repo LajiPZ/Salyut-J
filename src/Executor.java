@@ -70,6 +70,9 @@ public class Executor {
         MipsModule mipsModule = new MipsModule();
         mipsModule.buildFromIR(irModule);
         mipsModule.runPostBuildProcessing();
+        if (Settings.PrintConfig.printMIPS) {
+            mipsModule.printMIPS(Settings.FilePath.MIPSOut);
+        }
 
 
         if (Settings.PrintConfig.printError) {

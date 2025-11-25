@@ -11,4 +11,9 @@ public class VReg extends Operand {
     public VReg() {
         this.id = counter.get();
     }
+
+    @Override
+    public String toMIPS() {
+        throw new RuntimeException("VReg shouldn't in final result");
+    }
 }

@@ -13,11 +13,16 @@ public class Store extends Mem {
 
     @Override
     public Set<VReg> getDefVRegs() {
-        throw new RuntimeException("abstract Mem shouldn't in PRegAlloc");
+        return Set.of();
     }
 
     @Override
     public Set<VReg> getUseVRegs() {
-        throw new RuntimeException("abstract Mem shouldn't in PRegAlloc");
+        return Set.of((VReg) src, (VReg) base);
+    }
+
+    @Override
+    public String toMIPS() {
+        return "s" + align + "\t" + src.toMIPS() + ", " + offset.toMIPS() + "(" + base.toMIPS() + ")";
     }
 }

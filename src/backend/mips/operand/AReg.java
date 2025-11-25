@@ -42,4 +42,9 @@ public class AReg extends PReg {
         new AReg(20, "$s4"), new AReg(21, "$s5"),
         new AReg(22, "$s6"), new AReg(23, "$s7")
     };
+
+    @Override
+    public String toMIPS() {
+        return name;
+    }
 }

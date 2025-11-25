@@ -94,6 +94,10 @@ public class MipsFunction {
         return mipsFunction;
     }
 
+    public void fillStackSize() {
+        // TODO
+    }
+
     public static boolean isCaller(MipsFunction function) {
         for (MipsBlock block : function.getBlocks()) {
             for (Instruction inst : block.getInstructions()) {
@@ -102,5 +106,19 @@ public class MipsFunction {
                 }
             }
         }
+        return false;
+    }
+
+    public String toMIPS() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (MipsBlock block : blocks) {
+            stringBuilder.append(block.toMIPS()).append("\n");
+        }
+        return stringBuilder.toString();
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

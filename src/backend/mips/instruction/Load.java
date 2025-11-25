@@ -13,11 +13,16 @@ public class Load extends Mem {
 
     @Override
     public Set<VReg> getDefVRegs() {
-        return Set.of();
+        return Set.of((VReg) src);
     }
 
     @Override
     public Set<VReg> getUseVRegs() {
-        throw new RuntimeException("abstract Mem shouldn't in PRegAlloc");
+        return Set.of((VReg) base);
+    }
+
+    @Override
+    public String toMIPS() {
+        return "l" + align + "\t" + src.toMIPS() + ", " + offset.toMIPS() + "(" + base.toMIPS() + ")";
     }
 }

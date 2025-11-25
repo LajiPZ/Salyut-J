@@ -58,6 +58,7 @@ public class VReg2PReg {
             new LocalVReg2PReg(block).localAllocation();
         }
         refill();
+        function.fillStackSize();
     }
 
     private final HashSet<CP1Reg> availCP1RegForSpill = new HashSet<>(Arrays.asList(CP1Reg.f));

@@ -11,4 +11,9 @@ public class Immediate extends Operand {
     public Immediate(String valueLabel) {
         this.value = valueLabel;
     }
+
+    @Override
+    public String toMIPS() {
+        return String.valueOf(value);
+    }
 }

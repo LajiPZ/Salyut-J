@@ -93,4 +93,28 @@ public class MipsBlock {
     public boolean isMainEntry() {
         return name.equals("main.entry");
     }
+
+    public boolean isMainExit() {
+        return name.equals("main.exit");
+    }
+
+    public String toMIPS() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("  ").append(name).append(":\n");
+        if (isMainExit()) {
+            // 直接退出即可，忽略退出块内对栈等的操作
+            stringBuilder.append("    li $v0, 10\n");
+            stringBuilder.append("    syscall\n");
+        } else {
+            for (Instruction instruction : instructions) {
+                stringBuilder.append(instruction.toMIPS()).append("\n");
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

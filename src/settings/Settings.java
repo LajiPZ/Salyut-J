@@ -8,6 +8,7 @@ final public class Settings {
         public static String tabulatorOut = "symbol.txt";
         public static String errOut = "error.txt";
         public static String IROut = "llvm_ir.txt";
+        public static String MIPSOut = "mips.txt";
     }
 
     public static class PrintConfig {
@@ -16,5 +17,6 @@ final public class Settings {
         public static boolean printTabulation = false;
         public static boolean printError = false;
         public static boolean printIR = true;
+        public static boolean printMIPS = true;
     }
 }

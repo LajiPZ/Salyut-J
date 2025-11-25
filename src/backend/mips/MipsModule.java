@@ -4,7 +4,11 @@ import backend.mips.process.RemovePhi;
 import backend.mips.process.VReg2PReg;
 import frontend.llvm.IrModule;
 import frontend.llvm.value.Function;
+import frontend.llvm.value.GlobalVariable;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +60,29 @@ public class MipsModule {
 
     public void addGlobalVariable(MipsGlobalVariable variable) {
         globalVariables.add(variable);
+    }
+
+    public void printMIPS(String fileName) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("\n.data\n");
+
+        for (var global : globalVariables) {
+            stringBuilder.append("  ").append(global.toMIPS()).append("\n");
+        }
+
+        stringBuilder.append("\n.text\n\n");
+        stringBuilder.append("# main():\n");
+        stringBuilder.append(mainFunction.toMIPS()).append("\n");
+
+        for (MipsFunction func : functions) {
+            if (func == mainFunction) continue;
+            stringBuilder.append("# ").append(func).append("()\n");
+            stringBuilder.append(func.toMIPS()).append("\n");
+        }
+
+        writer.write(stringBuilder.toString());
+        writer.close();
     }
 
 }

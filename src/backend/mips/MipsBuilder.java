@@ -22,9 +22,9 @@ public class MipsBuilder {
     // A helper for building MIPS asm.
     // This is designed specifically for a function...
     private int stackSize;
-    private Map<BBlock, MipsBlock> blockMap;
+    private Map<BBlock, MipsBlock> blockMap = new HashMap<>();
     private Map<Function, MipsFunction> functionMap;
-    private Map<Value, VReg> valueMap;
+    private Map<Value, VReg> valueMap = new HashMap<>();
     private MipsBlock exitBlock;
     private MipsModule top;
 

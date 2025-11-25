@@ -2,8 +2,10 @@ package backend.mips.instruction;
 
 import backend.mips.MipsBlock;
 import backend.mips.operand.Operand;
+import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.Map;
 import java.util.Set;
 
 public class Jump extends Branch {
@@ -46,7 +48,26 @@ public class Jump extends Branch {
         return Set.of();
     }
 
+    @Override
+    public void replaceOperand(Operand prevOperand, Operand newOperand) {
+        if (regTarget == prevOperand) regTarget = newOperand;
+    }
+
+    @Override
+    public void fillPReg(Map<VReg, PReg> colorMap) {
+        fillPReg(regTarget, colorMap);
+    }
+
     public boolean isCall() {
         return op == Op.jal;
+    }
+
+    @Override
+    public String toMIPS() {
+        if (op == Op.jal) {
+            return op + "\t" + regTarget.toMIPS();
+        } else {
+            return op + "\t" + blkTarget.toMIPS();
+        }
     }
 }

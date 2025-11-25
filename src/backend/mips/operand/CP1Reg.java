@@ -46,4 +46,9 @@ public class CP1Reg extends PReg {
         new CP1Reg(30, "$f30"),
         new CP1Reg(31, "$f31"),
     };
+
+    @Override
+    public String toMIPS() {
+        return name;
+    }
 }

@@ -43,4 +43,6 @@ abstract public class Instruction {
         }
         return prev;
     }
+
+    abstract public String toMIPS();
 }

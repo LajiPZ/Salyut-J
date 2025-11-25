@@ -2,8 +2,10 @@ package backend.mips.instruction;
 
 import backend.mips.operand.CP1Reg;
 import backend.mips.operand.Operand;
+import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.Map;
 import java.util.Set;
 
 public class CP1RegMove extends Instruction{
@@ -37,6 +39,16 @@ public class CP1RegMove extends Instruction{
 
     @Override
     public void replaceOperand(Operand prevOperand, Operand newOperand) {
-        // TODO
+        if (operand == prevOperand) operand = newOperand;
+    }
+
+    @Override
+    public void fillPReg(Map<VReg, PReg> colorMap) {
+        fillPReg(operand, colorMap);
+    }
+
+    @Override
+    public String toMIPS() {
+        return op + "\t" + operand.toMIPS() + ", " + cp1Reg.toMIPS();
     }
 }

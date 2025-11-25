@@ -1,8 +1,10 @@
 package backend.mips.instruction;
 
 import backend.mips.operand.Operand;
+import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.Map;
 import java.util.Set;
 
 public class Shift extends Instruction {
@@ -33,5 +35,24 @@ public class Shift extends Instruction {
             return Set.of((VReg) src, (VReg) shiftAmount);
         }
         return Set.of((VReg) src);
+    }
+
+    @Override
+    public void replaceOperand(Operand prevOperand, Operand newOperand) {
+        if (res == prevOperand) res = newOperand;
+        if (src == prevOperand) src = newOperand;
+        if (shiftAmount == prevOperand) shiftAmount = newOperand;
+    }
+
+    @Override
+    public void fillPReg(Map<VReg, PReg> colorMap) {
+        fillPReg(res, colorMap);
+        fillPReg(src, colorMap);
+        fillPReg(shiftAmount, colorMap);
+    }
+
+    @Override
+    public String toMIPS() {
+        return op + "\t" + res.toMIPS() + ", " + src.toMIPS() + ", " + shiftAmount.toMIPS();
     }
 }

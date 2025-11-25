@@ -2,10 +2,12 @@ package backend.mips.instruction;
 
 import backend.mips.MipsBlock;
 import backend.mips.operand.Operand;
+import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 // Intermediate inst;
@@ -55,5 +57,20 @@ public class Phi extends Instruction {
     @Override
     public Set<VReg> getUseVRegs() {
         throw new RuntimeException("Phi shouldn't in PRegAlloc");
+    }
+
+    @Override
+    public void replaceOperand(Operand prevOperand, Operand newOperand) {
+        throw new RuntimeException("Phi shouldn't in PRegAlloc");
+    }
+
+    @Override
+    public void fillPReg(Map<VReg, PReg> colorMap) {
+        throw new RuntimeException("Phi shouldn't in PRegAlloc");
+    }
+
+    @Override
+    public String toMIPS() {
+        throw new RuntimeException("Phi shouldn't in final result");
     }
 }

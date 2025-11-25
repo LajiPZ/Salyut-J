@@ -1,8 +1,10 @@
 package backend.mips.instruction;
 
 import backend.mips.operand.Operand;
+import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.Map;
 import java.util.Set;
 
 
@@ -12,7 +14,7 @@ public class Mem extends Instruction {
         w, h, b
     }
 
-    private Align align;
+    protected Align align;
     protected Operand src;
     protected Operand base;
     protected Operand offset;
@@ -34,4 +36,22 @@ public class Mem extends Instruction {
         throw new RuntimeException("abstract Mem shouldn't in PRegAlloc");
     }
 
+    @Override
+    public void replaceOperand(Operand prevOperand, Operand newOperand) {
+        if (src == prevOperand) src = newOperand;
+        if (base == prevOperand) base = newOperand;
+        if (offset == prevOperand) offset = newOperand;
+    }
+
+    @Override
+    public void fillPReg(Map<VReg, PReg> colorMap) {
+        fillPReg(src, colorMap);
+        fillPReg(base, colorMap);
+        fillPReg(offset, colorMap);
+    }
+
+    @Override
+    public String toMIPS() {
+        throw new RuntimeException("abstract Mem shouldn't in final result");
+    }
 }

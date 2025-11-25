@@ -1,8 +1,10 @@
 package backend.mips.instruction;
 
 import backend.mips.operand.Operand;
+import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.Map;
 import java.util.Set;
 
 public class Calc extends Instruction {
@@ -35,5 +37,24 @@ public class Calc extends Instruction {
     @Override
     public Set<VReg> getUseVRegs() {
         return Set.of((VReg) leftOperand, (VReg) rightOperand);
+    }
+
+    @Override
+    public void replaceOperand(Operand prevOperand, Operand newOperand) {
+        if (res == prevOperand) res = newOperand;
+        if (leftOperand == prevOperand) leftOperand = newOperand;
+        if (rightOperand == prevOperand) rightOperand = newOperand;
+    }
+
+    @Override
+    public void fillPReg(Map<VReg, PReg> colorMap) {
+        fillPReg(res, colorMap);
+        fillPReg(leftOperand, colorMap);
+        fillPReg(rightOperand, colorMap);
+    }
+
+    @Override
+    public String toMIPS() {
+        return op + "\t" + res + ", " + leftOperand.toMIPS() + ", " + rightOperand.toMIPS();
     }
 }
