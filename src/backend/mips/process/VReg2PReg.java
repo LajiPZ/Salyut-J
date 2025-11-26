@@ -12,6 +12,8 @@ import backend.mips.utils.spillLoc.SpillLoc;
 
 import java.util.*;
 
+// TODO: concurrent modification; 不得不更改Block内Instruction的数据结构
+
 /**
  * Ref: Ep.13, Building an Optimizing Compiler
  * 考虑到没有浮点指令，选择将CP1.reg，作为溢出的一个选择
@@ -44,9 +46,6 @@ public class VReg2PReg {
         for (MipsBlock block : function.getBlocks()) {
             livingDataMap.put(block, new BlockLivingData<>());
         }
-        if (MipsFunction.isCaller(function)) {
-            this.assignedPRegs.add(AReg.ra);
-        }
     }
 
     public void run() {
@@ -56,6 +55,9 @@ public class VReg2PReg {
         globalAllocation();
         for (MipsBlock block : function.getBlocks()) {
             new LocalVReg2PReg(block).localAllocation();
+        }
+        if (MipsFunction.isCaller(function)) {
+            this.assignedPRegs.add(AReg.ra);
         }
         refill();
         function.fillStackSize();
@@ -137,8 +139,9 @@ public class VReg2PReg {
             function.getEntry().addInstruction(
                 new Store(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset))
             );
-            function.getExit().insertAfter(null,
-                new Load(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset))
+            function.getExit().insertAfter(
+                new Load(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset)),
+                null
             );
             currentOffset += 4;
         }
@@ -191,7 +194,7 @@ public class VReg2PReg {
             BlockLivingData.minus(local, in);
             BlockLivingData.minus(local, out);
             // local集初始化为空，直接加即可
-            livingData.getLocal().addAll(in);
+            livingData.getLocal().addAll(local);
         }
     }
 
@@ -282,7 +285,9 @@ public class VReg2PReg {
                 t = nodes.stream().min((o1, o2) -> {
                     int priority1 = priorityMap.get(o1);
                     int priority2 = priorityMap.get(o2);
-                    return priority1 / neighborsLeft.get(o1) - priority2 / neighborsLeft.get(o2);
+                    int divisor1 = neighborsLeft.get(o1) == 0 ? 1 : neighborsLeft.get(o1);
+                    int divisor2 = neighborsLeft.get(o2) == 0 ? 1 : neighborsLeft.get(o2);
+                    return priority1 / divisor1 - priority2 / divisor2;
                 }).get();
                 bucketMap.get(neighborsLeft.get(t)).remove(t);
             } else {
@@ -291,7 +296,9 @@ public class VReg2PReg {
                 t = bucket.stream().min((o1, o2) -> {
                     int priority1 = priorityMap.get(o1);
                     int priority2 = priorityMap.get(o2);
-                    return priority1 / neighborsLeft.get(o1) - priority2 / neighborsLeft.get(o2);
+                    int divisor1 = neighborsLeft.get(o1) == 0 ? 1 : neighborsLeft.get(o1);
+                    int divisor2 = neighborsLeft.get(o2) == 0 ? 1 : neighborsLeft.get(o2);
+                    return priority1 / divisor1 - priority2 / divisor2;
                 }).get();
                 bucket.remove(t);
             }
@@ -322,7 +329,7 @@ public class VReg2PReg {
                 allocateSpillLoc(t);
                 spilledVRegs.add(t);
             } else {
-                PReg color = choosePReg(t, unavailablePRegs);
+                PReg color = choosePRegGlobal(t, unavailablePRegs);
                 colorMap.put(t, color);
                 assignedPRegs.add(color);
                 inGlobalGraph.put(t, true);
@@ -335,7 +342,7 @@ public class VReg2PReg {
      * 相较Ref，去除了caller/ee save（认为这种情况没有可用的pReg）
      * 此外，原实现没有处理heuristic全部失效的情况，此处补上。
      */
-    private PReg choosePReg(VReg t, HashSet<PReg> unavailablePRegs) {
+    private PReg choosePRegGlobal(VReg t, HashSet<PReg> unavailablePRegs) {
         for (VReg vReg : globalConflictGraph.getNeighbors(t)) {
             if (!inGlobalGraph.get(vReg)) {
                 for (VReg z : globalConflictGraph.getNeighbors(vReg)) {
@@ -404,6 +411,30 @@ public class VReg2PReg {
 
         public LocalVReg2PReg(MipsBlock block) {
             this.block = block;
+        }
+
+
+        private PReg choosePRegLocal(VReg t, HashSet<PReg> unavailablePRegs) {
+            for (VReg vReg : localConflictGraph.getNeighbors(t)) {
+                if (!inLocalGraph.getOrDefault(vReg, false)) {
+                    for (VReg z : localConflictGraph.getNeighbors(vReg)) {
+                        if (inLocalGraph.getOrDefault(z, false) && !localConflictGraph.getNeighbors(z).contains(t)) {
+                            return colorMap.get(z);
+                        }
+                    }
+                }
+            }
+            for (PReg pReg : assignedPRegs) {
+                if (!unavailablePRegs.contains(pReg)) {
+                    return pReg;
+                }
+            }
+            for (PReg pReg : Config.availPRegs) {
+                if (!unavailablePRegs.contains(pReg)) {
+                    return pReg;
+                }
+            }
+            throw new RuntimeException("No available pReg found!!");
         }
 
         /**
@@ -554,6 +585,7 @@ public class VReg2PReg {
                 for (VReg t : instruction.getUseVRegs()) {
                     endTimeR.putIfAbsent(t, timeCount); // 注：原文逻辑有问题，此处只能赋值一次，后续的应该全部忽略
                     live.add(t);
+                    localConflictGraph.addVertex(t);
                 }
             }
             timeCount++;
@@ -571,7 +603,7 @@ public class VReg2PReg {
         }
 
         private void buildLocalBuckets() {
-            int maxNeighbors = localConflictGraph.getVertices().stream().map(localConflictGraph::getEdgeCount).max(Integer::compare).get();
+            int maxNeighbors = localConflictGraph.getVertices().stream().map(localConflictGraph::getEdgeCount).max(Integer::compare).orElse(0);
             localBucketMap = new HashMap<>();
             for (int i = 0 ; i <= maxNeighbors ; i++) {
                 localBucketMap.put(i, new HashSet<>());
@@ -589,12 +621,13 @@ public class VReg2PReg {
             // 这样的效果就是，一定能被分配的被压入栈，不能被分配的留在图中
             int i = 0;
             while (i < numberRegisters) {
-                if (!localBucketMap.get(i).isEmpty()) {
+                if (!localBucketMap.getOrDefault(i, new HashSet<>()).isEmpty()) {
                     VReg t = localBucketMap.get(i).iterator().next();
+                    localBucketMap.get(i).remove(t);
                     stack.push(t);
                     inLocalGraph.put(t, false); // 原文是下面的u = false，似乎有问题，此处已修正
                     for (VReg u : localConflictGraph.getNeighbors(t)) {
-                        if (inLocalGraph.get(u)) {
+                        if (inLocalGraph.getOrDefault(u,false)) {
                             localBucketMap.get(localNeighborsLeft.get(u)).remove(u);
                             localNeighborsLeft.compute(u, (k,v) -> v == null ? null : v - 1); // just to eliminate warnings...
                             localBucketMap.get(localNeighborsLeft.get(u)).add(u);
@@ -629,7 +662,7 @@ public class VReg2PReg {
                         Iterator<VReg> it = new HashSet<>(live).iterator();
                         while (it.hasNext()) {
                             VReg vReg = it.next();
-                            if (colorMap.containsKey(vReg) || !inLocalGraph.get(vReg)) {
+                            if (colorMap.containsKey(vReg) || !inLocalGraph.getOrDefault(vReg, false)) {
                                 // 较原文的修正
                                 // 分配过了（e.g. 全局变量，未被分配的一定是局部变量），或者已经从图里取出到栈内，就不应分配
                                 continue;
@@ -684,7 +717,7 @@ public class VReg2PReg {
                         live.add(t);
                         // 修正了原文逻辑，这里只对没入栈的分配
                         // 再次，没被分配寄存器的一定是局部变量，不用担心全局变量混进来
-                        if (!colorMap.containsKey(t) && inLocalGraph.get(t)) {
+                        if (!colorMap.containsKey(t) && inLocalGraph.getOrDefault(t, false)) {
                             if (freeRegisters.isEmpty()) {
                                 localSpillRegister(live, block, instruction, freeRegisters);
                             }
@@ -707,7 +740,7 @@ public class VReg2PReg {
                 for (VReg u : localConflictGraph.getNeighbors(t)) {
                     unavailable.add(colorMap.get(u));
                 }
-                PReg color = choosePReg(t, unavailable);
+                PReg color = choosePRegLocal(t, unavailable);
                 colorMap.put(t, color);
                 assignedPRegs.add(color);
                 inLocalGraph.put(t, true);

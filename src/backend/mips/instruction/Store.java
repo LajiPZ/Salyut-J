@@ -4,6 +4,7 @@ import backend.mips.operand.Operand;
 import backend.mips.operand.VReg;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Store extends Mem {
 
@@ -18,7 +19,7 @@ public class Store extends Mem {
 
     @Override
     public Set<VReg> getUseVRegs() {
-        return Set.of((VReg) src, (VReg) base);
+        return Set.of(src, base).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override

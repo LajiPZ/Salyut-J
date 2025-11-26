@@ -6,6 +6,7 @@ import backend.mips.operand.VReg;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MulDiv extends Instruction {
 
@@ -29,7 +30,7 @@ public class MulDiv extends Instruction {
 
     @Override
     public Set<VReg> getUseVRegs() {
-        return Set.of((VReg) l, (VReg) r);
+        return Set.of(l, r).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override
@@ -40,8 +41,8 @@ public class MulDiv extends Instruction {
 
     @Override
     public void fillPReg(Map<VReg, PReg> colorMap) {
-        fillPReg(l, colorMap);
-        fillPReg(r, colorMap);
+        l = fillPReg(l, colorMap);
+        r = fillPReg(r, colorMap);
     }
 
     @Override

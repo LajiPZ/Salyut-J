@@ -12,12 +12,12 @@ public class MipsFunction {
     private String name;
     private MipsBlock entry;
     private MipsBlock exit;
-    private ArrayList<MipsBlock> blocks;
+    private LinkedList<MipsBlock> blocks;
     private int stackSize = 0;
 
     public MipsFunction(String name) {
         this.name = name;
-        this.blocks = new ArrayList<>();
+        this.blocks = new LinkedList<>();
     }
 
     public void setStackSize(int stackSize) {

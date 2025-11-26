@@ -7,6 +7,7 @@ import backend.mips.operand.VReg;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Jump extends Branch {
 
@@ -44,7 +45,7 @@ public class Jump extends Branch {
 
     @Override
     public Set<VReg> getUseVRegs() {
-        if (regTarget != null) return Set.of((VReg) regTarget);
+        if (regTarget != null) return Set.of(regTarget).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
         return Set.of();
     }
 
@@ -55,7 +56,7 @@ public class Jump extends Branch {
 
     @Override
     public void fillPReg(Map<VReg, PReg> colorMap) {
-        fillPReg(regTarget, colorMap);
+        regTarget = fillPReg(regTarget, colorMap);
     }
 
     public boolean isCall() {
@@ -64,10 +65,10 @@ public class Jump extends Branch {
 
     @Override
     public String toMIPS() {
-        if (op == Op.jal) {
+        if (op == Op.jr) {
             return op + "\t" + regTarget.toMIPS();
         } else {
-            return op + "\t" + blkTarget.toMIPS();
+            return op + "\t" + blkTarget;
         }
     }
 }

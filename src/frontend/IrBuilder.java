@@ -32,6 +32,8 @@ public class IrBuilder {
     private CompileUnit compileUnit;
     private List<GlobalVariable> globalVariableList;
     private Map<String, Function> functionMap;
+    // 为了保序，我们不得不再开一个容器
+    private List<Function> functionList = new ArrayList<>();
 
     private BBlock insertPoint;
     private Function currentFunction;
@@ -48,13 +50,14 @@ public class IrBuilder {
 
     public IrModule build() {
         compileUnit.build(this);
-        return new IrModule(globalVariableList, functionMap, externalFunctionMap);
+        return new IrModule(globalVariableList, functionList, externalFunctionMap);
     }
 
     public Function registerFunction(String name, DataType dataType, List<FuncFParam> params) {
         // 1. 构建LLVM视角的函数
         Function func = new Function(name, dataType);
         functionMap.put(name, func);
+        functionList.add(func);
         currentFunction = func;
 
         for (FuncFParam fParam : params) {

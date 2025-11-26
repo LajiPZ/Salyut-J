@@ -6,6 +6,7 @@ import backend.mips.operand.VReg;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Shift extends Instruction {
 
@@ -26,15 +27,15 @@ public class Shift extends Instruction {
 
     @Override
     public Set<VReg> getDefVRegs() {
-        return Set.of((VReg) res);
+        return Set.of(res).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override
     public Set<VReg> getUseVRegs() {
         if (shiftAmount instanceof VReg) {
-            return Set.of((VReg) src, (VReg) shiftAmount);
+            return Set.of(src, shiftAmount).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
         }
-        return Set.of((VReg) src);
+        return Set.of(src).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override
@@ -46,9 +47,9 @@ public class Shift extends Instruction {
 
     @Override
     public void fillPReg(Map<VReg, PReg> colorMap) {
-        fillPReg(res, colorMap);
-        fillPReg(src, colorMap);
-        fillPReg(shiftAmount, colorMap);
+        res = fillPReg(res, colorMap);
+        src = fillPReg(src, colorMap);
+        shiftAmount = fillPReg(shiftAmount, colorMap);
     }
 
     @Override

@@ -107,6 +107,7 @@ public class MipsBlock {
             stringBuilder.append("    syscall\n");
         } else {
             for (Instruction instruction : instructions) {
+                stringBuilder.append("  ");
                 stringBuilder.append(instruction.toMIPS()).append("\n");
             }
         }

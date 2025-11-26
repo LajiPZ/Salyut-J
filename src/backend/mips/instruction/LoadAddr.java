@@ -6,6 +6,7 @@ import backend.mips.operand.VReg;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class LoadAddr extends Instruction {
     // TODO: This is a MARS psuedo-inst, can we eliminate it?
@@ -19,7 +20,7 @@ public class LoadAddr extends Instruction {
 
     @Override
     public Set<VReg> getDefVRegs() {
-        return Set.of((VReg) dest);
+        return Set.of(dest).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override
@@ -35,7 +36,7 @@ public class LoadAddr extends Instruction {
 
     @Override
     public void fillPReg(Map<VReg, PReg> colorMap) {
-        fillPReg(dest, colorMap);
+        dest = fillPReg(dest, colorMap);
     }
 
     @Override

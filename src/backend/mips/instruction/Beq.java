@@ -7,6 +7,7 @@ import backend.mips.operand.VReg;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Beq extends Branch {
 
@@ -39,7 +40,7 @@ public class Beq extends Branch {
 
     @Override
     public Set<VReg> getUseVRegs() {
-        return Set.of((VReg) left, (VReg) right);
+        return Set.of(left, right).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override
@@ -50,8 +51,8 @@ public class Beq extends Branch {
 
     @Override
     public void fillPReg(Map<VReg, PReg> colorMap) {
-        fillPReg(left, colorMap);
-        fillPReg(right, colorMap);
+        left = fillPReg(left, colorMap);
+        right = fillPReg(right, colorMap);
     }
 
     @Override

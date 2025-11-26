@@ -7,6 +7,7 @@ import backend.mips.operand.VReg;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class CP1RegMove extends Instruction{
     public enum Op {
@@ -27,13 +28,13 @@ public class CP1RegMove extends Instruction{
 
     @Override
     public Set<VReg> getDefVRegs() {
-        if (op.ordinal() < RegMove.Op.SEP.ordinal()) return Set.of((VReg) operand);
+        if (op.ordinal() < RegMove.Op.SEP.ordinal()) return Set.of(operand).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
         return Set.of();
     }
 
     @Override
     public Set<VReg> getUseVRegs() {
-        if (op.ordinal() > RegMove.Op.SEP.ordinal()) return Set.of((VReg) operand);
+        if (op.ordinal() > RegMove.Op.SEP.ordinal()) return Set.of(operand).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
         return Set.of();
     }
 
@@ -44,7 +45,7 @@ public class CP1RegMove extends Instruction{
 
     @Override
     public void fillPReg(Map<VReg, PReg> colorMap) {
-        fillPReg(operand, colorMap);
+        operand = fillPReg(operand, colorMap);
     }
 
     @Override

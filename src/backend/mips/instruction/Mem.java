@@ -45,9 +45,9 @@ public class Mem extends Instruction {
 
     @Override
     public void fillPReg(Map<VReg, PReg> colorMap) {
-        fillPReg(src, colorMap);
-        fillPReg(base, colorMap);
-        fillPReg(offset, colorMap);
+        src = fillPReg(src, colorMap);
+        base = fillPReg(base, colorMap);
+        offset = fillPReg(offset, colorMap);
     }
 
     @Override

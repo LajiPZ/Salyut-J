@@ -6,6 +6,7 @@ import backend.mips.operand.VReg;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Calc extends Instruction {
 
@@ -31,12 +32,12 @@ public class Calc extends Instruction {
 
     @Override
     public Set<VReg> getDefVRegs() {
-        return Set.of((VReg) res);
+        return Set.of(res).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override
     public Set<VReg> getUseVRegs() {
-        return Set.of((VReg) leftOperand, (VReg) rightOperand);
+        return Set.of(leftOperand, rightOperand).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override
@@ -48,13 +49,13 @@ public class Calc extends Instruction {
 
     @Override
     public void fillPReg(Map<VReg, PReg> colorMap) {
-        fillPReg(res, colorMap);
-        fillPReg(leftOperand, colorMap);
-        fillPReg(rightOperand, colorMap);
+        res = fillPReg(res, colorMap);
+        leftOperand = fillPReg(leftOperand, colorMap);
+        rightOperand = fillPReg(rightOperand, colorMap);
     }
 
     @Override
     public String toMIPS() {
-        return op + "\t" + res + ", " + leftOperand.toMIPS() + ", " + rightOperand.toMIPS();
+        return op + "\t" + res.toMIPS() + ", " + leftOperand.toMIPS() + ", " + rightOperand.toMIPS();
     }
 }

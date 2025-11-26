@@ -10,6 +10,7 @@ import backend.mips.operand.AReg;
 import backend.mips.operand.Immediate;
 import backend.mips.operand.Operand;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +29,9 @@ public class RemovePhi {
 
     public void run(){
         HashMap<MipsBlock, List<Instruction>> toBeInserted = new HashMap<>();
+
+        // Well, to prevent concurrentModification, we have to do something stupid...
+        ArrayList<MipsBlock> toBeAdded = new ArrayList<>();
 
         for (MipsBlock block : function.getBlocks()) {
             HashMap<MipsBlock, MipsBlock> intermediateBlkMap = new HashMap<>();
@@ -73,17 +77,21 @@ public class RemovePhi {
 
             // 最后添加中间块的跳转指令
             for (MipsBlock newBlk : intermediateBlkMap.values()) {
-                function.addBlock(newBlk);
+                // function.addBlock(newBlk);
+                toBeAdded.add(newBlk);
                 newBlk.addInstruction(new Jump(Jump.Op.j, block));
             }
-
-            for (var entry: toBeInserted.entrySet()) {
-                MipsBlock srcBlk = entry.getKey();
-                for (Instruction inst : entry.getValue()) {
-                    // TODO: 如果是并行复制，也要做到先全部赋值到各个temp上，再从temp赋值到phi上
-                    srcBlk.insertBeforeLastInstruction(inst);
-                }
+        }
+        for (var entry: toBeInserted.entrySet()) {
+            System.out.println(function.toString() + entry.getKey());
+            MipsBlock srcBlk = entry.getKey();
+            for (Instruction inst : entry.getValue()) {
+                // TODO: 如果是并行复制，也要做到先全部赋值到各个temp上，再从temp赋值到phi上
+                srcBlk.insertBeforeLastInstruction(inst);
             }
+        }
+        for (MipsBlock newBlk : toBeAdded) {
+            function.addBlock(newBlk);
         }
     }
 

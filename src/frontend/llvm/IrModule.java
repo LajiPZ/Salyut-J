@@ -12,14 +12,14 @@ import java.util.stream.Collectors;
 
 public class IrModule {
     private List<GlobalVariable> globalVariableList;
-    private Map<String, Function> functionMap;
+    private List<Function> functionList;
     private Map<String, Function> externalFunctionMap;
 
     public IrModule(List<GlobalVariable> globalVariableList,
-                    Map<String, Function> functionMap,
+                    List<Function> functionList,
                     Map<String, Function> externalFunctionMap) {
         this.globalVariableList = globalVariableList;
-        this.functionMap = functionMap;
+        this.functionList = functionList;
         this.externalFunctionMap = externalFunctionMap;
     }
 
@@ -28,7 +28,7 @@ public class IrModule {
     }
 
     public List<Function> getFunctions() {
-        return functionMap.values().stream().toList();
+        return functionList;
     }
 
     public void printIR(String fileName) throws IOException {
@@ -46,7 +46,7 @@ public class IrModule {
         for (GlobalVariable globalVariable : globalVariableList) {
             stringBuilder.append(globalVariable.toLLVM() + "\n");
         }
-        for (Function function : functionMap.values()) {
+        for (Function function : functionList) {
             stringBuilder.append(function.toString()).append("\n");
         }
         writer.write(stringBuilder.toString());
