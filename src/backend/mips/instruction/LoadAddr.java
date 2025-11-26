@@ -4,6 +4,7 @@ import backend.mips.operand.Operand;
 import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,6 +27,11 @@ public class LoadAddr extends Instruction {
     @Override
     public Set<VReg> getUseVRegs() {
         return Set.of();
+    }
+
+    @Override
+    public List<Operand> getDefOperands() {
+        return List.of(dest);
     }
 
     @Override

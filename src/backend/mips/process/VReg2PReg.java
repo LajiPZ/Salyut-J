@@ -13,7 +13,7 @@ import backend.mips.utils.spillLoc.SpillLoc;
 import java.util.*;
 
 // TODO: concurrent modification; 不得不更改Block内Instruction的数据结构
-// TODO: 分配逻辑似乎有问题，似乎分配局部变量时，会分配一个下面仍活跃的局部变量
+// TODO: 分配逻辑有问题，全局变量的分配有冲突
 
 /**
  * Ref: Ep.13, Building an Optimizing Compiler
@@ -135,10 +135,20 @@ public class VReg2PReg {
         }
 
         // 2. store/recover the allocated registers
+        // 在第一个调整$fp的指令后，加保存指令
+        Instruction target = null;
+        for (Instruction inst : function.getEntry().getInstructions()) {
+            if (inst instanceof Calc && inst.getDefOperands().contains(AReg.fp)) {
+                target = inst;
+                break;
+            }
+        }
+
         function.enlargeStackSize(4 * assignedPRegs.size());
         for (PReg pReg : assignedPRegs) {
-            function.getEntry().addInstruction(
-                new Store(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset))
+            function.getEntry().insertAfter(
+                new Store(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset)),
+                target
             );
             function.getExit().insertAfter(
                 new Load(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset)),
@@ -348,7 +358,8 @@ public class VReg2PReg {
             if (!inGlobalGraph.get(vReg)) {
                 for (VReg z : globalConflictGraph.getNeighbors(vReg)) {
                     if (inGlobalGraph.get(z) && !globalConflictGraph.getNeighbors(z).contains(t)) {
-                        return colorMap.get(z);
+                        PReg color = colorMap.get(z);
+                        if (!unavailablePRegs.contains(color)) return colorMap.get(z);
                     }
                 }
             }
@@ -420,7 +431,8 @@ public class VReg2PReg {
                 if (!inLocalGraph.getOrDefault(vReg, false)) {
                     for (VReg z : localConflictGraph.getNeighbors(vReg)) {
                         if (inLocalGraph.getOrDefault(z, false) && !localConflictGraph.getNeighbors(z).contains(t)) {
-                            return colorMap.get(z);
+                            PReg color = colorMap.get(z);
+                            if (!unavailablePRegs.contains(color)) return colorMap.get(z);
                         }
                     }
                 }

@@ -5,6 +5,7 @@ import backend.mips.operand.Operand;
 import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,6 +37,12 @@ public class CP1RegMove extends Instruction{
     public Set<VReg> getUseVRegs() {
         if (op.ordinal() > RegMove.Op.SEP.ordinal()) return Set.of(operand).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
         return Set.of();
+    }
+
+    @Override
+    public List<Operand> getDefOperands() {
+        if (op.ordinal() < RegMove.Op.SEP.ordinal()) return List.of(operand);
+        return List.of();
     }
 
     @Override

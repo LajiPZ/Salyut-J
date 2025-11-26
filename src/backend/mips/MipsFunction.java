@@ -28,6 +28,10 @@ public class MipsFunction {
         stackSize += by;
     }
 
+    public int getStackSize() {
+        return stackSize;
+    }
+
     public void setKeyBlocks(MipsBlock entry, MipsBlock exit) {
         this.entry = entry;
         this.exit = exit;
@@ -95,7 +99,21 @@ public class MipsFunction {
     }
 
     public void fillStackSize() {
-        // TODO
+        exit.insertBeforeLastInstruction(
+            new Calc(
+                Calc.Op.addiu,
+                AReg.sp, AReg.sp, new Immediate(getStackSize())
+            )
+        );
+        // 在第一个调整$fp的指令后加
+        Instruction target = null;
+        for (Instruction inst : entry.getInstructions()) {
+            if (inst instanceof Calc && inst.getDefOperands().contains(AReg.fp)) {
+                target = inst;
+                break;
+            }
+        }
+        entry.insertAfter(new Calc(Calc.Op.addiu, AReg.sp, AReg.sp, new Immediate(-getStackSize())), target);
     }
 
     public static boolean isCaller(MipsFunction function) {

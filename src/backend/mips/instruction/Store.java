@@ -3,6 +3,7 @@ package backend.mips.instruction;
 import backend.mips.operand.Operand;
 import backend.mips.operand.VReg;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,11 @@ public class Store extends Mem {
     @Override
     public Set<VReg> getDefVRegs() {
         return Set.of();
+    }
+
+    @Override
+    public List<Operand> getDefOperands() {
+        return List.of();
     }
 
     @Override

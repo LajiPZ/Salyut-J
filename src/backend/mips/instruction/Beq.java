@@ -5,6 +5,7 @@ import backend.mips.operand.Operand;
 import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -60,4 +61,8 @@ public class Beq extends Branch {
         return op + "\t" + left.toMIPS() + ", " + right.toMIPS() + ", " + target;
     }
 
+    @Override
+    public List<Operand> getDefOperands() {
+        return List.of();
+    }
 }

@@ -4,6 +4,7 @@ import backend.mips.operand.Operand;
 import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,6 +37,11 @@ public class Shift extends Instruction {
             return Set.of(src, shiftAmount).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
         }
         return Set.of(src).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
+    }
+
+    @Override
+    public List<Operand> getDefOperands() {
+        return List.of(res);
     }
 
     @Override

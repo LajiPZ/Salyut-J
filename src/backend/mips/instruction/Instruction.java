@@ -31,6 +31,8 @@ abstract public class Instruction {
     abstract public Set<VReg> getDefVRegs();
     abstract public Set<VReg> getUseVRegs();
 
+    abstract public List<Operand> getDefOperands();
+
     abstract public void replaceOperand(Operand prevOperand, Operand newOperand);
 
     abstract public void fillPReg(Map<VReg, PReg> colorMap);

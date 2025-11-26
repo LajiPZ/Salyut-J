@@ -83,7 +83,6 @@ public class RemovePhi {
             }
         }
         for (var entry: toBeInserted.entrySet()) {
-            System.out.println(function.toString() + entry.getKey());
             MipsBlock srcBlk = entry.getKey();
             for (Instruction inst : entry.getValue()) {
                 // TODO: 如果是并行复制，也要做到先全部赋值到各个temp上，再从temp赋值到phi上

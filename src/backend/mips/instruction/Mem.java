@@ -4,6 +4,7 @@ import backend.mips.operand.Operand;
 import backend.mips.operand.PReg;
 import backend.mips.operand.VReg;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +35,11 @@ public class Mem extends Instruction {
     @Override
     public Set<VReg> getUseVRegs() {
         throw new RuntimeException("abstract Mem shouldn't in PRegAlloc");
+    }
+
+    @Override
+    public List<Operand> getDefOperands() {
+        throw new RuntimeException("abstract Mem shouldn't be here");
     }
 
     @Override

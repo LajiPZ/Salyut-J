@@ -60,6 +60,11 @@ public class Phi extends Instruction {
     }
 
     @Override
+    public List<Operand> getDefOperands() {
+        return List.of(res);
+    }
+
+    @Override
     public void replaceOperand(Operand prevOperand, Operand newOperand) {
         throw new RuntimeException("Phi shouldn't in PRegAlloc");
     }
