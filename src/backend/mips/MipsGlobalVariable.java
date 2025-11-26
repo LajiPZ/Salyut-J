@@ -33,7 +33,7 @@ public class MipsGlobalVariable {
     public static MipsGlobalVariable build(GlobalVariable globalVariable) {
         return new MipsGlobalVariable(
             globalVariable.getType(),
-            globalVariable.getName(),
+            globalVariable.getName() + ".addr",
             globalVariable.getInitList()
         );
     }

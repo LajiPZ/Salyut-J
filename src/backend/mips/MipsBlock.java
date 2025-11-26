@@ -5,6 +5,7 @@ import backend.mips.instruction.Instruction;
 import backend.mips.instruction.Phi;
 import frontend.llvm.value.BBlock;
 import frontend.llvm.value.instruction.Inst;
+import utils.Counter;
 
 import java.util.*;
 
@@ -15,6 +16,8 @@ public class MipsBlock {
     // Control flow...
     private Set<MipsBlock> predecessors = new HashSet<>();
     private Set<MipsBlock> successors = new HashSet<>();
+
+    private static Counter counter = new Counter();
 
     public MipsBlock(String name) {
         this.name = name;
@@ -49,7 +52,7 @@ public class MipsBlock {
     }
 
     public MipsBlock(BBlock block) {
-        this(".L" + block.getName());
+        this(".L" + counter.get() + "_IR_" +  block.getName());
     }
 
     public static void addEdge(MipsBlock from, MipsBlock to) {
