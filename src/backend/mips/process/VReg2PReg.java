@@ -249,6 +249,13 @@ public class VReg2PReg {
                     if (!local.contains(use)) liveAfter.add(use);
                 }
             }
+            for (VReg reg1 : liveAfter) {
+                for (VReg reg2 : liveAfter) {
+                    if (!reg1.equals(reg2)) {
+                        graph.addEdge(reg1, reg2);
+                    }
+                }
+            }
         }
         globalConflictGraph = graph;
     }
@@ -605,7 +612,6 @@ public class VReg2PReg {
             for (VReg t : live) {
                 startTimeR.put(t, timeCount);
                 for (VReg u : live) {
-                    // TODO: IMHO this is redundant
                     if (u != t) {
                         localConflictGraph.addVertex(u);
                         localConflictGraph.addVertex(t);
