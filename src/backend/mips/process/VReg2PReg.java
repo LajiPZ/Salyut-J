@@ -13,7 +13,6 @@ import backend.mips.utils.spillLoc.SpillLoc;
 import java.util.*;
 
 // TODO: concurrent modification; 不得不更改Block内Instruction的数据结构
-// TODO: 分配逻辑有问题，局部变量错选了一个还在活跃的全局变量
 
 /**
  * Ref: Ep.13, Building an Optimizing Compiler
@@ -24,6 +23,7 @@ public class VReg2PReg {
     static class Config {
         // 本设计中，全局和局部的可用寄存器均一致
         // 溢出所用寄存器也通过局部变量分配完成，不需要预留寄存器处理溢出变量
+        // 代价是，调用的保存/恢复开销很大，因为无法预知局部变量是哪些，就算局部变量也要保存
         static final List<PReg> availPRegs = List.of(
             AReg.t[0], AReg.t[1], AReg.t[2], AReg.t[3],
             AReg.t[4], AReg.t[5], AReg.t[6], AReg.t[7],
