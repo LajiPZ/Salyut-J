@@ -575,8 +575,13 @@ public class VReg2PReg {
                     maxPressure = pressure;
                 }
             }
+            // liveThrough表示整个块内活跃，且有引用的变量
+            // 由上面过程可知，我们应该把它从liveStart里去除
+            liveStart.removeAll(liveThrough);
+
             liveEnd = new HashSet<>(livingDataMap.get(block).getOut());
             liveEnd.removeAll(liveThrough);
+            liveEnd.removeAll(liveTransparent);
         }
 
         private void buildLocalConflictGraph() {
@@ -622,7 +627,7 @@ public class VReg2PReg {
         }
 
         private void buildLocalBuckets() {
-            int maxNeighbors = localConflictGraph.getVertices().stream().map(localConflictGraph::getEdgeCount).max(Integer::compare).orElse(0);
+            int maxNeighbors = localConflictGraph.getVertices().stream().map(localConflictGraph::getEdgeCount).max(Integer::compare).orElse(0); // 这个orElse其实不用
             localBucketMap = new HashMap<>();
             for (int i = 0 ; i <= maxNeighbors ; i++) {
                 localBucketMap.put(i, new HashSet<>());
@@ -677,7 +682,7 @@ public class VReg2PReg {
                 live.removeAll(instruction.getDefVRegs());
                 live.addAll(instruction.getUseVRegs());
                 if (startTimeI.get(instruction) > finishTime) { // 考虑finishTimeI就是finishTime
-                    if (live.size() - liveThrough.size() >= numberRegisters) { // 类似着色，只对局部变量数超出可用寄存器的情况进行处理
+                    if (live.size() - liveThrough.size() - liveTransparent.size() >= numberRegisters) { // 类似着色，只对局部变量数超出可用寄存器的情况进行处理
                         Iterator<VReg> it = new HashSet<>(live).iterator();
                         while (it.hasNext()) {
                             VReg vReg = it.next();
