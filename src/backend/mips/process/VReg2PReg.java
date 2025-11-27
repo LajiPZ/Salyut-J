@@ -13,7 +13,7 @@ import backend.mips.utils.spillLoc.SpillLoc;
 import java.util.*;
 
 // TODO: concurrent modification; 不得不更改Block内Instruction的数据结构
-// TODO: 分配逻辑有问题，全局变量的分配有冲突
+// TODO: 分配逻辑有问题，局部变量错选了一个还在活跃的全局变量
 
 /**
  * Ref: Ep.13, Building an Optimizing Compiler
