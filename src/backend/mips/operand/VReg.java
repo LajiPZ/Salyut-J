@@ -1,5 +1,6 @@
 package backend.mips.operand;
 
+import settings.Settings;
 import utils.Counter;
 
 public class VReg extends Operand {
@@ -14,6 +15,7 @@ public class VReg extends Operand {
 
     @Override
     public String toMIPS() {
-        throw new RuntimeException("VReg shouldn't in final result");
+        if (!Settings.DebugConfig.printMIPSBeforePRegAlloc) throw new RuntimeException("VReg shouldn't in final result");
+        return this.toString();
     }
 }

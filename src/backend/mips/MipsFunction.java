@@ -9,14 +9,17 @@ import frontend.llvm.value.Function;
 import java.util.*;
 
 public class MipsFunction {
-    private String name;
+    private final String name;
+    private final Function irFunction;
+
     private MipsBlock entry;
     private MipsBlock exit;
     private LinkedList<MipsBlock> blocks;
     private int stackSize = 0;
 
-    public MipsFunction(String name) {
-        this.name = name;
+    public MipsFunction(Function irFunction) {
+        this.name = irFunction.getName();
+        this.irFunction = irFunction;
         this.blocks = new LinkedList<>();
     }
 
@@ -53,15 +56,15 @@ public class MipsFunction {
         return exit;
     }
 
-    public static MipsFunction build(Function func, MipsModule top) {
-        MipsBlock entry = new MipsBlock(func.getName() + ".entry");
-        MipsBlock exit = new MipsBlock(func.getName() + ".exit");
+    public MipsFunction build(MipsModule top) {
+        MipsBlock entry = new MipsBlock(irFunction.getName() + ".entry");
+        MipsBlock exit = new MipsBlock(irFunction.getName() + ".exit");
 
-        MipsBuilder builder = new MipsBuilder(top, func.getBBlocks(), entry, exit);
-        MipsFunction mipsFunction = new MipsFunction(func.getName());
+        MipsBuilder builder = new MipsBuilder(top, irFunction.getBBlocks(), entry, exit);
+        MipsFunction mipsFunction = this;
         mipsFunction.setKeyBlocks(entry, exit);
 
-        if (!func.getName().equals("main")) {
+        if (!irFunction.getName().equals("main")) {
             // 保存调用者的frame pointer；存到被调用函数（此函数）的栈内
             entry.addInstruction(
                 new Store(Mem.Align.w, AReg.fp, AReg.sp, new Immediate(-4))
@@ -72,12 +75,12 @@ public class MipsFunction {
         );
 
         entry.addInstruction(
-            builder.addParameters(func.getParams())
+            builder.addParameters(irFunction.getParams())
         );
 
 
         mipsFunction.addBlock(entry);
-        for (BBlock bblock : func.getBBlocks()) {
+        for (BBlock bblock : irFunction.getBBlocks()) {
             mipsFunction.addBlock(MipsBlock.build(bblock, builder));
         }
         mipsFunction.addBlock(exit);
@@ -86,7 +89,7 @@ public class MipsFunction {
         // 但在后续分配PReg时，由于溢出，栈大小会变，所以不是最终大小
         mipsFunction.setStackSize(builder.getStackSize());
         // Recover $fp
-        if (!func.getName().equals("main")) {
+        if (!irFunction.getName().equals("main")) {
             exit.addInstruction(
                 new Load(Mem.Align.w, AReg.fp, AReg.fp, new Immediate(-4))
             );

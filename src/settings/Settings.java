@@ -9,6 +9,8 @@ final public class Settings {
         public static String errOut = "error.txt";
         public static String IROut = "llvm_ir.txt";
         public static String MIPSOut = "mips.txt";
+        // Debug
+        public static String MIPSBeforePRegAlloc = "mipsBeforePRegAlloc.txt";
     }
 
     public static class PrintConfig {
@@ -18,5 +20,9 @@ final public class Settings {
         public static boolean printError = false;
         public static boolean printIR = true;
         public static boolean printMIPS = true;
+    }
+
+    public static class DebugConfig {
+        public static boolean printMIPSBeforePRegAlloc = true;
     }
 }

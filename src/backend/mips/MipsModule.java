@@ -5,6 +5,7 @@ import backend.mips.process.VReg2PReg;
 import frontend.llvm.IrModule;
 import frontend.llvm.value.Function;
 import frontend.llvm.value.GlobalVariable;
+import settings.Settings;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -28,16 +29,19 @@ public class MipsModule {
             ).collect(Collectors.toCollection(LinkedList::new))
         );
         for (Function func : module.getFunctions()) {
-            MipsFunction mFunc = MipsFunction.build(func, this);
+            MipsFunction mFunc = new MipsFunction(func);
             functions.add(mFunc);
             functionMap.put(func, mFunc);
             if (func.getName().equals("main")) {
                 mainFunction = mFunc;
             }
         }
+        for (MipsFunction function: functions) {
+            function.build(this);
+        }
     }
 
-    public void runPostBuildProcessing() {
+    public void runPostBuildProcessing() throws IOException {
         runRemovePhi();
         runAllocatePReg();
     }
@@ -48,7 +52,10 @@ public class MipsModule {
         }
     }
 
-    private void runAllocatePReg() {
+    private void runAllocatePReg() throws IOException {
+        if (Settings.DebugConfig.printMIPSBeforePRegAlloc) {
+            this.printMIPS(Settings.FilePath.MIPSBeforePRegAlloc);
+        }
         for (MipsFunction func : functions) {
             new VReg2PReg(func).run();
         }
