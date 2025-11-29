@@ -12,6 +12,7 @@ import frontend.llvm.value.constant.IntConstant;
 import frontend.llvm.value.instruction.ICall;
 import frontend.llvm.value.instruction.Inst;
 import utils.Counter;
+import utils.DoublyLinkedList;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -50,7 +51,8 @@ public class MipsBuilder {
 
     private void buildValueMap() {
         for (BBlock bblock : blockMap.keySet()) {
-            for (Inst instruction : bblock.getInstructions()) {
+            for (DoublyLinkedList.Node<Inst> node : bblock.getInstructions()) {
+                Inst instruction = node.getValue();
                 if (instruction.getType() != null) {
                     // TODO: 要不要考虑Void?
                     valueMap.put(instruction, new VReg());

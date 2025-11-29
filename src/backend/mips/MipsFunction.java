@@ -5,6 +5,7 @@ import backend.mips.operand.AReg;
 import backend.mips.operand.Immediate;
 import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Function;
+import utils.DoublyLinkedList;
 
 import java.util.*;
 
@@ -109,10 +110,11 @@ public class MipsFunction {
             )
         );
         // 在第一个调整$fp的指令后加
-        Instruction target = null;
-        for (Instruction inst : entry.getInstructions()) {
+        DoublyLinkedList.Node<Instruction> target = null;
+        for (DoublyLinkedList.Node<Instruction> node : entry.getInstructions()) {
+            Instruction inst = node.getValue();
             if (inst instanceof Calc && inst.getDefOperands().contains(AReg.fp)) {
-                target = inst;
+                target = node;
                 break;
             }
         }
@@ -121,7 +123,8 @@ public class MipsFunction {
 
     public static boolean isCaller(MipsFunction function) {
         for (MipsBlock block : function.getBlocks()) {
-            for (Instruction inst : block.getInstructions()) {
+            for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
+                Instruction inst = node.getValue();
                 if (inst instanceof Jump jump && jump.isCall()) {
                     return true;
                 }

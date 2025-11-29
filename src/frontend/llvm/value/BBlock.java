@@ -1,17 +1,19 @@
 package frontend.llvm.value;
 
+import backend.mips.instruction.Instruction;
 import frontend.llvm.value.instruction.Inst;
+import utils.DoublyLinkedList;
 
 import java.util.ArrayList;
 
 public class BBlock extends Value {
     private Function atFunction;
-    private ArrayList<Inst> instructions;
+    private DoublyLinkedList<Inst> instructions;
 
     public BBlock(Function atFunction) {
         super("" + Value.counter.get(), null);
         this.atFunction = atFunction;
-        this.instructions = new ArrayList<>();
+        this.instructions = new DoublyLinkedList<>();
     }
 
     public Function getFunction() {
@@ -19,14 +21,16 @@ public class BBlock extends Value {
     }
 
     public void addInstruction(Inst inst) {
-        instructions.add(inst);
+        new DoublyLinkedList.Node<>(inst).insertIntoTail(instructions);
     }
 
     public Inst getLastInstruction() {
-        return instructions.isEmpty() ? null : instructions.get(instructions.size() - 1);
+        DoublyLinkedList.Node<Inst> node =  instructions.getTail();
+        if (node == null) return null;
+        return node.getValue();
     }
 
-    public ArrayList<Inst> getInstructions() {
+    public DoublyLinkedList<Inst> getInstructions() {
         return instructions;
     }
 
@@ -34,7 +38,8 @@ public class BBlock extends Value {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("\t").append(getName()).append(":\n");
-        for (Inst inst : instructions) {
+        for (DoublyLinkedList.Node<Inst> node : instructions) {
+            Inst inst = node.getValue();
             sb.append("\t\t").append(inst.toLLVM()).append("\n");
         }
         return sb.toString();

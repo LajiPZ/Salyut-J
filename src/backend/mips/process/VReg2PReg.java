@@ -9,10 +9,10 @@ import backend.mips.utils.UndirectedGraph;
 import backend.mips.utils.spillLoc.CP1SpillLoc;
 import backend.mips.utils.spillLoc.MemSpillLoc;
 import backend.mips.utils.spillLoc.SpillLoc;
+import utils.DoublyLinkedList;
 
 import java.util.*;
 
-// TODO: concurrent modification; 不得不更改Block内Instruction的数据结构
 
 /**
  * Ref: Ep.13, Building an Optimizing Compiler
@@ -24,6 +24,7 @@ public class VReg2PReg {
         // 本设计中，全局和局部的可用寄存器均一致
         // 溢出所用寄存器也通过局部变量分配完成，不需要预留寄存器处理溢出变量
         // 代价是，调用的保存/恢复开销很大，因为无法预知局部变量是哪些，就算局部变量也要保存
+        // TODO:分级选取可用的寄存器，应该可以解决这个问题
         static final List<PReg> availPRegs = List.of(
             AReg.t[0], AReg.t[1], AReg.t[2], AReg.t[3],
             AReg.t[4], AReg.t[5], AReg.t[6], AReg.t[7],
@@ -41,6 +42,8 @@ public class VReg2PReg {
     private final HashSet<PReg> assignedPRegs = new HashSet<>();
     private final HashSet<VReg> spilledVRegs = new HashSet<>();
     private final HashMap<VReg, PReg> colorMap = new HashMap<>();
+
+    private final HashSet<PReg> protectedPRegs = new HashSet<>();
 
     public VReg2PReg(MipsFunction function) {
         this.function = function;
@@ -64,7 +67,9 @@ public class VReg2PReg {
         function.fillStackSize();
     }
 
-    private final HashSet<CP1Reg> availCP1RegForSpill = new HashSet<>(Arrays.asList(CP1Reg.f));
+    // 如果只是基于栈来处理溢出，简单加就可以
+    // 这里基于CP1溢出的话，其管理就必须对于编译单元全体而言，因而是static
+    private final static HashSet<CP1Reg> availCP1RegForSpill = new HashSet<>(Arrays.asList(CP1Reg.f));
     private HashMap<VReg, SpillLoc> spillLocMap = new HashMap<>();
     private int currentOffset = 0; // 从$sp往上，依次是spilledReg、保存寄存器
 
@@ -96,7 +101,7 @@ public class VReg2PReg {
         return spillLocMap.get(vReg);
     }
 
-    public Instruction getSpillLoad(VReg dest, SpillLoc src) {
+    public Instruction getSpillLoad(Operand dest, SpillLoc src) {
         if (src instanceof CP1SpillLoc cp1Loc) {
             return new CP1RegMove(
                 CP1RegMove.Op.mfc1, dest, cp1Loc.getReg()
@@ -111,7 +116,7 @@ public class VReg2PReg {
         }
     }
 
-    public Instruction getSpillStore(VReg src, SpillLoc dest) {
+    public Instruction getSpillStore(Operand src, SpillLoc dest) {
         if (dest instanceof CP1SpillLoc cp1Loc) {
             return new CP1RegMove(
                 CP1RegMove.Op.mtc1, src, cp1Loc.getReg()
@@ -129,17 +134,19 @@ public class VReg2PReg {
     private void refill() {
         // 1. refill
         for (MipsBlock block : function.getBlocks()) {
-            for (Instruction instruction : block.getInstructions()) {
+            for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
+                Instruction instruction = node.getValue();
                 instruction.fillPReg(colorMap);
             }
         }
 
-        // 2. store/recover the allocated registers
+        // 2. store/recover the allocated global registers
         // 在第一个调整$fp的指令后，加保存指令
-        Instruction target = null;
-        for (Instruction inst : function.getEntry().getInstructions()) {
+        DoublyLinkedList.Node<Instruction> target = null;
+        for (DoublyLinkedList.Node<Instruction> node : function.getEntry().getInstructions()) {
+            Instruction inst = node.getValue();
             if (inst instanceof Calc && inst.getDefOperands().contains(AReg.fp)) {
-                target = inst;
+                target = node;
                 break;
             }
         }
@@ -172,11 +179,13 @@ public class VReg2PReg {
                     BlockLivingData.union(out, livingDataMap.get(successor).getIn());
                 }
                 Set<VReg> in = new HashSet<>(out);
-                for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
-                    Instruction instruction = block.getInstructions().get(i);
+                Iterator<DoublyLinkedList.Node<Instruction>> backwardIt = block.getInstructions().backwardIterator();
+                while (backwardIt.hasNext()) {
+                    Instruction instruction = backwardIt.next().getValue();
                     BlockLivingData.minus(in, instruction.getDefVRegs());
                     BlockLivingData.union(in, instruction.getUseVRegs());
                 }
+
                 if (!in.equals(livingData.getIn()) || !out.equals(livingData.getOut())) {
                     changed = true;
                     livingData.getIn().clear();
@@ -198,7 +207,8 @@ public class VReg2PReg {
             Set<VReg> in = livingData.getIn();
             Set<VReg> out = livingData.getOut();
             Set<VReg> local = new HashSet<>();
-            for (Instruction instruction : block.getInstructions()) {
+            for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
+                Instruction instruction = node.getValue();
                 BlockLivingData.union(local, instruction.getDefVRegs());
                 BlockLivingData.union(local, instruction.getUseVRegs());
             }
@@ -231,9 +241,10 @@ public class VReg2PReg {
             // 再建立边
             Set<VReg> local = livingData.getLocal();
             HashSet<VReg> liveAfter = new HashSet<>(livingData.getOut());
-            for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
-                // def（如果是全局reg）跟当前除自己以外，所有liveAfter的VReg建立边
-                Instruction instruction = block.getInstructions().get(i);
+
+            Iterator<DoublyLinkedList.Node<Instruction>> backwardIt = block.getInstructions().backwardIterator();
+            while (backwardIt.hasNext()) {
+                Instruction instruction = backwardIt.next().getValue();
                 for (VReg def : instruction.getDefVRegs()) {
                     if (!local.contains(def)) {
                         for (VReg v : liveAfter) {
@@ -249,6 +260,7 @@ public class VReg2PReg {
                     if (!local.contains(use)) liveAfter.add(use);
                 }
             }
+
             for (VReg reg1 : liveAfter) {
                 for (VReg reg2 : liveAfter) {
                     if (!reg1.equals(reg2)) {
@@ -350,6 +362,7 @@ public class VReg2PReg {
                 PReg color = choosePRegGlobal(t, unavailablePRegs);
                 colorMap.put(t, color);
                 assignedPRegs.add(color);
+                protectedPRegs.add(color);
                 inGlobalGraph.put(t, true);
             }
         }
@@ -387,7 +400,8 @@ public class VReg2PReg {
     private HashMap<VReg, Integer> computePriority() {
         HashMap<VReg, Integer> priorityMap = new HashMap<>();
         for (MipsBlock block : function.getBlocks()) {
-            for (Instruction instruction : block.getInstructions()) {
+            for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
+                Instruction instruction = node.getValue();
                 HashSet<VReg> vRegs = new HashSet<>();
                 // 此处认为，point为指令；毕竟操作数可以相同
                 vRegs.addAll(instruction.getDefVRegs());
@@ -492,8 +506,11 @@ public class VReg2PReg {
         private void insertGlobalSpill() {
             HashSet<VReg> insertStore = new HashSet<>(spilledVRegs);
             HashSet<VReg> insertLoad = new HashSet<>();
-            for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
-                Instruction instruction = block.getInstructions().get(i);
+
+            Iterator<DoublyLinkedList.Node<Instruction>> backwardIterator = block.getInstructions().backwardIterator();
+            while (backwardIterator.hasNext()) {
+                DoublyLinkedList.Node<Instruction> node = backwardIterator.next();
+                Instruction instruction = node.getValue();
                 for (VReg t : instruction.getDefVRegs()) {
                     if (spilledVRegs.contains(t)) {
                         if (insertStore.contains(t)) {
@@ -501,7 +518,7 @@ public class VReg2PReg {
                             // insert store T, memory(T) after I
                             block.insertAfter(
                                 getSpillStore(t, getSpillLoc(t)),
-                                instruction
+                                node
                             );
                         }
                         insertLoad.remove(t);
@@ -513,8 +530,10 @@ public class VReg2PReg {
                     }
                 }
             }
+
             HashMap<VReg, VReg> newNameMap = new HashMap<>();
-            for (Instruction instruction : block.getInstructions()) {
+            for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
+                Instruction instruction = node.getValue();
                 for (VReg t : instruction.getUseVRegs()) {
                     if (spilledVRegs.contains(t)) {
                         if (!newNameMap.containsKey(t)) {
@@ -525,7 +544,7 @@ public class VReg2PReg {
                             // insert load memory(T) => newName(t) before I
                             block.insertBefore(
                                 getSpillLoad(newNameMap.get(t), getSpillLoc(t)),
-                                instruction
+                                node
                             );
                         }
                         instruction.replaceOperand(t, newNameMap.get(t));
@@ -549,8 +568,10 @@ public class VReg2PReg {
             localRegisters = new HashSet<>();
             HashSet<VReg> live = new HashSet<>(livingDataMap.get(block).getOut());
             maxPressure = live.size();
-            for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
-                Instruction instruction = block.getInstructions().get(i);
+
+            Iterator<DoublyLinkedList.Node<Instruction>> backwardIterator = block.getInstructions().backwardIterator();
+            while (backwardIterator.hasNext()) {
+                Instruction instruction = backwardIterator.next().getValue();
                 for (VReg vReg : instruction.getDefVRegs()) {
                     live.remove(vReg);
                     liveTransparent.remove(vReg);
@@ -575,6 +596,7 @@ public class VReg2PReg {
                     maxPressure = pressure;
                 }
             }
+
             // liveThrough表示整个块内活跃，且有引用的变量
             // 由上面过程可知，我们应该把它从liveStart里去除
             liveStart.removeAll(liveThrough);
@@ -592,16 +614,18 @@ public class VReg2PReg {
             for (VReg t : live) {
                 endTimeR.put(t, timeCount);
             }
-            for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
-                Instruction instruction = block.getInstructions().get(i);
+
+            Iterator<DoublyLinkedList.Node<Instruction>> backwardIterator = block.getInstructions().backwardIterator();
+            while (backwardIterator.hasNext()) {
+                Instruction instruction = backwardIterator.next().getValue();
                 timeCount++;
                 endTimeI.put(instruction, timeCount);
                 for (VReg t : instruction.getDefVRegs()) {
                     startTimeR.put(t, timeCount);
                     live.remove(t);
+                    localConflictGraph.addVertex(t);
                     for (VReg u : live) {
                         localConflictGraph.addVertex(u);
-                        localConflictGraph.addVertex(t);
                         localConflictGraph.addEdge(u, t);
                     }
                 }
@@ -677,8 +701,10 @@ public class VReg2PReg {
                 }
             }
             HashSet<VReg> live = new HashSet<>(livingDataMap.get(block).getOut());
-            for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
-                Instruction instruction = block.getInstructions().get(i);
+
+            Iterator<DoublyLinkedList.Node<Instruction>> backwardIterator = block.getInstructions().backwardIterator();
+            while (backwardIterator.hasNext()) {
+                Instruction instruction = backwardIterator.next().getValue();
                 live.removeAll(instruction.getDefVRegs());
                 live.addAll(instruction.getUseVRegs());
                 if (startTimeI.get(instruction) > finishTime) { // 考虑finishTimeI就是finishTime
@@ -705,6 +731,7 @@ public class VReg2PReg {
                     }
                 }
             }
+
             numberRegisters--;
         }
 
@@ -734,8 +761,12 @@ public class VReg2PReg {
             }
 
             HashSet<VReg> live = new HashSet<>(livingDataMap.get(block).getOut());
-            for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
-                Instruction instruction = block.getInstructions().get(i);
+            live.removeAll(spilledVRegs); // Out集可能包含已经溢出的全局VReg；他们已经被处理为局部变量，故不应出现
+
+            Iterator<DoublyLinkedList.Node<Instruction>> backwardIterator = block.getInstructions().backwardIterator();
+            while (backwardIterator.hasNext()) {
+                DoublyLinkedList.Node<Instruction> node = backwardIterator.next();
+                Instruction instruction = node.getValue();
                 if (releaseSpillLocMap.containsKey(instruction)) {
                     SpillLoc spillLoc = releaseSpillLocMap.get(instruction);
                     releaseSpillLoc(spillLoc);
@@ -750,7 +781,7 @@ public class VReg2PReg {
                         // 从优化角度而言，这种指令应该被删掉，从而减小寄存器分配的压力
                         // 只考虑不在栈内的变量
                         if (freePRegs.isEmpty()) {
-                            localSpillRegister(live, block, instruction, freePRegs);
+                            localSpillRegister(live, block, node, freePRegs);
                         }
                         PReg s = freePRegs.iterator().next();
                         freePRegs.remove(s);
@@ -770,7 +801,7 @@ public class VReg2PReg {
                         // 没被分配寄存器的，一定是局部变量
                         if (!colorMap.containsKey(t) && !inLocalGraph.getOrDefault(t, false)) {
                             if (freePRegs.isEmpty()) {
-                                localSpillRegister(live, block, instruction, freePRegs);
+                                localSpillRegister(live, block, node, freePRegs);
                             }
                             PReg s = freePRegs.iterator().next();
                             freePRegs.remove(s);
@@ -780,7 +811,6 @@ public class VReg2PReg {
                     }
                 }
             }
-
         }
 
         /* deprecated
@@ -846,33 +876,40 @@ public class VReg2PReg {
             }
         }
 
-        private void localSpillRegister(Set<VReg> live, MipsBlock block, Instruction instruction, Set<PReg> freeRegisters) {
+        private void localSpillRegister(Set<VReg> live, MipsBlock block, DoublyLinkedList.Node<Instruction> instrNode, Set<PReg> freeRegisters) {
             // live中的此时都已经被分配PReg
             // 此时溢出，可以溢出局部的，也可以溢出全局的，包括liveThrough/transparent，后者由insertAfter(target = null)直接在块头插入store保证正确性
+            Instruction instruction = instrNode.getValue();
             int earliest = 0;
-            Instruction lastUseDef = null;
+            DoublyLinkedList.Node<Instruction> lastUseDef = null;
             VReg target = null;
             for (VReg vReg : live) {
-                int prev = endTimeI.get(block.getInstructions().get(0));
-                Instruction prevInst = null;
-                loop: for (Instruction instr : block.getInstructions()) {
-                    if (instr.equals(instruction)) {
-                        break;
-                    }
+                int prev = endTimeI.get(block.getInstructions().getHead().getValue());
+                DoublyLinkedList.Node<Instruction> prevInst = null;
+                loop: for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
+                    Instruction instr = node.getValue();
                     for (VReg u : instr.getDefVRegs()) {
                         if (u.equals(vReg)) {
                             prev = endTimeI.get(instr);
-                            prevInst = instr;
+                            prevInst = node;
                             continue loop;
                         }
                     }
                     for (VReg u : instr.getUseVRegs()) {
                         if (u.equals(vReg)) {
                             prev = endTimeI.get(instr);
-                            prevInst = instr;
+                            prevInst = node;
                             continue loop;
                         }
                     }
+                    if (instr.equals(instruction)) {
+                        break;
+                    }
+                }
+                if (prevInst == instrNode) {
+                    // 考虑一条指令use两个不同VReg；
+                    // 显然不能spill在同一处用到的另一个VReg，因为操作数间没法插load
+                    continue;
                 }
                 if (prev > earliest) {
                     earliest = prev;
@@ -886,26 +923,26 @@ public class VReg2PReg {
             // insert load MEMORY(target), target after I
             block.insertAfter(
                 getSpillLoad(target, spillLoc),
-                instruction
+                instrNode
             );
-            VReg newName = new VReg();
-            inLocalGraph.put(newName, true);
+
+            // 事实上，在当前指令后插Load，就相当于定义了Target，把Target移出了live集
+            // 由此，也就不会产生重复溢出，换名之后引用的变量改变了等一系列问题
+            live.remove(target);
+
             // insert store newName, memory(target) after prevUse
+            Instruction spillStore = getSpillStore(target, spillLoc);
             block.insertAfter(
-                getSpillStore(newName, spillLoc),
+                spillStore,
                 lastUseDef
             );
 
-            // 考虑到我们是倒着做onePassAllocate的，遍历到lastUseDef时，溢出位置刚好释放
-            releaseSpillLocMap.put(lastUseDef, spillLoc);
+            // 考虑到我们是倒着做onePassAllocate的，遍历到Store指令时，溢出位置刚好释放
+            releaseSpillLocMap.put(spillStore, spillLoc);
 
-            int loc = lastUseDef == null ? -1 : block.getInstructions().indexOf(lastUseDef);
-            for (; loc >= 0; loc--) {
-                Instruction instr = block.getInstructions().get(loc);
-                instr.replaceOperand(target, newName);
-            }
             // 原文似乎把insert笔误成了delete...
             freeRegisters.add(colorMap.get(target));
+
         }
     }
 }

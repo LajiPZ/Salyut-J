@@ -6,12 +6,13 @@ import backend.mips.instruction.Phi;
 import frontend.llvm.value.BBlock;
 import frontend.llvm.value.instruction.Inst;
 import utils.Counter;
+import utils.DoublyLinkedList;
 
 import java.util.*;
 
 public class MipsBlock {
     private String name;
-    private ArrayList<Instruction> instructions;
+    private DoublyLinkedList<Instruction> instructions;
 
     // Control flow...
     private Set<MipsBlock> predecessors = new HashSet<>();
@@ -21,33 +22,36 @@ public class MipsBlock {
 
     public MipsBlock(String name) {
         this.name = name;
-        this.instructions = new ArrayList<>();
+        this.instructions = new DoublyLinkedList<>();
     }
 
     public void addInstruction(Instruction instruction) {
-        this.instructions.add(instruction);
+        new DoublyLinkedList.Node<>(instruction).insertIntoTail(this.instructions);
     }
 
     public void addInstruction(List<Instruction> instructions) {
-        this.instructions.addAll(instructions);
+        for (Instruction instruction : instructions) {
+            new DoublyLinkedList.Node<>(instruction).insertIntoTail(this.instructions);
+        }
     }
 
-    public void insertBefore(Instruction inst,Instruction target) {
-        int index = this.instructions.indexOf(target);
-        this.instructions.add(index, inst);
+    public void insertBefore(Instruction inst, DoublyLinkedList.Node<Instruction> target) {
+        new DoublyLinkedList.Node<>(inst).insertBefore(target);
     }
 
-    public void insertAfter(Instruction inst,Instruction target) {
-        int index = target == null ? 0 : this.instructions.indexOf(target) + 1;
-        this.instructions.add(index, inst);
+    public void insertAfter(Instruction inst, DoublyLinkedList.Node<Instruction> target) {
+        if (target == null) {
+            new DoublyLinkedList.Node<>(inst).insertIntoHead(this.instructions);
+        } else {
+            new DoublyLinkedList.Node<>(inst).insertAfter(target);
+        }
     }
 
     public void insertBeforeLastInstruction(Instruction instruction) {
-        int index = this.instructions.size() - 1;
-        this.instructions.add(index, instruction);
+        new DoublyLinkedList.Node<>(instruction).insertBefore(this.instructions.getTail());
     }
 
-    public List<Instruction> getInstructions() {
+    public DoublyLinkedList<Instruction> getInstructions() {
         return instructions;
     }
 
@@ -74,20 +78,27 @@ public class MipsBlock {
     }
 
     public void replaceAllBranchTarget(MipsBlock oldBlk, MipsBlock newBlk) {
-        for (Instruction instruction : instructions) {
-            if (instruction instanceof Branch branch) {
+        for (DoublyLinkedList.Node<Instruction> node : instructions) {
+            Instruction inst = node.getValue();
+            if (inst instanceof Branch branch) {
                 branch.replaceBranchTarget(oldBlk, newBlk);
             }
         }
     }
 
     public void removeAllPhi() {
-        instructions.removeIf(instruction -> instruction instanceof Phi);
+        Iterator<DoublyLinkedList.Node<Instruction>> it = instructions.iterator();
+        while (it.hasNext()) {
+            DoublyLinkedList.Node<Instruction> node = it.next();
+            Instruction inst = node.getValue();
+            if (inst instanceof Phi) { it.remove(); }
+        }
     }
 
     public static MipsBlock build(BBlock block, MipsBuilder builder) {
         MipsBlock mipsBlock = builder.getMipsBlock(block);
-        for (Inst inst : block.getInstructions()) {
+        for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
+            Inst inst = node.getValue();
             mipsBlock.addInstruction(Instruction.build(inst, mipsBlock, builder));
         }
         return mipsBlock;
@@ -109,7 +120,8 @@ public class MipsBlock {
             stringBuilder.append("    li $v0, 10\n");
             stringBuilder.append("    syscall\n");
         } else {
-            for (Instruction instruction : instructions) {
+            for (DoublyLinkedList.Node<Instruction> node : instructions) {
+                Instruction instruction = node.getValue();
                 stringBuilder.append("  ");
                 stringBuilder.append(instruction.toMIPS()).append("\n");
             }

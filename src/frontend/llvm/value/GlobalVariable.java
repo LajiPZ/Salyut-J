@@ -76,7 +76,7 @@ public class GlobalVariable extends Value {
 
     public List<Integer> initMaptoList(Map<Integer, Value> initList) {
         return IntStream.range(0, ((ArrayType) getType()).getLength())
-            .map(i -> ((IntConstant) initList.getOrDefault(i, new IntConstant(0))).getValue())
+            .map(i -> initList == null ? 0 : ((IntConstant) initList.getOrDefault(i, new IntConstant(0))).getValue())
             .boxed().collect(Collectors.toList());
     }
 

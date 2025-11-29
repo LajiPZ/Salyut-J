@@ -9,6 +9,7 @@ import backend.mips.instruction.Phi;
 import backend.mips.operand.AReg;
 import backend.mips.operand.Immediate;
 import backend.mips.operand.Operand;
+import utils.DoublyLinkedList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,12 +32,14 @@ public class RemovePhi {
         HashMap<MipsBlock, List<Instruction>> toBeInserted = new HashMap<>();
 
         // Well, to prevent concurrentModification, we have to do something stupid...
+        // But with DoublyLinkedList implemented, this seems redundant
         ArrayList<MipsBlock> toBeAdded = new ArrayList<>();
 
         for (MipsBlock block : function.getBlocks()) {
             HashMap<MipsBlock, MipsBlock> intermediateBlkMap = new HashMap<>();
 
-            for (Instruction inst : block.getInstructions()) {
+            for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
+                Instruction inst = node.getValue();
                 if (!(inst instanceof Phi phi)) {
                     continue;
                 }
