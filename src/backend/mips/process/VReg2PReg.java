@@ -343,7 +343,7 @@ public class VReg2PReg {
                     unavailablePRegs.add(colorMap.get(vReg));
                 }
             }
-            if (unavailablePRegs.size() == Config.availPRegs.size()) {
+            if (unavailablePRegs.size() >= Config.availPRegs.size()) {
                 allocateSpillLoc(t);
                 spilledVRegs.add(t);
             } else {
