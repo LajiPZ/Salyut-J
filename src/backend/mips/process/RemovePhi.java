@@ -9,6 +9,7 @@ import backend.mips.instruction.Phi;
 import backend.mips.operand.AReg;
 import backend.mips.operand.Immediate;
 import backend.mips.operand.Operand;
+import backend.mips.operand.VReg;
 import utils.DoublyLinkedList;
 
 import java.util.ArrayList;
@@ -16,10 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-// TODO: 注意，这个实现忽略了Phi的“并行复制”属性，省去分配多的PReg之虞
-// 为什么可行？
-// 因为LLVM IR是SSA，此时我们只是将一个结果写到了IPhi对应的新VReg里
-// 且我们只在条件短路时用了IPhi，这个VReg不会用于给任何变量赋值，故没有任何影响！
+// TODO: 已知在某些情况下，我们可以忽略并行复制特性，直接移动到目标位置；怎么做呢？
 
 public class RemovePhi {
     private MipsFunction function;
@@ -37,6 +35,8 @@ public class RemovePhi {
 
         for (MipsBlock block : function.getBlocks()) {
             HashMap<MipsBlock, MipsBlock> intermediateBlkMap = new HashMap<>();
+            HashMap<MipsBlock, List<Instruction>> intermediateToTemp = new HashMap<>();
+            HashMap<MipsBlock, List<Instruction>> intermediateFromTemp = new HashMap<>();
 
             for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
                 Instruction inst = node.getValue();
@@ -49,10 +49,12 @@ public class RemovePhi {
                     Operand op = phi.getOperand(i);
                     if (srcBlk.getSuccessors().size() == 1) {
                         // 前序块只会来到当前块，直接插入move
+                        VReg temp = new VReg();
                         toBeInserted.computeIfAbsent(srcBlk, k -> new LinkedList<>()).addAll(
                             List.of(
-                                // TODO: 如果是并行复制，那么这里中间要加一个VReg temp = new VReg();
-                                buildMove(phi.getRes(), op)
+                                // 如果是并行复制，那么这里中间要加一个VReg temp = new VReg();
+                                buildMove(temp, op),
+                                buildMove(phi.getRes(), temp)
                             )
                         );
                     } else {
@@ -69,8 +71,10 @@ public class RemovePhi {
                             intermediateBlkMap.put(srcBlk, newBlk);
                         }
                         MipsBlock newBlk = intermediateBlkMap.get(srcBlk);
-                        // TODO: 如果是并行复制，那么这里要先全部赋值到各个temp上，再从temp赋值到phi上
-                        newBlk.addInstruction(buildMove(phi.getRes(), op));
+                        // 如果是并行复制，那么这里要先全部赋值到各个temp上，再从temp赋值到phi上
+                        VReg temp = new VReg();
+                        intermediateToTemp.computeIfAbsent(newBlk, k -> new ArrayList<>()).add(buildMove(temp, op));
+                        intermediateFromTemp.computeIfAbsent(newBlk, k -> new ArrayList<>()).add(buildMove(phi.getRes(), temp));
                     }
                 }
             }
@@ -82,14 +86,24 @@ public class RemovePhi {
             for (MipsBlock newBlk : intermediateBlkMap.values()) {
                 // function.addBlock(newBlk);
                 toBeAdded.add(newBlk);
+                for (Instruction inst : intermediateToTemp.get(newBlk)) {
+                    newBlk.addInstruction(inst);
+                }
+                for (Instruction inst : intermediateFromTemp.get(newBlk)) {
+                    newBlk.addInstruction(inst);
+                }
                 newBlk.addInstruction(new Jump(Jump.Op.j, block));
             }
         }
         for (var entry: toBeInserted.entrySet()) {
             MipsBlock srcBlk = entry.getKey();
-            for (Instruction inst : entry.getValue()) {
-                // TODO: 如果是并行复制，也要做到先全部赋值到各个temp上，再从temp赋值到phi上
-                srcBlk.insertBeforeLastInstruction(inst);
+            List<Instruction> instructions = entry.getValue();
+            // 先全部Move，再赋值
+            for (int i = 0; i < instructions.size(); i += 2) {
+                srcBlk.insertBeforeLastInstruction(instructions.get(i));
+            }
+            for (int i = 1; i < instructions.size(); i += 2) {
+                srcBlk.insertBeforeLastInstruction(instructions.get(i));
             }
         }
         for (MipsBlock newBlk : toBeAdded) {
@@ -105,4 +119,3 @@ public class RemovePhi {
         }
     }
 }
-

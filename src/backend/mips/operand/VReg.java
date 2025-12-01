@@ -13,6 +13,10 @@ public class VReg extends Operand {
         this.id = counter.get();
     }
 
+    public int getId() {
+        return id;
+    }
+
     @Override
     public String toMIPS() {
         if (!Settings.DebugConfig.printMIPSBeforePRegAlloc) throw new RuntimeException("VReg shouldn't in final result");

@@ -10,4 +10,9 @@ public class MemSpillLoc extends SpillLoc {
     public int getOffset() {
         return offset;
     }
+
+    @Override
+    public String toString() {
+        return "MemSpillLoc [offset=" + offset + "]";
+    }
 }

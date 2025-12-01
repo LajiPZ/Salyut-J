@@ -12,4 +12,9 @@ public class CP1SpillLoc extends SpillLoc {
     public CP1Reg getReg() {
         return reg;
     }
+
+    @Override
+    public String toString() {
+        return "CP1SpillLoc [reg=" + reg.toMIPS() + "]";
+    }
 }

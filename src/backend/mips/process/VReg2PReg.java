@@ -26,12 +26,12 @@ public class VReg2PReg {
         // 代价是，调用的保存/恢复开销很大，因为无法预知局部变量是哪些，就算局部变量也要保存
         // TODO:分级选取可用的寄存器，应该可以解决这个问题
         static final List<PReg> availPRegs = List.of(
-            AReg.t[0], AReg.t[1], AReg.t[2], AReg.t[3],
+            AReg.t[0], AReg.t[1], AReg.t[2], AReg.t[3]/*,
             AReg.t[4], AReg.t[5], AReg.t[6], AReg.t[7],
             AReg.s[0], AReg.s[1], AReg.s[2], AReg.s[3],
             AReg.s[4], AReg.s[5], AReg.s[6], AReg.s[7],
             AReg.v1, AReg.t[8], AReg.t[9],
-            AReg.k0, AReg.k1, AReg.gp  // group pointer我们没用到，也可以来
+            AReg.k0, AReg.k1, AReg.gp  // group pointer我们没用到，也可以来*/
         );
     }
 
@@ -387,7 +387,7 @@ public class VReg2PReg {
                 for (VReg z : globalConflictGraph.getNeighbors(vReg)) {
                     if (inGlobalGraph.get(z) && !globalConflictGraph.getNeighbors(z).contains(t)) {
                         PReg color = colorMap.get(z);
-                        if (!unavailablePRegs.contains(color)) return colorMap.get(z);
+                        if (color != null && !unavailablePRegs.contains(color)) return colorMap.get(z);
                     }
                 }
             }
@@ -461,7 +461,7 @@ public class VReg2PReg {
                     for (VReg z : localConflictGraph.getNeighbors(vReg)) {
                         if (inLocalGraph.getOrDefault(z, false) && !localConflictGraph.getNeighbors(z).contains(t)) {
                             PReg color = colorMap.get(z);
-                            if (!unavailablePRegs.contains(color)) return colorMap.get(z);
+                            if (color != null && !unavailablePRegs.contains(color)) { return colorMap.get(z); }
                         }
                     }
                 }
@@ -511,6 +511,8 @@ public class VReg2PReg {
 
         }
 
+        HashMap<VReg, VReg> newNameMap = new HashMap<>();
+
         private void insertGlobalSpill() {
             HashSet<VReg> insertStore = new HashSet<>(spilledVRegs);
             HashSet<VReg> insertLoad = new HashSet<>();
@@ -539,7 +541,6 @@ public class VReg2PReg {
                 }
             }
 
-            HashMap<VReg, VReg> newNameMap = new HashMap<>();
             for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
                 Instruction instruction = node.getValue();
                 for (VReg t : instruction.getUseVRegs()) {
@@ -783,7 +784,7 @@ public class VReg2PReg {
                 for (VReg t : instruction.getDefVRegs()) {
                     live.remove(t);
                     // 此时定义部分也该分配pReg！
-                    if (!colorMap.containsKey(t) && !inLocalGraph.getOrDefault(t, false)) {
+                    if (!colorMap.containsKey(t) && inLocalGraph.getOrDefault(t, false)) {
                         // 仅在只def不use的情况时出现
                         // 此时live集内一定没有t，上面有live.remove(t)也不会影响
                         // 从优化角度而言，这种指令应该被删掉，从而减小寄存器分配的压力
@@ -798,7 +799,7 @@ public class VReg2PReg {
                     }
                     if (!liveStartPRegs.contains(colorMap.get(t))) {
                         // TODO: 原实现条件有!instruction.getUseVRegs().contains(t)，我认为没什么必要
-                        freePRegs.add(colorMap.get(t));
+                        if (colorMap.get(t) != null) freePRegs.add(colorMap.get(t));
                     }
                 }
                 for (VReg t : instruction.getUseVRegs()) {
@@ -807,7 +808,7 @@ public class VReg2PReg {
                         live.add(t);
                         // 只对没入栈的分配
                         // 没被分配寄存器的，一定是局部变量
-                        if (!colorMap.containsKey(t) && !inLocalGraph.getOrDefault(t, false)) {
+                        if (!colorMap.containsKey(t) && inLocalGraph.getOrDefault(t, false)) {
                             if (freePRegs.isEmpty()) {
                                 localSpillRegister(live, block, node, freePRegs);
                             }
@@ -940,6 +941,13 @@ public class VReg2PReg {
 
             // insert store newName, memory(target) after prevUse
             Instruction spillStore = getSpillStore(target, spillLoc);
+            if (lastUseDef == null) {
+                int timeCount = startTimeI.get(block.getInstructions().getHead().getValue());
+                timeCount++;
+                endTimeI.put(spillStore, timeCount);
+                timeCount++;
+                startTimeI.put(spillStore, timeCount);
+            }
             block.insertAfter(
                 spillStore,
                 lastUseDef
