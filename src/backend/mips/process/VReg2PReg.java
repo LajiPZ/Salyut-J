@@ -31,8 +31,7 @@ public class VReg2PReg {
             AReg.s[0], AReg.s[1], AReg.s[2], AReg.s[3],
             AReg.s[4], AReg.s[5], AReg.s[6], AReg.s[7],
             AReg.v1, AReg.t[8], AReg.t[9],
-            AReg.gp,  // group pointer我们没用到，也可以来
-            AReg.k0, AReg.k1
+            AReg.k0, AReg.k1, AReg.gp  // group pointer我们没用到，也可以来
         );
     }
 
@@ -70,30 +69,39 @@ public class VReg2PReg {
     // 如果只是基于栈来处理溢出，简单加就可以
     // 这里基于CP1溢出的话，其管理就必须对于编译单元全体而言，因而是static
     private final static HashSet<CP1Reg> availCP1RegForSpill = new HashSet<>(Arrays.asList(CP1Reg.f));
+    private final HashSet<CP1Reg> availCP1RegForSpillLocal = new HashSet<>();
     private HashMap<VReg, SpillLoc> spillLocMap = new HashMap<>();
     private int currentOffset = 0; // 从$sp往上，依次是spilledReg、保存寄存器
 
     public void allocateSpillLoc(VReg vReg) {
-        if (availCP1RegForSpill.isEmpty()) {
-            function.enlargeStackSize(4);
+        if (!availCP1RegForSpillLocal.isEmpty()) {
+            CP1Reg cp1Reg = availCP1RegForSpillLocal.iterator().next();
+            availCP1RegForSpillLocal.remove(cp1Reg);
             spillLocMap.put(
                 vReg,
-                new MemSpillLoc(currentOffset)
+                new CP1SpillLoc(cp1Reg)
             );
-            currentOffset += 4;
-        } else {
+        } else if (!availCP1RegForSpill.isEmpty()) {
             CP1Reg cp1Reg = availCP1RegForSpill.iterator().next();
             availCP1RegForSpill.remove(cp1Reg);
             spillLocMap.put(
                 vReg,
                 new CP1SpillLoc(cp1Reg)
             );
+        } else {
+            function.enlargeStackSize(4);
+            spillLocMap.put(
+                vReg,
+                new MemSpillLoc(currentOffset)
+            );
+            currentOffset += 4;
         }
     }
 
     public void releaseSpillLoc(SpillLoc spillLoc) {
+        // 需要注意的是，此处的回收只对于局部溢出，且不会回收到全局CP1列表；因为分给函数了就不可能回收
         if (spillLoc instanceof CP1SpillLoc cp1SpillLoc) {
-            availCP1RegForSpill.add(cp1SpillLoc.getReg());
+            availCP1RegForSpillLocal.add(cp1SpillLoc.getReg());
         }
     }
 

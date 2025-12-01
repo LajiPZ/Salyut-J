@@ -1,6 +1,9 @@
 package frontend.llvm.value.instruction;
 
+import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Value;
+
+import java.util.List;
 
 public class IReturn extends ITerminator {
     public IReturn() {
@@ -22,5 +25,10 @@ public class IReturn extends ITerminator {
             sb.append(getOperand(0));
         }
         return sb.toString();
+    }
+
+    @Override
+    public List<BBlock> getSuccessors() {
+        return List.of();
     }
 }

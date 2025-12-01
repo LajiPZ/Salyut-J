@@ -11,6 +11,14 @@ public class IStore extends Inst {
         addOperand(pointer);
     }
 
+    public Value getPointer() {
+        return getOperand(1);
+    }
+
+    public Value getValue() {
+        return getOperand(0);
+    }
+
     public String toLLVM() {
         return "store " + getOperand(0) + ", " + getOperand(1);
     }

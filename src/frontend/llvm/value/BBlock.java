@@ -1,10 +1,12 @@
 package frontend.llvm.value;
 
 import backend.mips.instruction.Instruction;
+import frontend.llvm.value.instruction.ITerminator;
 import frontend.llvm.value.instruction.Inst;
 import utils.DoublyLinkedList;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class BBlock extends Value {
     private Function atFunction;
@@ -43,5 +45,13 @@ public class BBlock extends Value {
             sb.append("\t\t").append(inst.toLLVM()).append("\n");
         }
         return sb.toString();
+    }
+
+    public List<BBlock> getSuccessors() {
+        Inst last = getLastInstruction();
+        if (!(last instanceof ITerminator terminator)) {
+            throw new RuntimeException("last Inst in a BBlock should be an ITerminator");
+        }
+        return terminator.getSuccessors();
     }
 }

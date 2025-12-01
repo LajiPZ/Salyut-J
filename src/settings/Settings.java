@@ -25,4 +25,8 @@ final public class Settings {
     public static class DebugConfig {
         public static boolean printMIPSBeforePRegAlloc = true;
     }
+
+    public static class OptimizeConfig {
+        public static boolean enableOptimization = true;
+    }
 }

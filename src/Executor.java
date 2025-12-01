@@ -6,6 +6,8 @@ import frontend.Tabulator;
 import frontend.error.ErrorComparator;
 import frontend.error.ErrorEntry;
 import frontend.llvm.IrModule;
+import frontend.llvm.Pass;
+import frontend.llvm.analysis.ControlFlowAnalysis;
 import frontend.syntax.CompileUnit;
 import frontend.token.TokenStream;
 import settings.Settings;
@@ -62,7 +64,12 @@ public class Executor {
         }
 
         // 4. Optimization
-
+        if (Settings.OptimizeConfig.enableOptimization) {
+            List<Pass> passes = List.of(
+                new ControlFlowAnalysis()
+            );
+            passes.stream().map(pass -> pass.run(irModule));
+        }
 
 
 

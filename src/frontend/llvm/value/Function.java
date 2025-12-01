@@ -1,6 +1,8 @@
 package frontend.llvm.value;
 
 import frontend.datatype.DataType;
+import frontend.llvm.tools.ControlFlowGraph;
+import frontend.llvm.tools.DominatorTree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,26 @@ public class Function extends Value {
     private boolean isExtern = false;
 
     private int valCounter;
+
+    // Properties for optimization-related analysis
+    private ControlFlowGraph ctrlFlowGraph = null;
+    private DominatorTree domTree = null;
+
+    public void setCtrlFlowGraph(ControlFlowGraph ctrlFlowGraph) {
+        this.ctrlFlowGraph = ctrlFlowGraph;
+    }
+
+    public ControlFlowGraph getCtrlFlowGraph() {
+        return ctrlFlowGraph;
+    }
+
+    public void setDomTree(DominatorTree domTree) {
+        this.domTree = domTree;
+    }
+
+    public DominatorTree getDomTree() {
+        return domTree;
+    }
 
     public int resumeValCounter() {
         int prev = this.valCounter;

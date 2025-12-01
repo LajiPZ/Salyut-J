@@ -9,6 +9,10 @@ public class ILoad extends Inst {
         addOperand(retVal);
     }
 
+    public Value getPointer() {
+        return getOperand(0);
+    }
+
     @Override
     public String toLLVM() {
         return getName() + " = load " + getType() + ", " + getOperand(0);

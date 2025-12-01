@@ -3,6 +3,8 @@ package frontend.llvm.value.instruction;
 import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Value;
 
+import java.util.List;
+
 public class IBranch extends ITerminator {
 
     public IBranch(BBlock target) {
@@ -60,5 +62,14 @@ public class IBranch extends ITerminator {
             sb.append("label %").append(getOperand(0).getName());
         }
         return sb.toString();
+    }
+
+    @Override
+    public List<BBlock> getSuccessors() {
+        if (isConditinal()) {
+            return List.of((BBlock) getOperand(1), (BBlock) getOperand(2));
+        } else {
+            return List.of((BBlock) getOperand(0));
+        }
     }
 }

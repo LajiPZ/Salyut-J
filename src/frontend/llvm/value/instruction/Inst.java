@@ -5,6 +5,7 @@ import frontend.datatype.DataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 
 /**
@@ -30,6 +31,12 @@ abstract public class Inst extends Value {
 
     public void replaceOperand(int index, Value operand) {
         this.operands.set(index, operand);
+    }
+
+    public void replaceOperand(Value prev, Value updated) {
+        IntStream.range(0, this.operands.size())
+            .filter(i -> this.operands.get(i).equals(prev))
+            .forEach(i -> replaceOperand(i, updated));
     }
 
     public List<Value> getOperands() {
