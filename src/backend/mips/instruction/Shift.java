@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Shift extends Instruction {
 
@@ -34,7 +35,7 @@ public class Shift extends Instruction {
     @Override
     public Set<VReg> getUseVRegs() {
         if (shiftAmount instanceof VReg) {
-            return Set.of(src, shiftAmount).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
+            return Stream.of(src, shiftAmount).distinct().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
         }
         return Set.of(src).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }

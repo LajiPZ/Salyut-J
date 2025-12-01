@@ -6,6 +6,7 @@ import backend.mips.operand.VReg;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Store extends Mem {
 
@@ -25,7 +26,7 @@ public class Store extends Mem {
 
     @Override
     public Set<VReg> getUseVRegs() {
-        return Set.of(src, base).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
+        return Stream.of(src, base).distinct().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override

@@ -8,6 +8,9 @@ import frontend.error.ErrorEntry;
 import frontend.llvm.IrModule;
 import frontend.llvm.Pass;
 import frontend.llvm.analysis.ControlFlowAnalysis;
+import frontend.llvm.analysis.DominatorAnalysis;
+import frontend.llvm.optimization.Mem2Reg;
+import frontend.llvm.optimization.RemoveUnreachableBBlocks;
 import frontend.syntax.CompileUnit;
 import frontend.token.TokenStream;
 import settings.Settings;
@@ -59,19 +62,21 @@ public class Executor {
         // 3. Intermediate code generation
         IrBuilder irBuilder = new IrBuilder(compileUnit);
         IrModule irModule = irBuilder.build();
-        if (Settings.PrintConfig.printIR) {
-           irModule.printIR(Settings.FilePath.IROut);
-        }
 
         // 4. Optimization
         if (Settings.OptimizeConfig.enableOptimization) {
             List<Pass> passes = List.of(
-                new ControlFlowAnalysis()
+                new ControlFlowAnalysis(),
+                new DominatorAnalysis(),
+                new RemoveUnreachableBBlocks(),
+                new Mem2Reg()
             );
-            passes.stream().map(pass -> pass.run(irModule));
+            for (Pass pass : passes) pass.run(irModule);
         }
 
-
+        if (Settings.PrintConfig.printIR) {
+            irModule.printIR(Settings.FilePath.IROut);
+        }
 
         // 5. Target code generation
         MipsModule mipsModule = new MipsModule();

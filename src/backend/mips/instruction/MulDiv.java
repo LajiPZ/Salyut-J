@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MulDiv extends Instruction {
 
@@ -31,7 +32,7 @@ public class MulDiv extends Instruction {
 
     @Override
     public Set<VReg> getUseVRegs() {
-        return Set.of(l, r).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
+        return Stream.of(l, r).distinct().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Beq extends Branch {
 
@@ -41,7 +42,7 @@ public class Beq extends Branch {
 
     @Override
     public Set<VReg> getUseVRegs() {
-        return Set.of(left, right).stream().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
+        return Stream.of(left, right).distinct().filter(VReg.class::isInstance).map(VReg.class::cast).collect(Collectors.toSet());
     }
 
     @Override
