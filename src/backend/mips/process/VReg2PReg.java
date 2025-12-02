@@ -492,11 +492,12 @@ public class VReg2PReg {
             stack = new Stack<>();
             numberRegisters = Config.availPRegs.size(); // 原文有笔误，写成了maxPressure
             //int i = 0;
-            while (!liveStart.isEmpty()) {
+            HashSet<VReg> liveStartCopy = new HashSet<>(liveStart);
+            while (!liveStartCopy.isEmpty()) {
                 addToLocalStack();
-                VReg t = liveStart.iterator().next();
-                liveStart.remove(t);
-                allocateWithGlobal(t);
+                VReg t = liveStartCopy.iterator().next();
+                liveStartCopy.remove(t);
+                // allocateWithGlobal(t);
             }
             addToLocalStack();
             boolean hasUnstacked = false;
@@ -613,6 +614,12 @@ public class VReg2PReg {
             liveEnd = new HashSet<>(livingDataMap.get(block).getOut());
             liveEnd.removeAll(liveThrough);
             liveEnd.removeAll(liveTransparent);
+
+            System.out.println("Blk " + block);
+            System.out.println("liveStart: " + liveStart);
+            System.out.println("liveEnd: " + liveEnd);
+            System.out.println("liveTransparent: " + liveTransparent);
+            System.out.println("liveThrough: " + liveThrough);
         }
 
         private void buildLocalConflictGraph() {
@@ -745,6 +752,7 @@ public class VReg2PReg {
         }
 
         private HashMap<Instruction, SpillLoc> releaseSpillLocMap = new HashMap<>();
+        HashSet<PReg> liveStartPRegs = new HashSet<>();
 
         private void onePassAllocate() {
             // 对于那些仍留在图中的局部VReg分配
@@ -753,8 +761,8 @@ public class VReg2PReg {
 
             HashSet<PReg> freePRegs = new HashSet<>(Config.availPRegs);
 
-            HashSet<PReg> liveStartPRegs = new HashSet<>();
             for (VReg vReg : liveStart) {
+                System.out.println("liveStart " + vReg + " with PReg " + colorMap.get(vReg).toMIPS());
                 liveStartPRegs.add(colorMap.get(vReg));
             }
 
@@ -766,6 +774,7 @@ public class VReg2PReg {
                 freePRegs.remove(colorMap.get(vReg));
             }
             for (VReg vReg : liveEnd) {
+                System.out.println("liveEnd " + vReg + " with PReg " + colorMap.get(vReg).toMIPS());
                 freePRegs.remove(colorMap.get(vReg)); // 这个在遍历的时候会回收进freePRegs
             }
 
@@ -797,20 +806,31 @@ public class VReg2PReg {
                         colorMap.put(t, s);
                         assignedPRegs.add(s);
                     }
-                    if (!liveStartPRegs.contains(colorMap.get(t))) {
+                    if (!liveStartPRegs.contains(colorMap.get(t)) && !instruction.getUseVRegs().contains(t)) {
                         // TODO: 原实现条件有!instruction.getUseVRegs().contains(t)，我认为没什么必要
-                        if (colorMap.get(t) != null) freePRegs.add(colorMap.get(t));
+                        if (colorMap.get(t) != null) {
+                            System.out.println(block + " Released: " + colorMap.get(t).toMIPS());
+                            freePRegs.add(colorMap.get(t));
+                        }
                     }
                 }
                 for (VReg t : instruction.getUseVRegs()) {
                     // live内的一定被分配过
                     if (!live.contains(t)) {
                         live.add(t);
+                        if (colorMap.containsKey(t)) {
+                            PReg pReg = colorMap.get(t);
+                            // 如果这个寄存器还在 free 池子里，必须把它拿走，因为它现在被占用了！
+                            if (pReg != null) {
+                                freePRegs.remove(pReg);
+                            }
+                        }
                         // 只对没入栈的分配
                         // 没被分配寄存器的，一定是局部变量
                         if (!colorMap.containsKey(t) && inLocalGraph.getOrDefault(t, false)) {
                             if (freePRegs.isEmpty()) {
                                 localSpillRegister(live, block, node, freePRegs);
+                                System.out.println(t.toString() + " retrieved " + freePRegs.iterator().next().toMIPS());
                             }
                             PReg s = freePRegs.iterator().next();
                             freePRegs.remove(s);
@@ -888,11 +908,13 @@ public class VReg2PReg {
         private void localSpillRegister(Set<VReg> live, MipsBlock block, DoublyLinkedList.Node<Instruction> instrNode, Set<PReg> freeRegisters) {
             // live中的此时都已经被分配PReg
             // 此时溢出，可以溢出局部的，也可以溢出全局的，包括liveThrough/transparent，后者由insertAfter(target = null)直接在块头插入store保证正确性
+            // TODO: 似乎是此处溢出了liveStart的，这不该发生
             Instruction instruction = instrNode.getValue();
             int earliest = 0;
             DoublyLinkedList.Node<Instruction> lastUseDef = null;
             VReg target = null;
             for (VReg vReg : live) {
+
                 int prev = endTimeI.get(block.getInstructions().getHead().getValue());
                 DoublyLinkedList.Node<Instruction> prevInst = null;
                 loop: for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
@@ -958,7 +980,7 @@ public class VReg2PReg {
 
             // 原文似乎把insert笔误成了delete...
             freeRegisters.add(colorMap.get(target));
-
+            System.out.println("Spilled: " + target.toString());
         }
     }
 }
