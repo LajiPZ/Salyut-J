@@ -3,41 +3,59 @@
 在这一部分中，我们需要将输入的源程序转换为Token串，便于接下来语法分析的进行。
 此外，在出现错误的情况，我们需要进行记录，并对某些错误情况进行特定的错误处理。
 
+本实现的字符读取、识别过程，\textbf{通过超前查看实现，不使用反压字符回文件的操作}。
+
 \subsection{总体设计}
 
 首先，我们定义以下类：
 \begin{itemize}
     \item \textbf{FileLoc}：数据类，记录Token所在的文件位置（行，行内偏移）；
-    \item \textbf{Token}：数据类，记录Token类型，Token内容和Token所在的行内字符位置，并提供属性有关的查询、比较等方法；
-    \item \textbf{TokenStream}：存储当前已成功读入的Token，并根据后续的语法分析需求，提供取出Token的\textbf{poll()}等方法；
-    \item \textbf{Lexer}：将输入程序处理为Token串的逻辑。同时记录了分析过程中发生的错误。
+    \item \textbf{Token}：数据类，记录Token类型，Token内容和Token所在的行内字符位置，并提供属性有关的查询、比较等方法；分类通过定义枚举类\textbf{TokenType}完成。
+    \item \textbf{TokenStream}：存储当前已成功读入的\\Token，并根据后续的语法分析需求，提供取出Token的\textbf{poll()}等方法；
+    \item \textbf{Lexer}：将输入程序处理为Token串的逻辑。同时记录分析过程中发生的错误。
 \end{itemize}
 
 编译程序通过实例化\textbf{Lexer}类，调用\textbf{analyze()}方法进行词法分析。
 \textbf{analyze()}方法的返回值是一个Bool类型，指示词法分析过程中是否出错。
 若返回值为真，则打印Token串，否则打印错误信息。
 
-最后，通过调用\textbf{Lexer::getTokenStream()}，获取词法分析后得到的Token串。 
 需要注意的是，词法分析完成后，无论出现错误与否，均需得到Token串并\textbf{继续执行}。
-是否应停机，交由语法分析部分进行处理，详见语法分析部分。
+是否应停机，交由语法分析部分进行处理。
 
 \subsection{方法实现}
 
-此处主要对\textbf{Lexer}内的实现进行介绍。
+此处主要对\textbf{Lexer}内计划的实现进行介绍。
 
 从文件读取字符的操作，通过创建一个内部类\textbf{Reader}实现。
 \textbf{Reader}是对\textbf{BufferedReader}的包装。
 整个读取过程通过\textbf{peek()}和\textbf{read()}两个操作完成。
 前者只看当前待读字符，而不从文件中读出，而后者需要从文件中读出。
-也就是说，本实现的字符读取过程，\textbf{不使用反压字符回文件的操作}。
 
 \textbf{analyze()}方法通过持续调用\textbf{Reader::peek()}，
 判断当前字符应采取的分析子过程并调用，直至文件末尾。
 
-各子过程会调用\textbf{Reader::read()}从文件中实际读取字符。
+各子过程应调用\textbf{Reader::read()}从文件中实际读取字符。
 子过程通过调用\textbf{Lexer::addToken()}和\textbf{Lexer::addError()}方法，记录当前过程读取成功的Token,或出现的错误。
 
 当前peek到字符，和执行的子方法对应关系如下：
 \begin{itemize}
-    \item 
+    \item 空字符：跳过
+    \item 数字：读取连续的数字串
+    \item 左斜杠：扫描除法符号，或注释
+    \item 双引号：扫描字符串；滤掉两侧的引号，保留引号内的内容。同时应处理转义符引起的识别问题。
+    \item 字母或下划线：扫描标识符，或关键字；连续匹配字符或下划线。
+    \item 其他：扫描符号。
 \end{itemize}
+
+对于scanIdentifier()，在匹配完成后，应先检查给定的keywords集合，判断是否读入了关键字，否则才应将当前读入归为标识符Token。
+
+对于scanSymbol()，主要处理Token对于符号不止一个字符的情况；若没有这种情况的匹配，则检查给定的symbols集合，包含当前读入符号则识别成功，否则报错。
+
+\subsection{编码后的修改}
+
+编码后,对字符串的识别进行了修改。
+
+在初始设计中，我只是将两端的引号去掉，完全保留中间内容，未有将中间转义符翻译为实际的ASCII字符。
+后发现，如此处理，应导致后续的中间代码/目标代码生成亦需处理字符串转义问题，违反了单一职责原则，遂决定将转义符的处理置于词法分析处完成。
+
+具体而言，scanString()在读到'\textbackslash'时，应先peek下一个字符，并根据之检查转义字符集合；若存在，则字符串中放入转义好的ASCII字符，否则报错（未知转义符）。

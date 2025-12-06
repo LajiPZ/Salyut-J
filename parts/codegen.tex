@@ -1,3 +1,108 @@
+
+
 \section{代码生成}
+
+本实现选择LLVM IR作为中间代码，以MIPS作为最终目标代码。
+
 \subsection{LLVM IR的生成}
+
+首先，类似语法分析和语义分析，~/frontend下需建立一IrBuilder类。
+主程序与之交互完成中间代码的构建，同时IrBuilder管理整个中间代码构建流程，
+记录构建过程中所需要的信息，如函数名与LLVM函数对象，或外部函数的对应关系，并提供构建过程中需要的辅助方法。
+
+为减少冗余和不必要的转换，LLVM IR构建中的类型系统，复用了语义分析中已经建立好的类型系统。
+在语义分析类型系统的基础上，添加了BooleanType、PointerType（指针类型），以适应LLVM IR对分支条件和变量引用的处理方法。
+
+在LLVM IR的概念中，一切皆Value。因此，应有一Value类，函数、全局变量、基本块、指令等均需继承Value类。
+
+注意到，LLVM IR的原始继承关系中，指令继承自User类，而User继承自Value类。
+在我们的实现中，User下仅有指令类，故我们选择忽略User类的存在，直接让指令类继承Value类，简化继承关系。
+
+LLVM IR的Value需有严格的顺序编号，故须实现一个计数器辅助类，处理Value编号的问题。
+
+随后就是抽象语法树到LLVM IR的转换。
+延续我们在语法、语义分析中分布式处理的思路，
+各个对应了IR的语法成分类（举例而言，包含CompileUnit，但不含BType）中，均需实现build()方法，与IrBuilder类交互，完成各ASTNode到中间代码的转换。
+
+构建完成后的数据结构大致如下：
+\begin{itemize}
+    \item IrModule：顶层模块，记录了IR所含的函数、全局变量
+    \item GlobalVariable：全局变量类；提供有关构建方法及toLLVM()方法，输出其LLVM IR形式。
+    \item Function：IR函数类，用容器记录内部所含的各IR基本块
+    \item BBlock：基本块类，用容器记录块内所含指令；
+    \item Inst：指令类，下派生各具体指令。各具体指令类需实现toLLVM()方法，输出LLVM IR。
+\end{itemize}
+
+\subsubsection{编码后的修改}
+
+主要是对于Function/BBlock类中，使用容器的更改。
+
+在初始实现中，我仅使用了简单的LinkedList，进行基本块/块内函数的记录。
+考虑到后续优化，可能出现边遍历，边增加/删除块或指令的情况，
+我额外实现了DoublyLinkedList类，即一双向链表。
+
+DoublyLinkedList以其内部类Node为核心类，
+提供其创建、维护方法，及其正向/反向的Iterator，
+允许在某个链表节点前/后插入内容，或直接删除当前节点，
+为后续的优化等过程的遍历过程带来极大的便利。
+
+后续MIPS的生成也利用了这一数据结构。
+
 \subsection{MIPS汇编的生成}
+
+在本实现中，
+我们先将LLVM IR翻译为\textbf{以虚拟寄存器作为操作数}的\\MIPS指令，
+再通过寄存器分配过程，将虚拟寄存器转换为物理寄存器，实现向MIPS代码的翻译。
+这使得寄存器分配从翻译过程中解耦出来，大大方便了翻译逻辑的编写。
+
+对于LLVM IR的Phi指令，我们规定一MIPS层面的伪指令phi。
+在翻译过程中，LLVM IR的Phi将被翻译为我们规定的伪指令phi；
+在执行寄存器分配前，我们通过RemovePhi过程，完成伪指令phi的消除。
+
+寄存器分配和消Phi逻辑的类，均置于backend/mips/process内，类似于LLVM IR的Pass。
+后续后端优化的Peephole等过程，也计划放在这一位置。
+
+在backend/mips内，亦有一个MipsBuilder类，管理整个构建流程，并提供构建过程的辅助方法。
+
+翻译过程仍然选择不集中在一个类中编写。
+在backend/instBuilder中，我为每种LLVM IR指令构建了对应的MIPS翻译逻辑。
+构建过程由顶层模块MipsModule开始，通过调用其中方法
+，逐层向下构建，最后完成LLVM IR到MIPS的翻译。
+
+整个结构层次为：
+\begin{itemize}
+    \item MipsModule：顶层模块，由其开始构建；
+    \item MipsGlobalVariable：对应应存放在.data区的全局变量；
+    \item MipsFunction：对应一个函数；
+    \item MipsBlock：对应一个基本块；
+    \item Instruction：指令抽象类，下派生各具体指令。属性为用到的操作数，需要实现获取操作数，替换操作数，toMIPS()等方法。
+\end{itemize}
+
+对于操作数，本设计亦进行了层次划分。
+顶层为抽象类Operand，派生VReg/PReg/Immediate，分别代表虚拟/物理寄存器/立即数（标签）。
+PReg下派生了AReg，即Arch Registers，MIPS架构定义的32个寄存器。
+至于为何如此，
+本设计希望在后续优化中，
+利用CP1中的32个浮点寄存器，
+处理全局变量、static变量和寄存器分配时溢出的问题。
+具体还请移步优化文章。
+
+寄存器分配部分，
+本设计计划先对跨块活跃的全局变量使用图着色分配法，
+再对块内活跃的局部变量,采用倒序线性扫描+寄存器池的分配方法。
+
+\subsubsection{编码后的修改}
+
+架构较初始设计并无太大变化，但对寄存器分配的方案做了调整。
+
+具体而言，本设计参考
+\href{https://building-an-optimizing-compiler-zh-cn.readthedocs.io/zh-cn/latest/index.html}{《Building an Optimizing Compiler》}
+的第13章，对寄存器分配的整个策略做了较大调整：
+
+\begin{itemize}
+    \item 全局变量和局部变量，可用的寄存器范围不再分开；
+    \item 溢出全局变量的读写，通过在每个块内换名，交由局部分配来进行；
+    \item 对块内活跃的全局变量做了分类，并在局部分配时复用了可用的全局寄存器；
+    \item 局部变量的分配，先构建块内的冲突图，将度小于全局变量分配后可用寄存器数者入栈；对于栈内变量，采取图着色方法分配颜色，对于栈外的，采用反向线性扫描分配；
+    \item 在反向线性扫描过程无寄存器可用时，通过溢出某一当前活跃变量的方法，强行获取可用的寄存器。
+\end{itemize}

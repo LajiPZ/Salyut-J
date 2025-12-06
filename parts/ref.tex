@@ -1,0 +1,45 @@
+\section{参考设计介绍}
+
+我选取了参考资料中的pl0-compiler，这是一个使用Pascal语言实现的编译器。
+
+\subsection{总体结构}
+
+这个编译器遵循了经典的编译流程，并通过生成中间代码并内置解释器的方式，完成最终执行。其主要功能模块和过程如下：
+
+\begin{itemize}
+    \item 词法分析：通过getsym()过程实现。
+    \item 语法分析、语义分析：采用递归下降法完成语法分析，逐层调用block(), statement(), expression()等语法成分的分析process。\\语义分析在语法分析过程中同时完成，存在耦合。
+    \item 代码生成：生成自定义的栈式中间代码。
+    \item 解释执行：通过interpret()过程内置的栈式机，解释执行生成的中间代码。
+\end{itemize}
+
+
+注意到，在本实现中，词法分析、语法分析、语义分析与代码生成这四个部分，均存在一定程度的耦合。
+
+\subsection{接口设计}
+
+
+整个编译器使用面向过程语言编写，不存在接口，大部分情况下使用全局变量传递信息。
+
+比如说，词法分析中，参考实现通过sym，id与num等全局变量，向语法分析过程传递 token 信息。
+
+在语法分析过程中，各语法成分对应的分析过程，其参数列表均有一些相同的参数，某种意义上这也算接口的一种：
+
+Procedure statement( fsys : symset );
+
+Procedure expression( fsys: symset);
+
+Procedure term( fsys : symset );
+
+Procedure factor( fsys : symset );
+
+Procedure expression( fsys: symset );
+
+Procedure condition( fsys : symset );
+
+
+其中，symset 为该分析过程接受的符号集。
+
+\subsection{文件组织}
+
+参考编译器是单一文件，不存在文件组织。

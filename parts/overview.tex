@@ -1,0 +1,85 @@
+\section{编译器总体设计}
+
+编译器使用Java实现，采用面向对象的程序构造方法进行组织，并利用了Java 17的部分特性。
+
+\subsection{总体结构}
+
+编译器整体划分为前端、后端两个部分。
+
+前端负责将源程序转换为中间代码，并对中间代码进行变换（优化）。
+本实现选择LLVM IR作为中间代码。
+
+后端负责将中间代码翻译为MIPS汇编。期间会进行消Phi，物理寄存器分配等过程。
+
+前端部分共执行以下过程：
+\begin{itemize}
+    \item 词法分析：产生TokenStream，供语法分析使用；
+    \item 语法分析：产生CompileUnit，即AST的顶层模块；
+    \item 语义分析：将语法树中定义、使用的符号关联起来，并指定符号的数据类型；
+    \item 中间代码生成：通过各语法单元内的build()方法，转换为LLVM IR；
+    \item 中间代码优化：执行各优化有关Pass。
+\end{itemize}
+
+前端中可能出现的错误，通过构建一ErrorEntry类进行管理。
+前端的词法、语法、语义分析各部分，均有一ErrorEntry容器，收集当前阶段产生的错误。
+
+后端负责以下过程：
+\begin{itemize}
+    \item 中间代码翻译：将LLVM IR，翻译为使用虚拟寄存器作为操作数的MIPS汇编；
+    \item 消Phi：正如其名
+    \item 物理寄存器分配：为各虚拟寄存器指派物理寄存器；在此步完成后，整个编译过程可认为结束。
+    \item 后端优化：主要是Peephole。
+\end{itemize}
+
+\subsection{接口设计}
+
+在设计各个类时，对于属性和方法的可见性，我进行了较为严格的管理。
+除了跨类交互需要用到的方法设为public外。仅在类内部使用的均设为private。
+在子类中亦会使用到的，则设置为protected类。
+
+\begin{itemize}
+    \item 词法解析：由frontend/Lexer实现，\\暴露其构造方法，运行分析的analyze()方法，以及\\收集错误，获取/打印TokenStream需要的方法；
+    \item 语法分析：由frontend/Parser开始，\\暴露其构造方法，运行分析的parse()方法，和获取CompileUnit和错误信息的方法；\\各语法成分均创建类，继承ASTNode抽象类，实现静态parse()方法;\\Parser通过自语法成分顶层CompileUnit往下递归语法成分对应的parse()，完成整个语法树的构建。
+    \item 语义分析：由frontend/Tabulator开始，\\暴露构造方法，运行分析的tabulate()方法，以及整个分析过程需要的辅助方法；\\各语法成分类需实现visit()方法，与Tabulator类交互，完成符号关系的构建；
+    \item 中间代码生成：由frontend/IrBuilder开始；\\各语法成分类需实现build()方法，IrBuilder通过从CompileUnit逐层向下递归调用build()方法，完成中间代码的构建；
+    \item 中间代码优化：构建接口frontend/llvm/Pass，要求实现run()方法；主程序通过实例化各Pass进一个有序容器内，随后顺序调用run()方法，完成对中间代码的变形。
+    \item 目标代码生成：由backend/mips/MipsBuilder开始，\\调用backend/mips/instBuilder中，各种LLVM IR对应的构建方法build()，完成到目标代码的转换。通过backend/mips/process中定义的各个后端Pass，完成消Phi，寄存器分配，后端优化等过程。
+\end{itemize}
+
+\subsection{文件组织}
+\begin{itemize}
+    \item Compiler.java：编译器入口；
+    \item Executer.java：编译器运行主程序，负责按配置控制各编译器过程的运行；
+    \item settings/Settings.java：编译器配置，控制编译器运行哪些过程，文件打印位置等；
+    \item utils/：存放整个编译器中可能需要用到的自定义数据结构；
+    \item frontend/：编译器前端内容
+    \item \begin{itemize}
+        \item ./datatype：语义分析、中间代码需用到的类型系统
+        \item ./error：前端记录错误需用到的数据结构
+        \item ./symbol：语义分析需用到的符号系统
+        \item ./syntax：语法分析时的各语法成分
+        \item ./token：词法分析时，构建的Token有关数据结构
+        \item ./llvm：LLVM相关逻辑：
+        \item \begin{itemize}
+            \item ./analysis：进行优化前需进行的分析Pass，如控制流分析等
+            \item ./optimization：各优化Pass
+            \item ./tools：LLVM IR构建时使用的辅助数据结构
+            \item ./value：LLVM IR中所有的Value，包括但不限于指令等
+            \item ./IrModule：LLVM IR构建完成后的顶层模块
+        \end{itemize}
+        \item ./IrBuilder.java：LLVM IR构建过程的控制、辅助类
+        \item ./Lexer.java：词法分析逻辑
+        \item ./Parser.java：语法分析的控制、辅助类
+        \item ./Tabulator.java：语义分析的控制、辅助类
+    \end{itemize}
+    \item backend/mips：编译器后端内容
+    \item \begin{itemize}
+        \item ./instBuilder：存放将各LLVM IR翻译为MIPS的逻辑
+        \item ./instruction：MIPS指令定义
+        \item ./operand：MIPS操作数定义
+        \item ./process：后端Pass，如寄存器分配等
+        \item ./utils：后端需用到的辅助数据结构
+        \item ./MipsBuilder.java：MIPS构建的控制、辅助类
+        \item ./Mips*.java：MIPS构建有关的数据结构
+    \end{itemize}
+\end{itemize}
