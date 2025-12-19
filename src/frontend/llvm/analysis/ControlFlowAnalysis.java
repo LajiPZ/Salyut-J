@@ -22,6 +22,7 @@ public class ControlFlowAnalysis implements Pass {
         Map<BBlock, Set<BBlock>> predecessors = new HashMap<>();
         Set<BBlock> visited = new HashSet<>();
         Queue<BBlock> queue = new LinkedList<>();
+        if (f.getBBlocks().isEmpty()) return null;
         queue.add(f.getBBlocks().get(0)); // That is, the first BBlock
 
         while (!queue.isEmpty()) {

@@ -81,7 +81,7 @@ public class VarDef extends ASTNode {
             if (initVal != null) initVal.visit();
             // 注：这里只处理全局变量的初值，局部变量的初值在代码生成时处理
             try {
-                if (Tabulator.isGlobalDef()) {
+                if (Tabulator.isGlobalDef() || isStatic) {
                     // TODO: 从C而非C++的角度，又或者，定义里“编译期间可知”的定义，这么处理是否合理？
                     if (indexExps.isEmpty()) {
                         if (initVal == null) {
@@ -134,56 +134,20 @@ public class VarDef extends ASTNode {
             varSymbol.setValue(
                 new Value("@" + valName, new PointerType(varSymbol.getDataType()))
             );
-            String ctrlName = valName + "_" + "ctrl";
-            varSymbol.setStaticCtrl(
-                new Value("@" + ctrlName, new PointerType(new BooleanType()))
-            );
-            if (indexExps.isEmpty()) {
-                builder.addGlobalVariable(
-                    new GlobalVariable(valName, varSymbol.getDataType(), new IntConstant(0, varSymbol.getDataType()))
-                );
-            } else {
-                // TODO：应该也只支持一维数组
-                // 这个问题在GlobalVar那边， 通过输出zeroinitializer解决
-                Map<Integer, Value> dummy = null;
-                builder.addGlobalVariable(
-                    new GlobalVariable(valName, varSymbol.getDataType(), dummy)
-                );
-            }
             builder.addGlobalVariable(
-                new GlobalVariable(ctrlName, new BooleanType(), new IntConstant(0, new BooleanType()))
+                GlobalVariable.create(varSymbol, valName)
             );
-        } else {
-            varSymbol.setValue(
-                builder.insertInst(
-                    new IAllocate(new PointerType(varSymbol.getDataType()))
-                )
-            );
+            return;
         }
+
+        varSymbol.setValue(
+            builder.insertInst(
+                new IAllocate(new PointerType(varSymbol.getDataType()))
+            )
+        );
 
         // 变量赋值部分；
         Inst condBranch = null; // 方便后面填后续块
-        if (isStatic) {
-            // static仅赋值一次，需要做一个条件分支出来
-            BBlock blockBefore = builder.getInsertPoint();
-            Value ctrl = builder.insertInst(
-                new ILoad(
-                    varSymbol.getStaticCtrl()
-                )
-            );
-            Value cond = builder.insertInst(
-                new ICompare(
-                    Operator.EQ,
-                    ctrl,
-                    IntConstant.logicZero
-                )
-            );
-            BBlock initBlk = builder.newBBlock(false);
-            condBranch = new IBranch(
-                cond, initBlk, null
-            );
-            blockBefore.addInstruction(condBranch);
-        }
 
         if (initVal == null) {
             if (isStatic) {
@@ -233,15 +197,6 @@ public class VarDef extends ASTNode {
                     )
                 );
             }
-        }
-        if (isStatic) {
-            builder.insertInst(
-                new IStore(
-                    IntConstant.logicOne, varSymbol.getStaticCtrl()
-                )
-            );
-            BBlock blkAfter = builder.newBBlock(true);
-            ((IBranch)condBranch).fillNullTarget(blkAfter);
         }
     }
 }

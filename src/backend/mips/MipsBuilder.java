@@ -38,7 +38,7 @@ public class MipsBuilder {
         this.exitBlock = exit;
         this.top = top;
 
-        MipsBlock.addEdge(entry, getMipsBlock(bblocks.get(0)));
+        if (!bblocks.isEmpty()) MipsBlock.addEdge(entry, getMipsBlock(bblocks.get(0)));
 
         buildValueMap();
 

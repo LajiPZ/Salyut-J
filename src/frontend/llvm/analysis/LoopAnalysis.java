@@ -30,6 +30,8 @@ public class LoopAnalysis implements Pass {
         DominatorTree dom = function.getDomTree();
         ControlFlowGraph cfg = function.getCtrlFlowGraph();
 
+        if (function.getBBlocks().isEmpty()) return;
+
         List<BBlock> postOrder = dom.getPostOrder(function.getBBlocks().get(0));
 
         for (BBlock head : postOrder) {

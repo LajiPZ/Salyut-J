@@ -23,6 +23,8 @@ public class DominatorAnalysis implements Pass {
         Map<BBlock, List<BBlock>> dominates = new HashMap<>();
         HashMap<BBlock, BBlock> immediateDominators = new HashMap<>();
 
+        if (f.getBBlocks().isEmpty()) return null;
+
         for (BBlock blk : f.getBBlocks()) {
             dominatedBy.put(blk, new HashSet<>());
             dominates.put(blk, new LinkedList<>());

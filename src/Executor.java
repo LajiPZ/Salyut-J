@@ -69,7 +69,10 @@ public class Executor {
                 new ControlFlowAnalysis(),
                 new RemoveUnreachableBBlocks(),
                 new DominatorAnalysis(),
+
                 new Mem2Reg(),
+                new EliminateReadOnlyGlobal(),
+
                 new EliminateDeadCode(),
 
                 new LoopAnalysis(),
@@ -89,9 +92,15 @@ public class Executor {
                 new SimplifyControlFlow(),
                 new ControlFlowAnalysis(),
                 new DominatorAnalysis(),
-                new EliminateDeadCode()
+                new EliminateDeadCode(),
+
+                new RenameValues()
             );
-            for (Pass pass : passes) pass.run(irModule);
+            for (int i = 0; i < passes.size(); i++) {
+                Pass pass = passes.get(i);
+                pass.run(irModule);
+            }
+            // for (Pass pass : passes) pass.run(irModule);
         }
 
         if (Settings.PrintConfig.printIR) {

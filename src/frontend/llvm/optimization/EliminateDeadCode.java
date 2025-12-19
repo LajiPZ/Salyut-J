@@ -83,6 +83,7 @@ public class EliminateDeadCode implements Pass {
                 }
             }
             if (bBlock.getInstructions().isEmpty()) {
+                // TODO: 如果要打印LLVM，此处不应删除任何块
                 bBlockIterator.remove();
                 deadBlocks.add(bBlock);
             }
@@ -103,7 +104,7 @@ public class EliminateDeadCode implements Pass {
             }
         }
 
-        // TODO: is it safe?
+        // TODO: 如果要打印LLVM，此处不应删除任何块
         function.getBBlocks().removeAll(deadBlocks);
     }
 }

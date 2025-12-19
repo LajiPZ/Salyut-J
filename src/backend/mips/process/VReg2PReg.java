@@ -149,28 +149,32 @@ public class VReg2PReg {
         }
 
         // 2. store/recover the allocated global registers
+        // but why would u do it for main()?
         // 在第一个调整$fp的指令后，加保存指令
-        DoublyLinkedList.Node<Instruction> target = null;
-        for (DoublyLinkedList.Node<Instruction> node : function.getEntry().getInstructions()) {
-            Instruction inst = node.getValue();
-            if (inst instanceof Calc && inst.getDefOperands().contains(AReg.fp)) {
-                target = node;
-                break;
+        if (!function.toString().equals("main")) {
+            DoublyLinkedList.Node<Instruction> target = null;
+            for (DoublyLinkedList.Node<Instruction> node : function.getEntry().getInstructions()) {
+                Instruction inst = node.getValue();
+                if (inst instanceof Calc && inst.getDefOperands().contains(AReg.fp)) {
+                    target = node;
+                    break;
+                }
+            }
+
+            function.enlargeStackSize(4 * assignedPRegs.size());
+            for (PReg pReg : assignedPRegs) {
+                function.getEntry().insertAfter(
+                    new Store(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset)),
+                    target
+                );
+                function.getExit().insertAfter(
+                    new Load(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset)),
+                    null
+                );
+                currentOffset += 4;
             }
         }
 
-        function.enlargeStackSize(4 * assignedPRegs.size());
-        for (PReg pReg : assignedPRegs) {
-            function.getEntry().insertAfter(
-                new Store(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset)),
-                target
-            );
-            function.getExit().insertAfter(
-                new Load(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset)),
-                null
-            );
-            currentOffset += 4;
-        }
     }
 
     /**

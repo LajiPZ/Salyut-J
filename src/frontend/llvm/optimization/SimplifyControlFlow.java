@@ -19,7 +19,7 @@ public class SimplifyControlFlow implements Pass {
        for (Function function : module.getFunctions()) {
             cutConstantCondition(function);
             var predecessorMap = buildPredecessorMap(function);
-            dropUnrachableBBlocks(function, predecessorMap);
+            dropUnreachableBBlocks(function, predecessorMap);
             var replacementMap = mergeBBlock(function, predecessorMap);
             updateOperand(function, replacementMap);
        }
@@ -79,6 +79,7 @@ public class SimplifyControlFlow implements Pass {
    private HashMap<BBlock, HashSet<BBlock>> buildPredecessorMap(Function function) {
        HashMap<BBlock, HashSet<BBlock>> predecessorMap = new HashMap<>();
        Deque<BBlock> queue = new LinkedList<>();
+       if (function.getBBlocks().isEmpty()) { return null; }
        queue.add(function.getBBlocks().get(0));
        predecessorMap.put(function.getBBlocks().get(0), new HashSet<>());
        while (!queue.isEmpty()) {
@@ -93,7 +94,7 @@ public class SimplifyControlFlow implements Pass {
        return predecessorMap;
    }
 
-   private void dropUnrachableBBlocks(Function function, HashMap<BBlock, HashSet<BBlock>> predecessorMap) {
+   private void dropUnreachableBBlocks(Function function, HashMap<BBlock, HashSet<BBlock>> predecessorMap) {
        HashSet<BBlock> droppedBBlocks = new HashSet<>();
        Iterator<BBlock> iterator = function.getBBlocks().iterator();
        while (iterator.hasNext()) {

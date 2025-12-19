@@ -7,6 +7,7 @@ import frontend.datatype.init.ValInitType;
 import frontend.llvm.tools.ArrayInitStr;
 import frontend.llvm.value.constant.IntConstant;
 import frontend.symbol.ConstSymbol;
+import frontend.symbol.Symbol;
 import frontend.symbol.ValSymbol;
 import frontend.symbol.VarSymbol;
 
@@ -40,15 +41,23 @@ public class GlobalVariable extends Value {
         this.type = Type.Multi;
     }
 
+    public ValSymbol getSymbol() {
+        return symbol;
+    }
+
     private static GlobalVariable create(ValSymbol symbol) {
+        return create(symbol, symbol.getIdent());
+    }
+
+    private static GlobalVariable create(ValSymbol symbol, String ident) {
         if (symbol.getInitType() instanceof ArrayInitType) {
             return new GlobalVariable(
-                symbol.getIdent(), symbol.getDataType(),
+                ident, symbol.getDataType(),
                 ((ArrayInitType)symbol.getInitType()).toValue()
             );
         } else {
             return new GlobalVariable(
-                symbol.getIdent(), symbol.getDataType(),
+                ident, symbol.getDataType(),
                 ((ValInitType)symbol.getInitType()).toValue()
             );
         }
@@ -62,6 +71,12 @@ public class GlobalVariable extends Value {
 
     public static GlobalVariable create(VarSymbol symbol) {
         GlobalVariable result = create((ValSymbol) symbol);
+        result.symbol = symbol;
+        return result;
+    }
+
+    public static GlobalVariable create(VarSymbol symbol, String ident) {
+        GlobalVariable result = create((ValSymbol) symbol, ident);
         result.symbol = symbol;
         return result;
     }
