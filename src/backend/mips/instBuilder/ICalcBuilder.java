@@ -15,6 +15,7 @@ import frontend.llvm.value.instruction.Inst;
 import frontend.llvm.value.instruction.Operator;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ICalcBuilder extends InstBuilder {
@@ -80,6 +81,24 @@ public class ICalcBuilder extends InstBuilder {
             }
             case GT -> {
                 return buildCompare(inst, Calc.Op.sgt, builder);
+            }
+            case AND -> {
+                return chooseImmInst(inst, Calc.Op.and, Calc.Op.andi, builder);
+            }
+            case OR -> {
+                return chooseImmInst(inst, Calc.Op.or, Calc.Op.ori, builder);
+            }
+            case XOR -> {
+                return chooseImmInst(inst, Calc.Op.xor, Calc.Op.xori, builder);
+            }
+            case SLL -> {
+                return buildShift(inst, Shift.Op.sllv, Shift.Op.sll, builder);
+            }
+            case SRA -> {
+                return buildShift(inst, Shift.Op.srav, Shift.Op.sra, builder);
+            }
+            case SRL -> {
+                return buildShift(inst, Shift.Op.srlv, Shift.Op.srl, builder);
             }
             default -> throw new RuntimeException("Unknown operator " + op);
         }
@@ -304,5 +323,31 @@ public class ICalcBuilder extends InstBuilder {
             }
         }
         return buildMulDiv(inst, MulDiv.Op.div, op, builder);
+    }
+
+    private static List<Instruction> buildShift(Inst inst, Shift.Op op, Shift.Op immOp, MipsBuilder builder) {
+        List<Instruction> list = new LinkedList<>();
+        Value l = inst.getOperand(0);
+        Value r = inst.getOperand(1);
+        Operand operand;
+        if (l instanceof IntConstant intConstant) {
+            operand = new VReg();
+            list.add(
+                new Calc(Calc.Op.addiu, operand, AReg.zero, new Immediate(intConstant.getValue()))
+            );
+        } else {
+            operand = builder.getVRegFromValue(l);
+        }
+        VReg result = builder.getVRegFromValue(inst);
+        if (r instanceof IntConstant intConstant) {
+            list.add(
+                new Shift(immOp, result, operand, new Immediate(intConstant.getValue()))
+            );
+        } else {
+            list.add(
+                new Shift(op, result, operand, builder.getVRegFromValue(r))
+            );
+        }
+        return list;
     }
 }

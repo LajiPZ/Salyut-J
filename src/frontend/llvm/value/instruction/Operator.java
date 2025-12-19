@@ -7,6 +7,12 @@ public enum Operator {
     MUL("mul"),
     DIV("sdiv"),
     MOD("srem"),
+    AND("and"),
+    OR("or"),
+    XOR("xor"),
+    SLL("shl"),
+    SRA("ashr"),
+    SRL("lshr"),
     EQ("icmp eq"),
     NE("icmp ne"),
     LT("icmp slt"),
@@ -30,6 +36,12 @@ public enum Operator {
             case GT -> l > r ? 1 : 0;
             case LE -> l <= r ? 1 : 0;
             case GE -> l >= r ? 1 : 0;
+            case AND -> l & r;
+            case OR -> l | r;
+            case XOR -> l ^ r;
+            case SLL -> l << r;
+            case SRA -> l >> r;
+            case SRL -> l >>> r;
             default -> throw new RuntimeException("Unknown operator: " + this);
         };
     }
@@ -40,5 +52,12 @@ public enum Operator {
 
     public String getOperation() {
         return operation;
+    }
+
+    public boolean swappable() {
+        return switch (this) {
+            case ADD, MUL, AND, OR, XOR, EQ, NE -> true;
+            default -> false;
+        };
     }
 }

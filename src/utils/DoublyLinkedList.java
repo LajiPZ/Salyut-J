@@ -158,7 +158,7 @@ final public class DoublyLinkedList<T> implements Iterable<DoublyLinkedList.Node
         }
     }
 
-    static class BackwardIter<T> implements Iterator<Node<T>> {
+    public static class BackwardIter<T> implements Iterator<Node<T>> {
 
         private final Node<T> start;
         private Node<T> now;

@@ -42,4 +42,19 @@ public class IGep extends Inst {
         sb.append(getOperand(1));
         return sb.toString();
     }
+
+    @Override
+    public Integer numbering() {
+        return getOperand(0).hashCode() ^ getOperand(1).hashCode();
+    }
+
+    @Override
+    public boolean numberingEquals(Inst inst) {
+        if (!(inst instanceof IGep other)) {
+            return false;
+        }
+        return getOperand(0).equals(other.getOperand(0))
+            && getOperand(1).equals(other.getOperand(1))
+            && fromArgs == other.fromArgs;
+    }
 }

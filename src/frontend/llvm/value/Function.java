@@ -3,8 +3,10 @@ package frontend.llvm.value;
 import frontend.datatype.DataType;
 import frontend.llvm.tools.ControlFlowGraph;
 import frontend.llvm.tools.DominatorTree;
+import frontend.llvm.tools.LoopInformation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +20,10 @@ public class Function extends Value {
     // Properties for optimization-related analysis
     private ControlFlowGraph ctrlFlowGraph = null;
     private DominatorTree domTree = null;
+
+    private HashMap<BBlock, LoopInformation> loopMap = null;
+    private List<LoopInformation> loops = null;
+    private List<LoopInformation> allLoops = null;
 
     public void setCtrlFlowGraph(ControlFlowGraph ctrlFlowGraph) {
         this.ctrlFlowGraph = ctrlFlowGraph;
@@ -33,6 +39,22 @@ public class Function extends Value {
 
     public DominatorTree getDomTree() {
         return domTree;
+    }
+
+    public List<LoopInformation> getLoops() {
+        return loops;
+    }
+
+    public void setLoops(List<LoopInformation> loops) {
+        this.loops = loops;
+    }
+
+    public void setAllLoops(List<LoopInformation> allLoops) {
+        this.allLoops = allLoops;
+    }
+
+    public void setLoopMap(HashMap<BBlock, LoopInformation> loopMap) {
+        this.loopMap = loopMap;
     }
 
     public int resumeValCounter() {

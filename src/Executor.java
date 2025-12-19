@@ -9,8 +9,8 @@ import frontend.llvm.IrModule;
 import frontend.llvm.Pass;
 import frontend.llvm.analysis.ControlFlowAnalysis;
 import frontend.llvm.analysis.DominatorAnalysis;
-import frontend.llvm.optimization.Mem2Reg;
-import frontend.llvm.optimization.RemoveUnreachableBBlocks;
+import frontend.llvm.analysis.LoopAnalysis;
+import frontend.llvm.optimization.*;
 import frontend.syntax.CompileUnit;
 import frontend.token.TokenStream;
 import settings.Settings;
@@ -67,9 +67,29 @@ public class Executor {
         if (Settings.OptimizeConfig.enableOptimization) {
             List<Pass> passes = List.of(
                 new ControlFlowAnalysis(),
-                new DominatorAnalysis(),
                 new RemoveUnreachableBBlocks(),
-                new Mem2Reg()
+                new DominatorAnalysis(),
+                new Mem2Reg(),
+                new EliminateDeadCode(),
+
+                new LoopAnalysis(),
+                new LoopHoist(),
+                new ControlFlowAnalysis(),
+                new ConstantFolding(),
+                new SimplifyMultiplication(),
+                new EliminateDeadCode(),
+
+                new SimplifyControlFlow(),
+                new LocalVariableNumbering(),
+                new ControlFlowAnalysis(),
+                new DominatorAnalysis(),
+
+                new EliminateDeadCode(),
+
+                new SimplifyControlFlow(),
+                new ControlFlowAnalysis(),
+                new DominatorAnalysis(),
+                new EliminateDeadCode()
             );
             for (Pass pass : passes) pass.run(irModule);
         }

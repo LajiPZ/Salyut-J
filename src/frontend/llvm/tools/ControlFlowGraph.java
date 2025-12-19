@@ -2,6 +2,7 @@ package frontend.llvm.tools;
 
 import frontend.llvm.value.BBlock;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,5 +27,14 @@ public class ControlFlowGraph {
 
     public boolean containsBBlock(BBlock block) {
         return blocks.contains(block);
+    }
+
+    public void insertBetween(BBlock block, BBlock predecessor, BBlock newBlock) {
+        predecessors.get(block).remove(predecessor);
+        predecessors.computeIfAbsent(newBlock, k -> new HashSet<>()).add(predecessor);
+        predecessors.get(block).add(newBlock);
+        successors.get(predecessor).remove(block);
+        successors.get(predecessor).add(newBlock);
+        successors.computeIfAbsent(newBlock, k -> new HashSet<>()).add(block);
     }
 }

@@ -24,9 +24,8 @@ public class VReg2PReg {
         // 本设计中，全局和局部的可用寄存器均一致
         // 溢出所用寄存器也通过局部变量分配完成，不需要预留寄存器处理溢出变量
         // 代价是，调用的保存/恢复开销很大，因为无法预知局部变量是哪些，就算局部变量也要保存
-        // TODO:分级选取可用的寄存器，应该可以解决这个问题
         static final List<PReg> availPRegs = List.of(
-            AReg.t[0], AReg.t[1], AReg.t[2], AReg.t[3]/*,
+            AReg.t[0], AReg.t[1], AReg.t[2], AReg.t[3],
             AReg.t[4], AReg.t[5], AReg.t[6], AReg.t[7],
             AReg.s[0], AReg.s[1], AReg.s[2], AReg.s[3],
             AReg.s[4], AReg.s[5], AReg.s[6], AReg.s[7],
@@ -69,6 +68,7 @@ public class VReg2PReg {
     // 如果只是基于栈来处理溢出，简单加就可以
     // 这里基于CP1溢出的话，其管理就必须对于编译单元全体而言，因而是static
     private final static HashSet<CP1Reg> availCP1RegForSpill = new HashSet<>(Arrays.asList(CP1Reg.f));
+    //private final static HashSet<CP1Reg> availCP1RegForSpill = new HashSet<>();
     private final HashSet<CP1Reg> availCP1RegForSpillLocal = new HashSet<>();
     private HashMap<VReg, SpillLoc> spillLocMap = new HashMap<>();
     private int currentOffset = 0; // 从$sp往上，依次是spilledReg、保存寄存器
@@ -208,7 +208,10 @@ public class VReg2PReg {
     /**
      * 通过in/out集以及块内引用VReg信息，确定出块内的局部寄存器。
      * 可以得知，出现在块内，且不在in/out集内的，即为局部寄存器。
+     * 如果真是这样就好了。如果存在在多个块只def而从未Use的呢？这就会出问题...为此专门处理一下
      */
+    HashMap<VReg, MipsBlock> defBlockMap = new HashMap<>();
+    HashSet<VReg> riskyDefs = new HashSet<>();
     private void classifyLocalVRegs() {
         for (MipsBlock block : function.getBlocks()) {
             BlockLivingData<VReg> livingData = livingDataMap.get(block);
@@ -219,11 +222,25 @@ public class VReg2PReg {
                 Instruction instruction = node.getValue();
                 BlockLivingData.union(local, instruction.getDefVRegs());
                 BlockLivingData.union(local, instruction.getUseVRegs());
+                for (VReg def : instruction.getDefVRegs()) {
+                    if (!defBlockMap.containsKey(def)) {
+                        defBlockMap.put(def, block);
+                    } else {
+                        if (defBlockMap.get(def) != block) {
+                            // System.out.println("Risky def: " + def.toString());
+                            riskyDefs.add(def);
+                        }
+                    }
+                }
             }
             BlockLivingData.minus(local, in);
             BlockLivingData.minus(local, out);
             // local集初始化为空，直接加即可
             livingData.getLocal().addAll(local);
+        }
+        for (MipsBlock block : function.getBlocks()) {
+            BlockLivingData<VReg> livingData = livingDataMap.get(block);
+            livingData.getLocal().removeAll(riskyDefs);
         }
     }
 
@@ -239,14 +256,7 @@ public class VReg2PReg {
         UndirectedGraph<VReg> graph = new UndirectedGraph<>();
         for (MipsBlock block : function.getBlocks()) {
             BlockLivingData<VReg> livingData = livingDataMap.get(block);
-            // 先建立点
-            for (VReg reg : livingData.getOut()) {
-                graph.addVertex(reg);
-            }
-            for (VReg reg : livingData.getIn()) {
-                graph.addVertex(reg);
-            }
-            // 再建立边
+
             Set<VReg> local = livingData.getLocal();
             HashSet<VReg> liveAfter = new HashSet<>(livingData.getOut());
 
@@ -255,23 +265,27 @@ public class VReg2PReg {
                 Instruction instruction = backwardIt.next().getValue();
                 for (VReg def : instruction.getDefVRegs()) {
                     if (!local.contains(def)) {
+                        graph.addVertex(def);
+                        liveAfter.remove(def);
                         for (VReg v : liveAfter) {
-                            if (!v.equals(def)) graph.addEdge(def, v);
+                            graph.addVertex(v);
+                            graph.addEdge(def, v);
                         }
                     }
                 }
-                // 更新liveAfter；(liveAfter - def) + use；忽略局部变量
-                for (VReg def : instruction.getDefVRegs()) {
-                    if (!local.contains(def)) liveAfter.remove(def);
-                }
                 for (VReg use : instruction.getUseVRegs()) {
-                    if (!local.contains(use)) liveAfter.add(use);
+                    if (!local.contains(use)) {
+                        liveAfter.add(use);
+                        graph.addVertex(use);
+                    }
                 }
             }
 
             for (VReg reg1 : liveAfter) {
                 for (VReg reg2 : liveAfter) {
                     if (!reg1.equals(reg2)) {
+                        graph.addVertex(reg1);
+                        graph.addVertex(reg2);
                         graph.addEdge(reg1, reg2);
                     }
                 }
@@ -497,7 +511,7 @@ public class VReg2PReg {
                 addToLocalStack();
                 VReg t = liveStartCopy.iterator().next();
                 liveStartCopy.remove(t);
-                // allocateWithGlobal(t);
+                allocateWithGlobal(t);
             }
             addToLocalStack();
             boolean hasUnstacked = false;
@@ -615,11 +629,11 @@ public class VReg2PReg {
             liveEnd.removeAll(liveThrough);
             liveEnd.removeAll(liveTransparent);
 
-            System.out.println("Blk " + block);
-            System.out.println("liveStart: " + liveStart);
-            System.out.println("liveEnd: " + liveEnd);
-            System.out.println("liveTransparent: " + liveTransparent);
-            System.out.println("liveThrough: " + liveThrough);
+            // System.out.println("Blk " + block);
+            // System.out.println("liveStart: " + liveStart);
+            // System.out.println("liveEnd: " + liveEnd);
+            // System.out.println("liveTransparent: " + liveTransparent);
+            // System.out.println("liveThrough: " + liveThrough);
         }
 
         private void buildLocalConflictGraph() {
@@ -653,9 +667,8 @@ public class VReg2PReg {
                     localConflictGraph.addVertex(t);
                 }
             }
-            timeCount++;
             for (VReg t : live) {
-                startTimeR.put(t, timeCount);
+                startTimeR.put(t, Integer.MAX_VALUE); // Better not...
                 for (VReg u : live) {
                     if (u != t) {
                         localConflictGraph.addVertex(u);
@@ -704,6 +717,8 @@ public class VReg2PReg {
             }
         }
 
+
+        private HashMap<PReg, Integer> liveStartAvailMap = new HashMap<>();
         private void allocateWithGlobal(VReg t) {
             // 注意时间是倒着的
             int beginTime = endTimeR.get(t);
@@ -716,6 +731,9 @@ public class VReg2PReg {
                     }
                 }
             }
+
+            liveStartAvailMap.put(colorMap.get(t), beginTime);
+
             HashSet<VReg> live = new HashSet<>(livingDataMap.get(block).getOut());
 
             Iterator<DoublyLinkedList.Node<Instruction>> backwardIterator = block.getInstructions().backwardIterator();
@@ -753,20 +771,25 @@ public class VReg2PReg {
 
         private HashMap<Instruction, SpillLoc> releaseSpillLocMap = new HashMap<>();
         HashSet<PReg> liveStartPRegs = new HashSet<>();
+        HashMap<PReg, Integer> localSpillDefMap = new HashMap<>(); // pReg -> startTimeR
+
+
 
         private void onePassAllocate() {
             // 对于那些仍留在图中的局部VReg分配
             // 不溢出，不能使用的；liveStart（前面已经处理过），liveThrough/Transparent（始终占用）
             // 可以复用的：liveEnd
-
+            // 这是建立在这样一个假设上：倒序遍历，如果一个寄存器可用，则在当前指令前方，这个寄存器一定没有被使用过
+            // 我们当前的spill破坏了这个假设，所以引起了问题，需要专门解决
             HashSet<PReg> freePRegs = new HashSet<>(Config.availPRegs);
 
             for (VReg vReg : liveStart) {
-                System.out.println("liveStart " + vReg + " with PReg " + colorMap.get(vReg).toMIPS());
+                // System.out.println("liveStart " + vReg + " with PReg " + colorMap.get(vReg).toMIPS());
                 liveStartPRegs.add(colorMap.get(vReg));
             }
 
-            freePRegs.removeAll(liveStartPRegs);
+            // freePRegs.removeAll(liveStartPRegs); // 这个，不需要了
+
             for (VReg vReg : liveThrough) {
                 freePRegs.remove(colorMap.get(vReg));
             }
@@ -774,7 +797,7 @@ public class VReg2PReg {
                 freePRegs.remove(colorMap.get(vReg));
             }
             for (VReg vReg : liveEnd) {
-                System.out.println("liveEnd " + vReg + " with PReg " + colorMap.get(vReg).toMIPS());
+                // System.out.println("liveEnd " + vReg + " with PReg " + colorMap.get(vReg).toMIPS());
                 freePRegs.remove(colorMap.get(vReg)); // 这个在遍历的时候会回收进freePRegs
             }
 
@@ -785,6 +808,16 @@ public class VReg2PReg {
             while (backwardIterator.hasNext()) {
                 DoublyLinkedList.Node<Instruction> node = backwardIterator.next();
                 Instruction instruction = node.getValue();
+
+                Iterator<Map.Entry<PReg, Integer>> iterator = localSpillDefMap.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry<PReg, Integer> entry = iterator.next();
+                    int startTime = entry.getValue();
+                    // startTimeR = endTimeI
+                    // 已知插入的load/store绝对不会是目标指令，且我们没给他更新start/endTimeI，直接default = -1即可
+                    if (startTime == endTimeI.getOrDefault(instruction, -1)) iterator.remove();
+                }
+
                 if (releaseSpillLocMap.containsKey(instruction)) {
                     SpillLoc spillLoc = releaseSpillLocMap.get(instruction);
                     releaseSpillLoc(spillLoc);
@@ -793,23 +826,12 @@ public class VReg2PReg {
                 for (VReg t : instruction.getDefVRegs()) {
                     live.remove(t);
                     // 此时定义部分也该分配pReg！
-                    if (!colorMap.containsKey(t) && inLocalGraph.getOrDefault(t, false)) {
-                        // 仅在只def不use的情况时出现
-                        // 此时live集内一定没有t，上面有live.remove(t)也不会影响
-                        // 从优化角度而言，这种指令应该被删掉，从而减小寄存器分配的压力
-                        // 只考虑不在栈内的变量
-                        if (freePRegs.isEmpty()) {
-                            localSpillRegister(live, block, node, freePRegs);
-                        }
-                        PReg s = freePRegs.iterator().next();
-                        freePRegs.remove(s);
-                        colorMap.put(t, s);
-                        assignedPRegs.add(s);
-                    }
-                    if (!liveStartPRegs.contains(colorMap.get(t)) && !instruction.getUseVRegs().contains(t)) {
-                        // TODO: 原实现条件有!instruction.getUseVRegs().contains(t)，我认为没什么必要
+                    getColorForOnePass(freePRegs, live, node, t);
+                    if (!instruction.getUseVRegs().contains(t)) {
+                        // liveStart的pReg也可以回收，下面getColor会判断能否分配；不能的话，溢出逻辑应该能解决问题
+                        // !instruction.getUseVRegs().contains(t)要有，否则两个不同use会被分到同一个pReg
                         if (colorMap.get(t) != null) {
-                            System.out.println(block + " Released: " + colorMap.get(t).toMIPS());
+                            // System.out.println(block + " Released: " + colorMap.get(t).toMIPS());
                             freePRegs.add(colorMap.get(t));
                         }
                     }
@@ -827,68 +849,61 @@ public class VReg2PReg {
                         }
                         // 只对没入栈的分配
                         // 没被分配寄存器的，一定是局部变量
-                        if (!colorMap.containsKey(t) && inLocalGraph.getOrDefault(t, false)) {
-                            if (freePRegs.isEmpty()) {
-                                localSpillRegister(live, block, node, freePRegs);
-                                System.out.println(t.toString() + " retrieved " + freePRegs.iterator().next().toMIPS());
-                            }
-                            PReg s = freePRegs.iterator().next();
-                            freePRegs.remove(s);
-                            colorMap.put(t, s);
-                            assignedPRegs.add(s);
-                        }
+                        getColorForOnePass(freePRegs, live, node, t);
                     }
                 }
             }
         }
 
-        /* deprecated
-        private void onePassAllocate() {
-            // 对于那些仍然留在图中的VReg
-            HashSet<PReg> globalRegisters = new HashSet<>();
-            for (VReg t : liveStart) {
-                globalRegisters.add(colorMap.get(t));
-            }
-            HashSet<PReg> freeRegisters = new HashSet<>(Config.availPRegs);
-            for (VReg t : liveEnd) {
-                freeRegisters.remove(colorMap.get(t));
-                inLocalGraph.put(t, true);
-            }
-            freeRegisters.removeAll(globalRegisters);
-            HashSet<VReg> live = new HashSet<>(liveEnd); // 以liveEnd初始化，旨在屏蔽掉那些已完成分配的全局变量
-            for (int i = block.getInstructions().size() - 1; i >= 0; i--) {
-                Instruction instruction = block.getInstructions().get(i);
-                if (releaseSpillLocMap.containsKey(instruction)) {
-                    SpillLoc spillLoc = releaseSpillLocMap.get(instruction);
-                    releaseSpillLoc(spillLoc);
-                }
-                for (VReg t : instruction.getDefVRegs()) {
-                    live.remove(t);
-                    if (!instruction.getUseVRegs().contains(t) && !globalRegisters.contains(colorMap.get(t))) {
-                        // 第二个条件，是为了忽略通过liveStart共用分配好的结果
-                        freeRegisters.add(colorMap.get(t));
-                    }
-                }
-                for (VReg t : instruction.getUseVRegs()) {
-                    if (!live.contains(t)) {
-                        live.add(t);
-                        // 修正了原文逻辑，这里只对没入栈的分配
-                        // 再次，没被分配寄存器的一定是局部变量，不用担心全局变量混进来
-                        if (!colorMap.containsKey(t) && inLocalGraph.getOrDefault(t, false)) {
-                            if (freeRegisters.isEmpty()) {
-                                localSpillRegister(live, block, instruction, freeRegisters);
+        private void getColorForOnePass(HashSet<PReg> freePRegs, HashSet<VReg> live, DoublyLinkedList.Node<Instruction> node, VReg t) {
+            if (!colorMap.containsKey(t) && inLocalGraph.getOrDefault(t, false)) {
+                // 仅在只def不use的情况时出现
+                // 此时live集内一定没有t，上面有live.remove(t)也不会影响
+                // 从优化角度而言，这种指令应该被删掉，从而减小寄存器分配的压力
+                // 只考虑不在栈内的变量
+                PReg color = null;
+                if (freePRegs.isEmpty()) {
+                    localSpillRegister(t, live, block, node, freePRegs);
+                    color = freePRegs.iterator().next();
+                } else {
+                    boolean avail = false;
+                    for (PReg pReg : freePRegs) {
+                        if (localSpillDefMap.containsKey(pReg)) {
+                            if (startTimeR.get(t) < localSpillDefMap.get(pReg)) {
+                                avail = true;
+                                color = pReg;
+                                break;
                             }
-                            PReg s = freeRegisters.iterator().next();
-                            freeRegisters.remove(s);
-                            colorMap.put(t, s);
-                            assignedPRegs.add(s);
-                            // inLocalGraph.put(t, true);
+                        } else if (liveStartAvailMap.containsKey(pReg)) {
+                            if (startTimeR.get(t) < liveStartAvailMap.get(pReg)) {
+                                avail = true;
+                                color = pReg;
+                                break;
+                            }
+                        } else {
+                            HashSet<PReg> unavail = new HashSet<>();
+                            for (VReg u : localConflictGraph.getNeighbors(t)) {
+                                unavail.add(colorMap.get(u));
+                            }
+                            if (!unavail.contains(pReg)) {
+                                avail = true;
+                                color = pReg;
+                                break;
+                            }
                         }
                     }
+                    if (!avail) {
+                        localSpillRegister(t, live, block, node, freePRegs);
+                        color = freePRegs.iterator().next();
+                    }
                 }
+                PReg s = color;
+                freePRegs.remove(s);
+                colorMap.put(t, s);
+                assignedPRegs.add(s);
+                // System.out.println(t.toString() + " got from onePass: " + colorMap.get(t).toMIPS());
             }
         }
-        */
 
         private void giveStackedVRegsColor() {
             // 在Stacked内，一定能找到可用的PReg
@@ -896,25 +911,25 @@ public class VReg2PReg {
                 VReg t = stack.pop();
                 HashSet<PReg> unavailable = new HashSet<>();
                 for (VReg u : localConflictGraph.getNeighbors(t)) {
+                    // System.out.println(t.toString() + " neighbors: " + u.toString());
                     unavailable.add(colorMap.get(u));
                 }
                 PReg color = choosePRegLocal(t, unavailable);
                 colorMap.put(t, color);
                 assignedPRegs.add(color);
                 inLocalGraph.put(t, true);
+                // System.out.println(t.toString() + " got " + color.toMIPS());
             }
         }
 
-        private void localSpillRegister(Set<VReg> live, MipsBlock block, DoublyLinkedList.Node<Instruction> instrNode, Set<PReg> freeRegisters) {
+        private void localSpillRegister(VReg currentVReg, Set<VReg> live, MipsBlock block, DoublyLinkedList.Node<Instruction> instrNode, Set<PReg> freeRegisters) {
             // live中的此时都已经被分配PReg
             // 此时溢出，可以溢出局部的，也可以溢出全局的，包括liveThrough/transparent，后者由insertAfter(target = null)直接在块头插入store保证正确性
-            // TODO: 似乎是此处溢出了liveStart的，这不该发生
             Instruction instruction = instrNode.getValue();
             int earliest = 0;
             DoublyLinkedList.Node<Instruction> lastUseDef = null;
             VReg target = null;
             for (VReg vReg : live) {
-
                 int prev = endTimeI.get(block.getInstructions().getHead().getValue());
                 DoublyLinkedList.Node<Instruction> prevInst = null;
                 loop: for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
@@ -937,11 +952,14 @@ public class VReg2PReg {
                         break;
                     }
                 }
-                if (prevInst == instrNode) {
-                    // 考虑一条指令use两个不同VReg；
-                    // 显然不能spill在同一处用到的另一个VReg，因为操作数间没法插load
-                    continue;
-                }
+
+                // 考虑一条指令use两个不同VReg；
+                // 显然不能spill在同一处用到的另一个VReg，因为操作数间没法插load
+                if (prevInst == instrNode) continue;
+
+                // 待分配vReg定义早于victim vReg，则不应分配
+                if (startTimeR.get(currentVReg) > startTimeR.get(vReg)) continue;
+
                 if (prev > earliest) {
                     earliest = prev;
                     lastUseDef = prevInst;
@@ -980,7 +998,8 @@ public class VReg2PReg {
 
             // 原文似乎把insert笔误成了delete...
             freeRegisters.add(colorMap.get(target));
-            System.out.println("Spilled: " + target.toString());
+            localSpillDefMap.put(colorMap.get(target), startTimeR.get(target));
+            // System.out.println("Spilled: " + target.toString());
         }
     }
 }

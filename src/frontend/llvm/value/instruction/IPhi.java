@@ -28,6 +28,32 @@ public class IPhi extends Inst {
         return pairs;
     }
 
+    public void dropSourcePair(int index) {
+        dropOperand(index * 2);
+        dropOperand(index * 2);
+    }
+
+    @Override
+    public Integer numbering() {
+        return getOperands().stream().map(Value::hashCode).reduce(0, Integer::sum);
+    }
+
+    @Override
+    public boolean numberingEquals(Inst inst) {
+        // 由于是LVN，由于我们Phi的构建方法，可以保证等价的Phi，sourcePair的顺序是一样的
+        if (!(inst instanceof IPhi other)) {
+            return false;
+        }
+        if (this.getOperands().size() != other.getOperands().size()) {
+            return false;
+        }
+        for (int i = 0; i < this.getOperands().size(); i++) {
+            if (!this.getOperands().get(i).equals(other.getOperands().get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     @Override
     public String toLLVM() {
