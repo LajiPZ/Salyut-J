@@ -202,5 +202,9 @@ final public class DoublyLinkedList<T> implements Iterable<DoublyLinkedList.Node
         return new ForwardIter<>(head);
     }
 
+    public Iterator<Node<T>> iteratorAfter(Node<T> node) {
+        return new ForwardIter<>(node);
+    }
+
     public Iterator<Node<T>> backwardIterator() { return new BackwardIter<>(tail); }
 }

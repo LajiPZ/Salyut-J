@@ -4,7 +4,9 @@ import frontend.datatype.VoidType;
 import frontend.llvm.value.Function;
 import frontend.llvm.value.Value;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ICall extends Inst {
@@ -40,4 +42,18 @@ public class ICall extends Inst {
         sb.append(")");
         return sb.toString();
     }
+
+    @Override
+    public Inst clone(Map<Value, Value> replacementMap) {
+        List<Value> newArgs = new ArrayList<>();
+        for (Value arg : getOperands()) {
+            newArgs.add(replacementMap.getOrDefault(arg, arg));
+        }
+        return new ICall(
+            getFunction(),
+            newArgs
+        );
+    }
+
+
 }

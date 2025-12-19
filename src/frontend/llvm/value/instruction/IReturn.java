@@ -4,6 +4,7 @@ import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Value;
 
 import java.util.List;
+import java.util.Map;
 
 public class IReturn extends ITerminator {
     public IReturn() {
@@ -28,7 +29,20 @@ public class IReturn extends ITerminator {
     }
 
     @Override
+    public Inst clone(Map<Value, Value> replacementMap) {
+        if (getOperands().isEmpty()) {
+            return new IReturn();
+        } else {
+            return new IReturn(
+                replacementMap.getOrDefault(getOperand(0), getOperand(0))
+            );
+        }
+    }
+
+    @Override
     public List<BBlock> getSuccessors() {
         return List.of();
     }
+
+
 }

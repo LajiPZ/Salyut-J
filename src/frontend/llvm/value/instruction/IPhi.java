@@ -7,6 +7,7 @@ import utils.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class IPhi extends Inst {
     public IPhi(DataType type) {
@@ -53,6 +54,18 @@ public class IPhi extends Inst {
             }
         }
         return true;
+    }
+
+    @Override
+    public Inst clone(Map<Value, Value> replacementMap) {
+        IPhi phi = new IPhi(getType());
+        for (var sourcePair : getSourcePairs()) {
+            phi.addSourcePair(
+                (BBlock) replacementMap.getOrDefault(sourcePair.getValue1(), sourcePair.getValue1()),
+                replacementMap.getOrDefault(sourcePair.getValue2(), sourcePair.getValue2())
+            );
+        }
+        return phi;
     }
 
     @Override

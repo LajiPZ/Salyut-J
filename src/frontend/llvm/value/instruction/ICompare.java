@@ -3,6 +3,8 @@ package frontend.llvm.value.instruction;
 import frontend.datatype.BooleanType;
 import frontend.llvm.value.Value;
 
+import java.util.Map;
+
 public class ICompare extends Inst {
 
     private final Operator op;
@@ -22,5 +24,14 @@ public class ICompare extends Inst {
     public String toLLVM() {
         return getName() + " = " + op.getOperation() + " " + getOperand(0).getType() + " " +
             getOperand(0).getName() + ", " + getOperand(1).getName();
+    }
+
+    @Override
+    public Inst clone(Map<Value, Value> replacementMap) {
+        return new ICompare(
+            op,
+            replacementMap.getOrDefault(getOperand(0), getOperand(0)),
+            replacementMap.getOrDefault(getOperand(1), getOperand(1))
+        );
     }
 }

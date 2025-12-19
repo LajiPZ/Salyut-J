@@ -4,6 +4,8 @@ import frontend.datatype.ArrayType;
 import frontend.datatype.PointerType;
 import frontend.llvm.value.Value;
 
+import java.util.Map;
+
 public class IGep extends Inst {
     // Get Element Pointer
 
@@ -56,5 +58,14 @@ public class IGep extends Inst {
         return getOperand(0).equals(other.getOperand(0))
             && getOperand(1).equals(other.getOperand(1))
             && fromArgs == other.fromArgs;
+    }
+
+    @Override
+    public Inst clone(Map<Value, Value> replacementMap) {
+        return new IGep(
+            replacementMap.getOrDefault(getOperand(0), getOperand(0)),
+            replacementMap.getOrDefault(getOperand(1), getOperand(1)),
+            fromArgs
+        );
     }
 }

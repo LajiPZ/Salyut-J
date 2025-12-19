@@ -7,6 +7,7 @@ import frontend.datatype.DataType;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 
@@ -79,4 +80,6 @@ abstract public class Inst extends Value {
             .filter(i -> this.uses.get(i).getValue().equals(inst))
             .findFirst().ifPresent(uses::remove);
     }
+
+    abstract public Inst clone(Map<Value, Value> replacementMap);
 }

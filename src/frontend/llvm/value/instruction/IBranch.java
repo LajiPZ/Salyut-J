@@ -4,6 +4,7 @@ import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Value;
 
 import java.util.List;
+import java.util.Map;
 
 public class IBranch extends ITerminator {
 
@@ -42,6 +43,10 @@ public class IBranch extends ITerminator {
         return (BBlock) getOperand(0);
     }
 
+    public Value getCond() {
+        return getOperand(0);
+    }
+
     public BBlock getTrueTarget() {
         return (BBlock) getOperand(1);
     }
@@ -65,6 +70,21 @@ public class IBranch extends ITerminator {
     }
 
     @Override
+    public Inst clone(Map<Value, Value> replacementMap) {
+        if (isConditinal()) {
+            return new IBranch(
+                replacementMap.get(this.getCond()),
+                (BBlock) replacementMap.get(this.getTrueTarget()),
+                (BBlock) replacementMap.get(this.getFalseTarget())
+            );
+        } else {
+            return new IBranch(
+                (BBlock) replacementMap.get(getUncondTarget())
+            );
+        }
+    }
+
+    @Override
     public List<BBlock> getSuccessors() {
         if (isConditinal()) {
             return List.of((BBlock) getOperand(1), (BBlock) getOperand(2));
@@ -72,4 +92,6 @@ public class IBranch extends ITerminator {
             return List.of((BBlock) getOperand(0));
         }
     }
+
+
 }

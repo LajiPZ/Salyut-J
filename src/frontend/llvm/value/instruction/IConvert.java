@@ -5,10 +5,15 @@ import frontend.datatype.DataType;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.constant.IntConstant;
 
+import java.util.Map;
+
 public class IConvert extends Inst {
+
+    private DataType target;
 
     public IConvert(DataType target, Value val) {
         super("%" + Value.counter.get(), target);
+        this.target = target;
         addOperand(val);
     }
 
@@ -25,7 +30,17 @@ public class IConvert extends Inst {
         return sb.toString();
     }
 
+    @Override
+    public Inst clone(Map<Value, Value> replacementMap) {
+        return new IConvert(
+            target,
+            replacementMap.getOrDefault(getOperand(0), getOperand(0))
+        );
+    }
+
     public boolean isTruncating() {
         return getType().getSize() < getOperand(0).getType().getSize();
     }
+
+
 }

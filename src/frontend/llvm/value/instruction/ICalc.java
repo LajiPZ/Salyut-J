@@ -2,6 +2,8 @@ package frontend.llvm.value.instruction;
 
 import frontend.llvm.value.Value;
 
+import java.util.Map;
+
 public class ICalc extends Inst {
     private final Operator operator;
 
@@ -48,4 +50,15 @@ public class ICalc extends Inst {
             return (getOperand(0).equals(other.getOperand(0)) && getOperand(1).equals(other.getOperand(1)));
         }
     }
+
+    @Override
+    public Inst clone(Map<Value, Value> replacementMap) {
+        return new ICalc(
+            getOp(),
+            replacementMap.getOrDefault(getOperand(0), getOperand(0)),
+            replacementMap.getOrDefault(getOperand(1), getOperand(1))
+        );
+    }
+
+
 }
