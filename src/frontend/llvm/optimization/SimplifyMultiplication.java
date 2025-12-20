@@ -27,7 +27,8 @@ public class SimplifyMultiplication implements Pass {
 
     private void execute(Function func) {
         HashMap<Value, Value> replacementMap = new HashMap<>();
-        for (BBlock block : func.getBBlocks()) {
+        for (var n : func.getBBlocks()) {
+            BBlock block = n.getValue();
             for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
                 Inst inst = node.getValue();
                 if (!(inst instanceof ICalc iCalc)) {
@@ -90,7 +91,8 @@ public class SimplifyMultiplication implements Pass {
                 }
             }
         }
-        for (BBlock block : func.getBBlocks()) {
+        for (var n : func.getBBlocks()) {
+            BBlock block = n.getValue();
             for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
                 Inst inst = node.getValue();
                 replacementMap.forEach(inst::replaceOperand);

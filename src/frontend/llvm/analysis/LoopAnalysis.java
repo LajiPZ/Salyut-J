@@ -32,7 +32,7 @@ public class LoopAnalysis implements Pass {
 
         if (function.getBBlocks().isEmpty()) return;
 
-        List<BBlock> postOrder = dom.getPostOrder(function.getBBlocks().get(0));
+        List<BBlock> postOrder = dom.getPostOrder(function.getBBlocks().getHead().getValue());
 
         for (BBlock head : postOrder) {
             Stack<BBlock> backEdges = new Stack<>();

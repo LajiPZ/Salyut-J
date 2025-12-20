@@ -25,6 +25,7 @@ public class Phi extends Instruction {
     }
 
     public void addOperand(Operand operand, MipsBlock source) {
+
         operands.add(operand);
         sources.add(source);
     }

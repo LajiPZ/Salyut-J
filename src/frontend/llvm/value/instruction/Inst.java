@@ -81,5 +81,6 @@ abstract public class Inst extends Value {
             .findFirst().ifPresent(uses::remove);
     }
 
-    abstract public Inst clone(Map<Value, Value> replacementMap);
+    @Override
+    abstract public Inst clone();
 }

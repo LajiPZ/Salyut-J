@@ -26,7 +26,8 @@ public class EliminateDeadCode implements Pass {
         HashMap<Inst, BBlock> blockMap = new HashMap<>();
 
         // 1. Init
-        for (BBlock bBlock : function.getBBlocks()) {
+        for (var n : function.getBBlocks()) {
+            BBlock bBlock = n.getValue();
             for (DoublyLinkedList.Node<Inst> node : bBlock.getInstructions()) {
                 Inst inst = node.getValue();
                 blockMap.put(inst, bBlock);
@@ -72,24 +73,36 @@ public class EliminateDeadCode implements Pass {
 
         // 3. 删除不活跃的指令和块
         List<BBlock> deadBlocks = new LinkedList<>();
-        Iterator<BBlock> bBlockIterator = function.getBBlocks().iterator();
+        Iterator<DoublyLinkedList.Node<BBlock>> bBlockIterator = function.getBBlocks().iterator();
         while (bBlockIterator.hasNext()) {
-            BBlock bBlock = bBlockIterator.next();
+            BBlock bBlock = bBlockIterator.next().getValue();
+            if (!liveBlocks.contains(bBlock)) {
+                deadBlocks.add(bBlock);
+                continue;
+            }
             var it = bBlock.getInstructions().iterator();
             while (it.hasNext()) {
                 Inst inst = it.next().getValue();
                 if (!liveInsts.contains(inst)) {
                     it.remove();
+                    if (inst instanceof ITerminator && liveBlocks.contains(bBlock)) System.out.println("WARNING...");
                 }
             }
             if (bBlock.getInstructions().isEmpty()) {
-                // TODO: 如果要打印LLVM，此处不应删除任何块
-                bBlockIterator.remove();
                 deadBlocks.add(bBlock);
             }
         }
 
-        for (BBlock bBlock : function.getBBlocks()) {
+        // TODO: 如果要打印LLVM，此处不应删除任何块
+        for (var node : function.getBBlocks()) {
+            BBlock bBlock = node.getValue();
+            if (deadBlocks.contains(bBlock)) {
+                node.drop();
+            }
+        }
+
+        for (var node : function.getBBlocks()) {
+            BBlock bBlock = node.getValue();
             ITerminator terminator = (ITerminator) bBlock.getLastInstruction();
             if (terminator.getSuccessors().stream().anyMatch(deadBlocks::contains)) {
                 if (terminator.getSuccessors().size() != 2) {
@@ -103,8 +116,6 @@ public class EliminateDeadCode implements Pass {
                 bBlock.addInstruction(new IBranch(successor));
             }
         }
-
-        // TODO: 如果要打印LLVM，此处不应删除任何块
-        function.getBBlocks().removeAll(deadBlocks);
+        // function.getBBlocks().removeAll(deadBlocks);
     }
 }

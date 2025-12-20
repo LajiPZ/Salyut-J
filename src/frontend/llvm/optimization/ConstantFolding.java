@@ -31,7 +31,8 @@ public class ConstantFolding implements Pass {
         while (changed) {
             changed = false;
 
-            for (BBlock bBlock : function.getBBlocks()) {
+            for (var n : function.getBBlocks()) {
+                BBlock bBlock = n.getValue();
                 for (DoublyLinkedList.Node<Inst> node : bBlock.getInstructions()) {
                     Inst inst = node.getValue();
                     if (!map.containsKey(inst) && (inst instanceof ICalc || inst instanceof ICompare)) {

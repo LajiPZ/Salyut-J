@@ -61,10 +61,10 @@ public class IGep extends Inst {
     }
 
     @Override
-    public Inst clone(Map<Value, Value> replacementMap) {
+    public Inst clone() {
         return new IGep(
-            replacementMap.getOrDefault(getOperand(0), getOperand(0)),
-            replacementMap.getOrDefault(getOperand(1), getOperand(1)),
+            getOperand(0),
+            getOperand(1),
             fromArgs
         );
     }

@@ -18,11 +18,11 @@ public class ControlFlowGraph {
     }
 
     public Set<BBlock> getPredecessors(BBlock block) {
-        return predecessors.get(block);
+        return predecessors.getOrDefault(block, Set.of());
     }
 
     public Set<BBlock> getSuccessors(BBlock block) {
-        return successors.get(block);
+        return successors.getOrDefault(block, Set.of());
     }
 
     public boolean containsBBlock(BBlock block) {

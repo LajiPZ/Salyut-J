@@ -4,14 +4,16 @@ import frontend.datatype.DataType;
 import frontend.llvm.tools.ControlFlowGraph;
 import frontend.llvm.tools.DominatorTree;
 import frontend.llvm.tools.LoopInformation;
+import utils.DoublyLinkedList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Function extends Value {
-    private final List<BBlock> bBlocks;
+    private final DoublyLinkedList<BBlock> bBlocks;
     private final List<Value> params;
     private boolean isExtern = false;
 
@@ -69,7 +71,7 @@ public class Function extends Value {
 
     public Function(String name, DataType type) {
         super(name, type);
-        this.bBlocks = new ArrayList<>();
+        this.bBlocks = new DoublyLinkedList<>();
         this.params = new ArrayList<>();
     }
 
@@ -92,19 +94,24 @@ public class Function extends Value {
     }
 
     public void addBBlock(BBlock bBlock) {
-        bBlocks.add(bBlock);
+        new DoublyLinkedList.Node<BBlock>(bBlock).insertIntoTail(bBlocks);
     }
 
     public List<Value> getParams() {
         return params;
     }
 
-    public List<BBlock> getBBlocks() {
+    public DoublyLinkedList<BBlock> getBBlocks() {
         return bBlocks;
     }
 
     @Override
     public String toString() {
+        List<BBlock> output = new LinkedList<>();
+        for (DoublyLinkedList.Node<BBlock> node : bBlocks) {
+            BBlock bBlock = node.getValue();
+            output.add(bBlock);
+        }
         // 输出函数定义，external函数此处不关心
         return "define dso_local " +
                 getType() +
@@ -112,7 +119,7 @@ public class Function extends Value {
                 "(" +
                 params.stream().map(Value::toString).collect(Collectors.joining(", ")) +
                 ") {\n" +
-                bBlocks.stream().map(Value::toString).collect(Collectors.joining("\n")) +
+                output.stream().map(Value::toString).collect(Collectors.joining("\n")) +
                 "}\n";
     }
 }

@@ -113,6 +113,9 @@ final public class DoublyLinkedList<T> implements Iterable<DoublyLinkedList.Node
                 parent.tail = prev;
             }
 
+            this.prev = null;
+            this.next = null;
+
             parent.size--;
         }
 

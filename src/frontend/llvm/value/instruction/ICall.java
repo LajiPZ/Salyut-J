@@ -44,11 +44,8 @@ public class ICall extends Inst {
     }
 
     @Override
-    public Inst clone(Map<Value, Value> replacementMap) {
-        List<Value> newArgs = new ArrayList<>();
-        for (Value arg : getOperands()) {
-            newArgs.add(replacementMap.getOrDefault(arg, arg));
-        }
+    public Inst clone() {
+        List<Value> newArgs = new ArrayList<>(getOperands());
         return new ICall(
             getFunction(),
             newArgs

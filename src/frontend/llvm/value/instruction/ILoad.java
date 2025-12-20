@@ -21,8 +21,8 @@ public class ILoad extends Inst {
     }
 
     @Override
-    public Inst clone(Map<Value, Value> replacementMap) {
-        return new ILoad(replacementMap.getOrDefault(getOperand(0), getOperand(0)));
+    public Inst clone() {
+        return new ILoad(getOperand(0));
     }
 
 

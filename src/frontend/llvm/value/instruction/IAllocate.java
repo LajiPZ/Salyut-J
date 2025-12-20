@@ -18,7 +18,7 @@ public class IAllocate extends Inst {
     }
 
     @Override
-    public Inst clone(Map<Value, Value> replacementMap) {
+    public Inst clone() {
         return new IAllocate(getType());
     }
 }

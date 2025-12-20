@@ -29,16 +29,16 @@ public class MipsBuilder {
     private MipsBlock exitBlock;
     private MipsModule top;
 
-    public MipsBuilder(MipsModule top, List<BBlock> bblocks, MipsBlock entry, MipsBlock exit) {
+    public MipsBuilder(MipsModule top, DoublyLinkedList<BBlock> bblocks, MipsBlock entry, MipsBlock exit) {
         bblocks.forEach(bblock -> {
-            blockMap.put(bblock, new MipsBlock(bblock));
+            blockMap.put(bblock.getValue(), new MipsBlock(bblock.getValue()));
         });
 
         this.functionMap = top.getFunctionMap();
         this.exitBlock = exit;
         this.top = top;
 
-        if (!bblocks.isEmpty()) MipsBlock.addEdge(entry, getMipsBlock(bblocks.get(0)));
+        if (!bblocks.isEmpty()) MipsBlock.addEdge(entry, getMipsBlock(bblocks.getHead().getValue()));
 
         buildValueMap();
 

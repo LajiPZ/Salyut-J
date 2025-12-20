@@ -25,10 +25,10 @@ public class IStore extends Inst {
     }
 
     @Override
-    public Inst clone(Map<Value, Value> replacementMap) {
+    public Inst clone() {
         return new IStore(
-            replacementMap.getOrDefault(getValue(), getValue()),
-            replacementMap.getOrDefault(getPointer(), getPointer())
+            getValue(),
+            getPointer()
         );
     }
 }

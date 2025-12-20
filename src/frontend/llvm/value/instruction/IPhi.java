@@ -57,12 +57,12 @@ public class IPhi extends Inst {
     }
 
     @Override
-    public Inst clone(Map<Value, Value> replacementMap) {
+    public Inst clone() {
         IPhi phi = new IPhi(getType());
         for (var sourcePair : getSourcePairs()) {
             phi.addSourcePair(
-                (BBlock) replacementMap.getOrDefault(sourcePair.getValue1(), sourcePair.getValue1()),
-                replacementMap.getOrDefault(sourcePair.getValue2(), sourcePair.getValue2())
+                sourcePair.getValue1(),
+                sourcePair.getValue2()
             );
         }
         return phi;

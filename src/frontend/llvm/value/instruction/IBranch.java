@@ -70,16 +70,16 @@ public class IBranch extends ITerminator {
     }
 
     @Override
-    public Inst clone(Map<Value, Value> replacementMap) {
+    public Inst clone() {
         if (isConditinal()) {
             return new IBranch(
-                replacementMap.get(this.getCond()),
-                (BBlock) replacementMap.get(this.getTrueTarget()),
-                (BBlock) replacementMap.get(this.getFalseTarget())
+                this.getCond(),
+                this.getTrueTarget(),
+                this.getFalseTarget()
             );
         } else {
             return new IBranch(
-                (BBlock) replacementMap.get(getUncondTarget())
+                getUncondTarget()
             );
         }
     }

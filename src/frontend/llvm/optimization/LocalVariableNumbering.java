@@ -17,8 +17,8 @@ public class LocalVariableNumbering implements Pass {
     @Override
     public void run(IrModule module) {
         for (Function f : module.getFunctions()) {
-            for (BBlock block : f.getBBlocks()) {
-                execute(block);
+            for (var node : f.getBBlocks()) {
+                execute(node.getValue());
             }
         }
     }

@@ -37,7 +37,8 @@ public class Mem2Reg implements Pass {
         // 找到所有的Alloc，以及所有的定义点
         allocates.clear();
         allocateDefines.clear();
-        for (BBlock block: func.getBBlocks()) {
+        for (var n: func.getBBlocks()) {
+            BBlock block = n.getValue();
             if (!func.getCtrlFlowGraph().containsBBlock(block)) {
                 continue;
             }
@@ -59,10 +60,12 @@ public class Mem2Reg implements Pass {
 
     private void findDominationFrontiers(Function func) {
         dominatorFrontiers.clear();
-        for (BBlock block: func.getBBlocks()) {
+        for (var node: func.getBBlocks()) {
+            BBlock block = node.getValue();
             dominatorFrontiers.put(block, new HashSet<>());
         }
-        for (BBlock block: func.getBBlocks()) {
+        for (var node: func.getBBlocks()) {
+            BBlock block = node.getValue();
             if (func.getCtrlFlowGraph().getPredecessors(block).size() <= 1) {
                 // Sequential / Dead Block
                 continue;
@@ -106,7 +109,7 @@ public class Mem2Reg implements Pass {
         Map<Value, Value> replaceMap = new HashMap<>(); // 被替换掉的指令（如Load），被替换为的值
 
         LinkedList<Map<BBlock, Map<Value, Value>>> worklist = new LinkedList<>(); // BBlock到replaceMap映射的集合，用于给Phi加入来源
-        worklist.push(Map.of(func.getBBlocks().get(0), new HashMap<>()));
+        worklist.push(Map.of(func.getBBlocks().getHead().getValue(), new HashMap<>()));
         while (!worklist.isEmpty()) {
             var entry = worklist.pop();
             BBlock block = entry.keySet().iterator().next();
@@ -166,7 +169,8 @@ public class Mem2Reg implements Pass {
                 }
             }
         }
-        for (BBlock block : func.getBBlocks()) {
+        for (var n : func.getBBlocks()) {
+            BBlock block = n.getValue();
             // visited的已经换好了，没visited的没换完，故有这一步
             if (!visited.contains(block)) {
                 for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {

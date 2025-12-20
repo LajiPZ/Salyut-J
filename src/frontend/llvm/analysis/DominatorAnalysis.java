@@ -6,6 +6,7 @@ import frontend.llvm.tools.ControlFlowGraph;
 import frontend.llvm.tools.DominatorTree;
 import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Function;
+import utils.DoublyLinkedList;
 
 import java.util.*;
 
@@ -25,18 +26,21 @@ public class DominatorAnalysis implements Pass {
 
         if (f.getBBlocks().isEmpty()) return null;
 
-        for (BBlock blk : f.getBBlocks()) {
+        for (DoublyLinkedList.Node<BBlock> node : f.getBBlocks()) {
+            BBlock blk = node.getValue();
             dominatedBy.put(blk, new HashSet<>());
             dominates.put(blk, new LinkedList<>());
         }
 
-        for (BBlock blk : f.getBBlocks()) {
+        for (var node : f.getBBlocks()) {
+            BBlock blk = node.getValue();
             Set<BBlock> visited = new HashSet<>() {{
                 add(blk);
             }};
-            dfs(f.getBBlocks().get(0), f.getCtrlFlowGraph(), visited);
+            dfs(f.getBBlocks().getHead().getValue(), f.getCtrlFlowGraph(), visited);
             // 移除Blk之后，不能到，则被blk支配；注意此时已经删掉了不可达块
-            for (BBlock t : f.getBBlocks()) {
+            for (var node1 : f.getBBlocks()) {
+                BBlock t = node1.getValue();
                 if (!visited.contains(t)) {
                     dominatedBy.get(t).add(blk);
                 }

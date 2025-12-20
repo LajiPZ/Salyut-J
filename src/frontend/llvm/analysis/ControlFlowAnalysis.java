@@ -23,7 +23,7 @@ public class ControlFlowAnalysis implements Pass {
         Set<BBlock> visited = new HashSet<>();
         Queue<BBlock> queue = new LinkedList<>();
         if (f.getBBlocks().isEmpty()) return null;
-        queue.add(f.getBBlocks().get(0)); // That is, the first BBlock
+        queue.add(f.getBBlocks().getHead().getValue()); // That is, the first BBlock
 
         while (!queue.isEmpty()) {
             BBlock block = queue.poll();

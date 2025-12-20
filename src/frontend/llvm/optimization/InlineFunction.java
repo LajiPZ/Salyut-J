@@ -8,60 +8,48 @@ import frontend.llvm.value.Function;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.instruction.*;
 import utils.DoublyLinkedList;
+import utils.Pair;
 
 import java.util.*;
 
 public class InlineFunction implements Pass {
-
-    private HashMap<Value, Value> callReplacementMap = new HashMap<>();
-
     @Override
     public void run(IrModule module) {
         for (Function f : module.getFunctions()) {
             Value.counter.set(f.resumeValCounter());
-            List<BBlock> bBlocksToBeInserted = new LinkedList<>();
-            for (BBlock block : f.getBBlocks()) {
+            HashSet<Function> activeFunctions = new HashSet<>();
+            activeFunctions.add(f);
+            for (var n : f.getBBlocks()) {
+                BBlock block = n.getValue();
                 for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
                     Inst inst = node.getValue();
                     if (inst instanceof ICall call) {
                         // getint()也是ICall调用的，所以要处理一下
                         if (module.getFunctions().contains(call.getFunction())) {
-                            HashSet<Function> activeFunctions = new HashSet<>();
-                            bBlocksToBeInserted.addAll(execute(module, node, block, f, activeFunctions));
+                            execute(module, node, block, f, activeFunctions);
                         }
                     }
                 }
             }
             f.saveCurrentValCounter(Value.counter.reset());
-            for (BBlock block : bBlocksToBeInserted) f.addBBlock(block);
-        }
-        // 虽然很蠢，但是这样换ICall的值最简单
-        for (Function f : module.getFunctions()) {
-            for (BBlock block : f.getBBlocks()) {
-                for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
-                    Inst inst = node.getValue();
-                    for (int i = 0; i < inst.getOperands().size(); i++) {
-                        Value replaced = callReplacementMap.getOrDefault(inst.getOperand(i), inst.getOperand(i));
-                        inst.replaceOperand(i, replaced);
-                    }
-                }
-            }
         }
     }
 
-    private List<BBlock> execute(IrModule module, DoublyLinkedList.Node<Inst> callNode, BBlock callAtBlock, Function callAtFunction, HashSet<Function> activeFunctions) {
-        // TODO: activeFunctions有问题
+    private void execute(IrModule module, DoublyLinkedList.Node<Inst> callNode, BBlock callAtBlock, Function callAtFunction, HashSet<Function> activeFunctions) {
+        Function calledFunction = ((ICall) callNode.getValue()).getFunction();
+        if (activeFunctions.contains(calledFunction)) return;
+        activeFunctions.add(calledFunction);
+
+        Stack<Pair<DoublyLinkedList.Node<Inst>, BBlock>> pendingCalls = new Stack<>();
 
         List<BBlock> bBlocksToBeInserted = new LinkedList<>();
-
-        activeFunctions.add(callAtFunction);
-        Function calledFunction = ((ICall) callNode.getValue()).getFunction();
-        if (activeFunctions.contains(calledFunction)) return List.of();
 
         // 1. ICall为界，分块
         BBlock lowerBBlock = new BBlock(callAtFunction);
         // iteratorAfter的行为，保证下半部分第一条就是ICall
         Iterator<DoublyLinkedList.Node<Inst>> it = callAtBlock.getInstructions().iteratorAfter(callNode);
+        it.next();
+        it.remove();
         while (it.hasNext()) {
             DoublyLinkedList.Node<Inst> node = it.next();
             Inst inst = node.getValue();
@@ -71,28 +59,20 @@ public class InlineFunction implements Pass {
         bBlocksToBeInserted.add(lowerBBlock);
 
         // 2. 展开函数
-        IPhi phi = new IPhi(callNode.getValue().getType());
-        BBlock endBlock = new BBlock(callAtFunction);
-        if (!(calledFunction.getType() instanceof VoidType)) endBlock.addInstruction(phi);
-        endBlock.addInstruction(new IBranch(lowerBBlock));
-
         // 展开部分终结块的Phi对应的Value，代替原来的ICall
-        lowerBBlock.getInstructions().getHead().drop();
-        IPhi retPhi = new IPhi(callNode.getValue().getType());
-        retPhi.addSourcePair(endBlock, phi);
-        new DoublyLinkedList.Node<Inst>(retPhi).insertIntoHead(lowerBBlock.getInstructions());
-        callReplacementMap.put(callNode.getValue(), retPhi);
-
-        // 显然，你需要处理lowerBBlock内的ICall
+        IPhi retPhi = new IPhi(callNode.getValue().getType()); // 这个Phi用来替代ICall
+        if (!(calledFunction.getType() instanceof VoidType)) new DoublyLinkedList.Node<Inst>(retPhi).insertIntoHead(lowerBBlock.getInstructions());
+        // 把Call的引用换成retPhi
+        for (var n : callAtFunction.getBBlocks()) {
+            BBlock block = n.getValue();
+            for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
+                Inst inst = node.getValue();
+                inst.replaceOperand(callNode.getValue(), retPhi);
+            }
+        }
         for (DoublyLinkedList.Node<Inst> node : lowerBBlock.getInstructions()) {
             Inst inst = node.getValue();
-            if (inst instanceof ICall call && module.getFunctions().contains(call.getFunction())) {
-                List<BBlock> moreBBlocks = execute(module, node, lowerBBlock, callAtFunction, activeFunctions);
-                // 如果展开成功，需要更新当前的lowerBBlock，从而继续复制指令；上面保证，moreBBlocks的第一个，一定是被切分块的下半部分
-                if (!moreBBlocks.isEmpty()) lowerBBlock = moreBBlocks.get(0);
-                // 那么，replacementMap需不需要更新呢？答案是不需要，因为跳转一定是跳转到上半部分，也就是lowerBBlock的旧值，故不必担心...
-                bBlocksToBeInserted.addAll(moreBBlocks);
-            }
+            inst.replaceOperand(callNode.getValue(), retPhi);
         }
 
         HashMap<Value, Value> replacementMap = new HashMap<>(); // 记录函数克隆之后的替换值
@@ -102,33 +82,72 @@ public class InlineFunction implements Pass {
                 callNode.getValue().getOperand(i)
             );
         }
-        for (BBlock block : calledFunction.getBBlocks()) {
+
+        // 克隆块
+        for (var node : calledFunction.getBBlocks()) {
+            BBlock block = node.getValue();
             BBlock newBlk = new BBlock(callAtFunction);
             replacementMap.put(block, newBlk);
             bBlocksToBeInserted.add(newBlk);
         }
 
-        for (BBlock block : calledFunction.getBBlocks()) {
+        // 克隆块内指令
+        for (var n : calledFunction.getBBlocks()) {
+            BBlock block = n.getValue();
             BBlock newBlk = (BBlock) replacementMap.get(block);
             for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
                 Inst inst = node.getValue();
-                if (inst instanceof ICall call && module.getFunctions().contains(call.getFunction())) {
-                    List<BBlock> moreBBlocks = execute(module, node, newBlk, callAtFunction, activeFunctions);
-                    // 如果展开成功，需要更新当前的newBlk，从而继续复制指令；上面保证，moreBBlocks的第一个，一定是被切分块的下半部分
-                    if (!moreBBlocks.isEmpty()) newBlk = moreBBlocks.get(0);
-                    // 那么，replacementMap需不需要更新呢？答案是不需要，因为跳转一定是跳转到上半部分，也就是newBlk的旧值，故不必担心...
-                    bBlocksToBeInserted.addAll(moreBBlocks);
+                Inst newInst = inst.clone();
+                if (inst instanceof IReturn ret) {
+                    if (!ret.getOperands().isEmpty()) retPhi.addSourcePair(
+                        newBlk,
+                        ret.getOperand(0)
+                    );
+                    replacementMap.put(ret, retPhi);
+                    newBlk.addInstruction(new IBranch(lowerBBlock));
                 } else {
-                    Inst newInst = inst.clone(replacementMap);
                     replacementMap.put(inst, newInst);
-                    if (newInst instanceof IReturn ret) {
-                        if (!ret.getOperands().isEmpty()) phi.addSourcePair(newBlk, ret.getOperand(0));
-                        newBlk.addInstruction(
-                            new IBranch(endBlock)
-                        );
-                    } else {
-                        newBlk.addInstruction(newInst);
-                    }
+                    newBlk.addInstruction(newInst);
+                }
+            }
+        }
+
+        // 换克隆结果的操作数，检查ICall
+        for (var n : calledFunction.getBBlocks()) {
+            BBlock block = n.getValue();
+            BBlock newBlk = (BBlock) replacementMap.get(block);
+            for (DoublyLinkedList.Node<Inst> node : newBlk.getInstructions()) {
+                Inst inst = node.getValue();
+                for (int i = 0; i < inst.getOperands().size(); i++) {
+                    Value replaced = replacementMap.getOrDefault(inst.getOperand(i), inst.getOperand(i));
+                    inst.replaceOperand(i, replaced);
+                }
+                if (inst instanceof ICall call && module.getFunctions().contains(call.getFunction())) {
+                    pendingCalls.push(new Pair<>(node, newBlk));
+                }
+            }
+        }
+
+        // 处理lowerBBlock内的ICall
+        for (DoublyLinkedList.Node<Inst> node : lowerBBlock.getInstructions()) {
+            Inst inst = node.getValue();
+            for (int i = 0; i < inst.getOperands().size(); i++) {
+                Value replaced = replacementMap.getOrDefault(inst.getOperand(i), inst.getOperand(i));
+                inst.replaceOperand(i, replaced);
+            }
+            if (inst instanceof ICall call && module.getFunctions().contains(call.getFunction())) {
+                pendingCalls.push(new Pair<>(node, lowerBBlock));
+            }
+        }
+
+        // 现在这个函数里的也要换，ICall不一定只在lowerBBlock内
+        for (var node : callAtFunction.getBBlocks()) {
+            BBlock block = node.getValue();
+            for (var inode : block.getInstructions()) {
+                Inst inst = inode.getValue();
+                for (int i = 0; i < inst.getOperands().size(); i++) {
+                    Value replaced = replacementMap.getOrDefault(inst.getOperand(i), inst.getOperand(i));
+                    inst.replaceOperand(i, replaced);
                 }
             }
         }
@@ -139,7 +158,14 @@ public class InlineFunction implements Pass {
         callAtBlock.addInstruction(
             new IBranch(entry)
         );
-        bBlocksToBeInserted.add(endBlock);
-        return bBlocksToBeInserted;
+        for (BBlock block : bBlocksToBeInserted) callAtFunction.addBBlock(block);
+
+        while (!pendingCalls.isEmpty()) {
+            var pair = pendingCalls.pop();
+            DoublyLinkedList.Node<Inst> node = pair.getValue1();
+            BBlock blk = pair.getValue2();
+            execute(module, node, blk, callAtFunction, activeFunctions);
+        }
+        activeFunctions.remove(calledFunction);
     }
 }

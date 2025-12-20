@@ -24,12 +24,14 @@ public class EliminateReadOnlyGlobal implements Pass {
         HashMap<Value, List<Integer>> readOnly = recognize(module);
         HashMap<Value, Value> replacementMap = new HashMap<>();
         for (Function function : module.getFunctions()) {
-            for (BBlock bBlock : function.getBBlocks()) {
+            for (var node : function.getBBlocks()) {
+                BBlock bBlock = node.getValue();
                 replacementMap.putAll(buildReplacementMap(bBlock, readOnly));
             }
         }
         for (Function function : module.getFunctions()) {
-            for (BBlock bBlock : function.getBBlocks()) {
+            for (var node : function.getBBlocks()) {
+                BBlock bBlock = node.getValue();
                 updateOperands(bBlock, replacementMap);
             }
         }
@@ -41,7 +43,8 @@ public class EliminateReadOnlyGlobal implements Pass {
             readOnly.put(gv.getSymbol().getValue(), gv.getInitList());
         }
         for (Function function : module.getFunctions()) {
-            for (BBlock bBlock : function.getBBlocks()) {
+            for (var n : function.getBBlocks()) {
+                BBlock bBlock = n.getValue();
                 for (DoublyLinkedList.Node<Inst> node : bBlock.getInstructions()) {
                     Inst inst = node.getValue();
                     for (Value operand : inst.getOperands()) {

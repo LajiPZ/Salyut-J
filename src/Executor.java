@@ -66,7 +66,6 @@ public class Executor {
         // 4. Optimization
         if (Settings.OptimizeConfig.enableOptimization) {
             List<Pass> passes = List.of(
-                new InlineFunction()/*,
                 new ControlFlowAnalysis(),
                 new RemoveUnreachableBBlocks(),
                 new DominatorAnalysis(),
@@ -89,6 +88,15 @@ public class Executor {
                 new DominatorAnalysis(),
 
                 new EliminateDeadCode(),
+
+                new SimplifyControlFlow(),
+                new ControlFlowAnalysis(),
+                new DominatorAnalysis(),
+                new EliminateDeadCode(),
+
+                // new InlineFunction(),
+                new ControlFlowAnalysis(),
+                new DominatorAnalysis()/*,
 
                 new SimplifyControlFlow(),
                 new ControlFlowAnalysis(),

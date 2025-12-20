@@ -2,6 +2,7 @@ package frontend.llvm.optimization;
 
 import frontend.llvm.IrModule;
 import frontend.llvm.Pass;
+import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Function;
 import frontend.llvm.value.Value;
 import frontend.llvm.value.constant.IntConstant;
@@ -32,7 +33,8 @@ public class RenameValues implements Pass {
     private void execute(Function function) {
         counter.reset();
         function.getParams().forEach(this::updateName);
-        function.getBBlocks().forEach(block -> {
+        function.getBBlocks().forEach(node -> {
+            BBlock block = node.getValue();
             this.updateName(block);
             block.getInstructions().forEach(instruction -> {
                 this.updateName(instruction.getValue());

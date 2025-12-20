@@ -31,10 +31,10 @@ public class IConvert extends Inst {
     }
 
     @Override
-    public Inst clone(Map<Value, Value> replacementMap) {
+    public Inst clone() {
         return new IConvert(
             target,
-            replacementMap.getOrDefault(getOperand(0), getOperand(0))
+            getOperand(0)
         );
     }
 

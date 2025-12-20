@@ -81,7 +81,8 @@ public class MipsFunction {
 
 
         mipsFunction.addBlock(entry);
-        for (BBlock bblock : irFunction.getBBlocks()) {
+        for (DoublyLinkedList.Node<BBlock> node : irFunction.getBBlocks()) {
+            BBlock bblock = node.getValue();
             mipsFunction.addBlock(MipsBlock.build(bblock, builder));
         }
         mipsFunction.addBlock(exit);
