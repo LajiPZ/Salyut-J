@@ -38,10 +38,6 @@ public class InlineFunction implements Pass {
         }
     }
 
-    private HashSet<Inst> retPoints = new HashSet<>();
-    private HashMap<Inst, BBlock> dummyMap = new HashMap<>();
-    private HashMap<BBlock, BBlock> dummyReplacementMap = new HashMap();
-
     private void execute(IrModule module, DoublyLinkedList.Node<Inst> callNode, BBlock callAtBlock, Function callAtFunction, HashSet<Function> activeFunctions) {
 
         Function calledFunction = ((ICall) callNode.getValue()).getFunction();
@@ -49,6 +45,7 @@ public class InlineFunction implements Pass {
         activeFunctions.add(calledFunction);
 
         Stack<Pair<DoublyLinkedList.Node<Inst>, BBlock>> pendingCalls = new Stack<>();
+        Stack<Pair<DoublyLinkedList.Node<Inst>, BBlock>> recursiveCalls = new Stack<>();
 
         List<BBlock> bBlocksToBeInserted = new LinkedList<>();
 
@@ -103,21 +100,17 @@ public class InlineFunction implements Pass {
         for (var n : calledFunction.getBBlocks()) {
             BBlock block = n.getValue();
             BBlock newBlk = (BBlock) replacementMap.get(block);
-            BBlock dummy = new BBlock(callAtFunction);
             for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
                 Inst inst = node.getValue();
                 Inst newInst = inst.clone();
                 if (inst instanceof IReturn ret) {
                     if (!ret.getOperands().isEmpty()) retPhi.addSourcePair(
-                        dummy,
+                        newBlk,
                         ret.getOperand(0)
                     );
                     replacementMap.put(ret, retPhi);
                     Inst substitute = new IBranch(lowerBBlock);
                     newBlk.addInstruction(substitute);
-                    dummyMap.put(substitute, dummy);
-                    dummyReplacementMap.put(dummy, newBlk);
-                    retPoints.add(substitute);
                 } else {
                     replacementMap.put(inst, newInst);
                     newBlk.addInstruction(newInst);
@@ -136,7 +129,7 @@ public class InlineFunction implements Pass {
                     inst.replaceOperand(i, replaced);
                 }
                 if (inst instanceof ICall call && module.getFunctions().contains(call.getFunction())) {
-                    pendingCalls.push(new Pair<>(node, newBlk));
+                    recursiveCalls.push(new Pair<>(node, newBlk));
                 }
             }
         }
@@ -151,9 +144,12 @@ public class InlineFunction implements Pass {
             if (inst instanceof ICall call && module.getFunctions().contains(call.getFunction())) {
                 pendingCalls.push(new Pair<>(node, lowerBBlock));
             }
-            if (retPoints.contains(inst)) {
-                BBlock dummy = dummyMap.get(inst);
-                dummyReplacementMap.put(dummy, lowerBBlock);
+        }
+
+        for (BBlock b : lowerBBlock.getSuccessors()) {
+            for (var n : b.getInstructions()) {
+                Inst inst = n.getValue();
+                if (inst instanceof IPhi) inst.replaceOperand(callAtBlock, lowerBBlock);
             }
         }
 
@@ -184,14 +180,14 @@ public class InlineFunction implements Pass {
             var pair = pendingCalls.pop();
             DoublyLinkedList.Node<Inst> node = pair.getValue1();
             BBlock blk = pair.getValue2();
-            execute(module, node, blk, callAtFunction, activeFunctions);
+            execute(module, node, blk, callAtFunction, new HashSet<>());
         }
 
-        for (int i = 0; i < retPhi.getOperands().size(); i+=2) {
-            BBlock src = (BBlock) retPhi.getOperand(i);
-            if (dummyReplacementMap.containsKey(src)) {
-                retPhi.replaceOperand(src, dummyReplacementMap.get(src));
-            }
+        while (!recursiveCalls.isEmpty()) {
+            var pair = recursiveCalls.pop();
+            DoublyLinkedList.Node<Inst> node = pair.getValue1();
+            BBlock blk = pair.getValue2();
+            execute(module, node, blk, callAtFunction, new HashSet<>(activeFunctions));
         }
 
         /*

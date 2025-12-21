@@ -10,6 +10,7 @@ import frontend.llvm.Pass;
 import frontend.llvm.analysis.ControlFlowAnalysis;
 import frontend.llvm.analysis.DominatorAnalysis;
 import frontend.llvm.analysis.LoopAnalysis;
+import frontend.llvm.analysis.PhiCheck;
 import frontend.llvm.optimization.*;
 import frontend.syntax.CompileUnit;
 import frontend.token.TokenStream;
@@ -92,9 +93,10 @@ public class Executor {
                 new SimplifyControlFlow(),
                 new ControlFlowAnalysis(),
                 new DominatorAnalysis(),
-                new EliminateDeadCode()/*,
+                new EliminateDeadCode(),
 
                 new InlineFunction(),
+                new ConstantFolding(),
                 new ControlFlowAnalysis(),
                 new DominatorAnalysis(),
 
@@ -103,7 +105,8 @@ public class Executor {
                 new DominatorAnalysis(),
                 new EliminateDeadCode(),
 
-                new RenameValues()*/
+                new Oscillate(),
+                new RenameValues()/**/
             );
             for (int i = 0; i < passes.size(); i++) {
                 Pass pass = passes.get(i);
