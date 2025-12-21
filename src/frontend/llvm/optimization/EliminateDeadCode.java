@@ -1,5 +1,7 @@
 package frontend.llvm.optimization;
 
+import frontend.datatype.IntType;
+import frontend.datatype.PointerType;
 import frontend.llvm.IrModule;
 import frontend.llvm.Pass;
 import frontend.llvm.tools.UseRecord;
@@ -56,6 +58,10 @@ public class EliminateDeadCode implements Pass {
                 }
             }
 
+            if (!liveInsts.contains(bBlock.getLastInstruction())) {
+                workList.addLast(bBlock.getLastInstruction());
+            }
+
             for (BBlock predecessor : function.getCtrlFlowGraph().getPredecessors(bBlock)) {
                 if (!liveInsts.contains(predecessor.getLastInstruction())) {
                     workList.add(predecessor.getLastInstruction());
@@ -67,6 +73,11 @@ public class EliminateDeadCode implements Pass {
                 if (!(usedValue instanceof Inst)) continue;
                 if (!liveInsts.contains(usedValue)) {
                     workList.add((Inst) usedValue);
+                    if (usedValue instanceof IAllocate alloc) {
+                        if (((PointerType) alloc.getType()).getBaseType() instanceof IntType) {
+                            System.out.println("!!!");
+                        }
+                    }
                 }
             }
         }

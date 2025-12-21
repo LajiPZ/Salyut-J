@@ -70,7 +70,7 @@ public class Executor {
                 new RemoveUnreachableBBlocks(),
                 new DominatorAnalysis(),
 
-                new Mem2Reg(),
+                new Mem2Reg()/*,
                 new EliminateReadOnlyGlobal(),
 
                 new EliminateDeadCode(),
@@ -87,16 +87,16 @@ public class Executor {
                 new ControlFlowAnalysis(),
                 new DominatorAnalysis(),
 
-                new EliminateDeadCode(),
+                // new EliminateDeadCode(),
 
                 new SimplifyControlFlow(),
                 new ControlFlowAnalysis(),
                 new DominatorAnalysis(),
-                new EliminateDeadCode(),
+                // new EliminateDeadCode(),
 
-                // new InlineFunction(),
+                new InlineFunction(),
                 new ControlFlowAnalysis(),
-                new DominatorAnalysis()/*,
+                new DominatorAnalysis(),
 
                 new SimplifyControlFlow(),
                 new ControlFlowAnalysis(),
