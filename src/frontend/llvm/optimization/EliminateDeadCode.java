@@ -16,6 +16,24 @@ import java.util.*;
 public class EliminateDeadCode implements Pass {
     @Override
     public void run(IrModule module) {
+        Iterator<Function> it = module.getFunctions().iterator();
+        /**
+         * e.g. 陷在死循环，到不了IReturn的函数；对于能进行评测的程序，不会调用这种函数，去了也没有影响
+         * 其存在会影响死代码消除，因此把这种函数去掉
+         */
+        while (it.hasNext()) {
+            Function f = it.next();
+            boolean hasReturn = false;
+            for (var bnode : f.getBBlocks()) {
+                BBlock bBlock = bnode.getValue();
+                for (var inode : bBlock.getInstructions()) {
+                    Inst inst = inode.getValue();
+                    if (inst instanceof IReturn) hasReturn = true;
+                }
+            }
+            if (!hasReturn) it.remove();
+        }
+
         for (Function f : module.getFunctions()) {
             execute(f);
         }

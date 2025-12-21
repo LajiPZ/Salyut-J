@@ -13,6 +13,8 @@ import utils.Pair;
 import java.util.*;
 
 public class InlineFunction implements Pass {
+    private HashSet<BBlock> newlyAdded = new HashSet<>();
+
     @Override
     public void run(IrModule module) {
         for (Function f : module.getFunctions()) {
@@ -21,6 +23,7 @@ public class InlineFunction implements Pass {
             activeFunctions.add(f);
             for (var n : f.getBBlocks()) {
                 BBlock block = n.getValue();
+                if (newlyAdded.contains(block)) break;
                 for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
                     Inst inst = node.getValue();
                     if (inst instanceof ICall call) {
@@ -35,7 +38,12 @@ public class InlineFunction implements Pass {
         }
     }
 
+    private HashSet<Inst> retPoints = new HashSet<>();
+    private HashMap<Inst, BBlock> dummyMap = new HashMap<>();
+    private HashMap<BBlock, BBlock> dummyReplacementMap = new HashMap();
+
     private void execute(IrModule module, DoublyLinkedList.Node<Inst> callNode, BBlock callAtBlock, Function callAtFunction, HashSet<Function> activeFunctions) {
+
         Function calledFunction = ((ICall) callNode.getValue()).getFunction();
         if (activeFunctions.contains(calledFunction)) return;
         activeFunctions.add(calledFunction);
@@ -95,16 +103,21 @@ public class InlineFunction implements Pass {
         for (var n : calledFunction.getBBlocks()) {
             BBlock block = n.getValue();
             BBlock newBlk = (BBlock) replacementMap.get(block);
+            BBlock dummy = new BBlock(callAtFunction);
             for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
                 Inst inst = node.getValue();
                 Inst newInst = inst.clone();
                 if (inst instanceof IReturn ret) {
                     if (!ret.getOperands().isEmpty()) retPhi.addSourcePair(
-                        newBlk,
+                        dummy,
                         ret.getOperand(0)
                     );
                     replacementMap.put(ret, retPhi);
-                    newBlk.addInstruction(new IBranch(lowerBBlock));
+                    Inst substitute = new IBranch(lowerBBlock);
+                    newBlk.addInstruction(substitute);
+                    dummyMap.put(substitute, dummy);
+                    dummyReplacementMap.put(dummy, newBlk);
+                    retPoints.add(substitute);
                 } else {
                     replacementMap.put(inst, newInst);
                     newBlk.addInstruction(newInst);
@@ -138,6 +151,10 @@ public class InlineFunction implements Pass {
             if (inst instanceof ICall call && module.getFunctions().contains(call.getFunction())) {
                 pendingCalls.push(new Pair<>(node, lowerBBlock));
             }
+            if (retPoints.contains(inst)) {
+                BBlock dummy = dummyMap.get(inst);
+                dummyReplacementMap.put(dummy, lowerBBlock);
+            }
         }
 
         // 现在这个函数里的也要换，ICall不一定只在lowerBBlock内
@@ -158,7 +175,10 @@ public class InlineFunction implements Pass {
         callAtBlock.addInstruction(
             new IBranch(entry)
         );
-        for (BBlock block : bBlocksToBeInserted) callAtFunction.addBBlock(block);
+        for (BBlock block : bBlocksToBeInserted) {
+            callAtFunction.addBBlock(block);
+            newlyAdded.add(block);
+        }
 
         while (!pendingCalls.isEmpty()) {
             var pair = pendingCalls.pop();
@@ -166,6 +186,25 @@ public class InlineFunction implements Pass {
             BBlock blk = pair.getValue2();
             execute(module, node, blk, callAtFunction, activeFunctions);
         }
+
+        for (int i = 0; i < retPhi.getOperands().size(); i+=2) {
+            BBlock src = (BBlock) retPhi.getOperand(i);
+            if (dummyReplacementMap.containsKey(src)) {
+                retPhi.replaceOperand(src, dummyReplacementMap.get(src));
+            }
+        }
+
+        /*
+        for (DoublyLinkedList.Node<BBlock> bnode : callAtFunction.getBBlocks()) {
+            BBlock block = bnode.getValue();
+            for (DoublyLinkedList.Node<Inst> node : block.getInstructions()) {
+                Inst inst = node.getValue();
+                if (dummyMap.containsKey(inst)) {
+                    retPhi.replaceOperand(dummyMap.get(inst), block);
+                }
+            }
+        }
+        */
         activeFunctions.remove(calledFunction);
     }
 }

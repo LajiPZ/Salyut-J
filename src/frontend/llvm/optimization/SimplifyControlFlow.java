@@ -35,11 +35,11 @@ public class SimplifyControlFlow implements Pass {
                    IBranch newBranch;
                    BBlock notTaken;
                    if (intConstant.getValue() == 0) {
-                       newBranch = new IBranch((BBlock) branch.getOperand(2));
-                       notTaken = (BBlock) branch.getOperand(1);
+                       newBranch = new IBranch(branch.getFalseTarget());
+                       notTaken = branch.getTrueTarget();
                    } else {
-                       newBranch = new IBranch((BBlock) branch.getOperand(1));
-                       notTaken = (BBlock) branch.getOperand(2);
+                       newBranch = new IBranch(branch.getTrueTarget());
+                       notTaken = branch.getFalseTarget();
                    }
 
                    bBlock.addInstruction(newBranch);
