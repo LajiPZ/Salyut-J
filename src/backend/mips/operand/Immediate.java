@@ -12,6 +12,10 @@ public class Immediate extends Operand {
         this.value = valueLabel;
     }
 
+    public int asInt() {
+        return (int) value;
+    }
+
     @Override
     public String toMIPS() {
         return String.valueOf(value);

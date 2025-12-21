@@ -61,6 +61,10 @@ public class MipsModule {
         }
     }
 
+    public List<MipsFunction> getFunctions() {
+        return functions;
+    }
+
     public Map<Function, MipsFunction> getFunctionMap() {
         return functionMap;
     }

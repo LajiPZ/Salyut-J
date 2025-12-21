@@ -1,4 +1,5 @@
 import backend.mips.MipsModule;
+import backend.mips.optimization.Peephole;
 import frontend.IrBuilder;
 import frontend.Lexer;
 import frontend.Parser;
@@ -106,6 +107,8 @@ public class Executor {
                 new EliminateDeadCode(),
 
                 new Oscillate(),
+                // new PhiCheck(),
+                // new Interpret(),
                 new RenameValues()/**/
             );
             for (int i = 0; i < passes.size(); i++) {
@@ -123,10 +126,14 @@ public class Executor {
         MipsModule mipsModule = new MipsModule();
         mipsModule.buildFromIR(irModule);
         mipsModule.runPostBuildProcessing();
+
+        if (Settings.OptimizeConfig.enableOptimization) {
+            new Peephole().run(mipsModule);
+        }
+
         if (Settings.PrintConfig.printMIPS) {
             mipsModule.printMIPS(Settings.FilePath.MIPSOut);
         }
-
 
         if (Settings.PrintConfig.printError) {
             printErrors(Settings.FilePath.errOut);

@@ -65,4 +65,12 @@ public class Calc extends Instruction {
     public String toMIPS() {
         return op + "\t" + res.toMIPS() + ", " + leftOperand.toMIPS() + ", " + rightOperand.toMIPS();
     }
+
+    public Op getOp() {
+        return op;
+    }
+
+    public Operand[] getOperands() {
+        return new Operand[]{res, leftOperand, rightOperand};
+    }
 }

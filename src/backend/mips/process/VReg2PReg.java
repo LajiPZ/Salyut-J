@@ -792,7 +792,7 @@ public class VReg2PReg {
                 liveStartPRegs.add(colorMap.get(vReg));
             }
 
-            // freePRegs.removeAll(liveStartPRegs); // 这个，不需要了
+            freePRegs.removeAll(liveStartPRegs); // 这个，不需要了...？实践下来发现还是得留着？？
 
             for (VReg vReg : liveThrough) {
                 freePRegs.remove(colorMap.get(vReg));

@@ -152,9 +152,10 @@ public class SimplifyControlFlow implements Pass {
                                }
                            }
                        }
+
+                       break;
                    }
                }
-               break;
            }
            updateOperand(function, replacementMap);
        }
