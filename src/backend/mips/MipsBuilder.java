@@ -2,6 +2,7 @@ package backend.mips;
 
 import backend.mips.instruction.*;
 import backend.mips.operand.AReg;
+import backend.mips.operand.CP1Reg;
 import backend.mips.operand.Immediate;
 import backend.mips.operand.VReg;
 import frontend.datatype.CharType;
@@ -176,5 +177,9 @@ public class MipsBuilder {
 
     public void appendOutputBuffer(char chr) {
         outputBuffer.append(chr);
+    }
+
+    public HashMap<Value, CP1Reg> getGlobalVarsInCP1Reg() {
+        return top.getGlobalVarsInCP1Reg();
     }
 }

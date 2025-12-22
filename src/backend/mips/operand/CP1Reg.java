@@ -1,5 +1,8 @@
 package backend.mips.operand;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 public class CP1Reg extends PReg {
     // Float registers, that is, those in CP1
     // There are 32 of them in CP1, which seems more than appealing to me...
@@ -46,6 +49,8 @@ public class CP1Reg extends PReg {
         new CP1Reg(30, "$f30"),
         new CP1Reg(31, "$f31"),
     };
+
+    public static HashSet<CP1Reg> availableCP1Regs = new HashSet<>(Arrays.asList(f));
 
     @Override
     public String toMIPS() {

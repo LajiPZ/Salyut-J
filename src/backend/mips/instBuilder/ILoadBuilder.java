@@ -2,6 +2,7 @@ package backend.mips.instBuilder;
 
 import backend.mips.MipsBlock;
 import backend.mips.MipsBuilder;
+import backend.mips.instruction.CP1RegMove;
 import backend.mips.instruction.Instruction;
 import backend.mips.instruction.Load;
 import backend.mips.instruction.Mem;
@@ -30,6 +31,15 @@ public class ILoadBuilder extends InstBuilder {
         // 加载全局变量的情况；全局变量都以@开头
         // 直接从.data 起始 + 对应全局变量的offset
         if (inst.getOperand(0).getName().startsWith("@")) {
+            if (builder.getGlobalVarsInCP1Reg().containsKey(inst.getOperand(0))) {
+                return List.of(
+                    new CP1RegMove(
+                        CP1RegMove.Op.mfc1,
+                        reg,
+                        builder.getGlobalVarsInCP1Reg().get(inst.getOperand(0))
+                    )
+                );
+            }
             return List.of(
                 new Load(
                     align,

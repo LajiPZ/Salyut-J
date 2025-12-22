@@ -28,5 +28,7 @@ final public class Settings {
 
     public static class OptimizeConfig {
         public static boolean enableOptimization = true;
+        public static boolean allowGlobalVarInCP1 = true;
+        public static boolean allowCallSaveToCP1 = true;
     }
 }

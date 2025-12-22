@@ -9,6 +9,7 @@ import backend.mips.utils.UndirectedGraph;
 import backend.mips.utils.spillLoc.CP1SpillLoc;
 import backend.mips.utils.spillLoc.MemSpillLoc;
 import backend.mips.utils.spillLoc.SpillLoc;
+import settings.Settings;
 import utils.DoublyLinkedList;
 
 import java.util.*;
@@ -67,7 +68,7 @@ public class VReg2PReg {
 
     // 如果只是基于栈来处理溢出，简单加就可以
     // 这里基于CP1溢出的话，其管理就必须对于编译单元全体而言，因而是static
-    private final static HashSet<CP1Reg> availCP1RegForSpill = new HashSet<>(Arrays.asList(CP1Reg.f));
+    private final static HashSet<CP1Reg> availCP1RegForSpill = CP1Reg.availableCP1Regs;
     //private final static HashSet<CP1Reg> availCP1RegForSpill = new HashSet<>();
     private final HashSet<CP1Reg> availCP1RegForSpillLocal = new HashSet<>();
     private HashMap<VReg, SpillLoc> spillLocMap = new HashMap<>();
@@ -161,8 +162,35 @@ public class VReg2PReg {
                 }
             }
 
-            function.enlargeStackSize(4 * assignedPRegs.size());
+            HashSet<PReg> stackSavedPRegs = new HashSet<>();
+            HashMap<PReg, CP1Reg> CP1SaveMap = new HashMap<>();
             for (PReg pReg : assignedPRegs) {
+                if (Settings.OptimizeConfig.allowCallSaveToCP1) {
+                    if (!CP1Reg.availableCP1Regs.isEmpty()) {
+                        CP1Reg cp1Reg = CP1Reg.availableCP1Regs.iterator().next();
+                        CP1Reg.availableCP1Regs.remove(cp1Reg);
+                        CP1SaveMap.put(pReg, cp1Reg);
+                    } else {
+                        stackSavedPRegs.add(pReg);
+                    }
+                } else {
+                    stackSavedPRegs.add(pReg);
+                }
+            }
+
+            for (var entry : CP1SaveMap.entrySet()) {
+                function.getEntry().insertAfter(
+                    new CP1RegMove(CP1RegMove.Op.mtc1, entry.getKey(), entry.getValue()),
+                    target
+                );
+                function.getExit().insertAfter(
+                    new CP1RegMove(CP1RegMove.Op.mfc1, entry.getKey(), entry.getValue()),
+                    null
+                );
+            }
+
+            function.enlargeStackSize(4 * stackSavedPRegs.size());
+            for (PReg pReg : stackSavedPRegs) {
                 function.getEntry().insertAfter(
                     new Store(Mem.Align.w, pReg, AReg.sp, new Immediate(currentOffset)),
                     target
@@ -632,6 +660,7 @@ public class VReg2PReg {
             liveEnd = new HashSet<>(livingDataMap.get(block).getOut());
             liveEnd.removeAll(liveThrough);
             liveEnd.removeAll(liveTransparent);
+            liveEnd.removeAll(liveStart);
 
             // System.out.println("Blk " + block);
             // System.out.println("liveStart: " + liveStart);
@@ -836,7 +865,7 @@ public class VReg2PReg {
                         // !instruction.getUseVRegs().contains(t)要有，否则两个不同use会被分到同一个pReg
                         if (colorMap.get(t) != null) {
                             // System.out.println(block + " Released: " + colorMap.get(t).toMIPS());
-                            freePRegs.add(colorMap.get(t));
+                            if (!liveStartPRegs.contains(colorMap.get(t))) freePRegs.add(colorMap.get(t));
                         }
                     }
                 }

@@ -2,10 +2,7 @@ package backend.mips.instBuilder;
 
 import backend.mips.MipsBlock;
 import backend.mips.MipsBuilder;
-import backend.mips.instruction.Calc;
-import backend.mips.instruction.Instruction;
-import backend.mips.instruction.Mem;
-import backend.mips.instruction.Store;
+import backend.mips.instruction.*;
 import backend.mips.operand.AReg;
 import backend.mips.operand.Immediate;
 import backend.mips.operand.Operand;
@@ -45,15 +42,25 @@ public class IStoreBuilder extends InstBuilder {
         }
 
         if (inst.getOperand(1).getName().startsWith("@")) {
-            // Global var
-            res.add(
-                new Store(
-                    align,
-                    valueToStore,
-                    AReg.zero,
-                    new Immediate(builder.getGlobalVarTag(inst.getOperand(1)))
-                )
-            );
+            if (builder.getGlobalVarsInCP1Reg().containsKey(inst.getOperand(1))) {
+                res.add(
+                    new CP1RegMove(
+                        CP1RegMove.Op.mtc1,
+                        valueToStore,
+                        builder.getGlobalVarsInCP1Reg().get(inst.getOperand(1))
+                    )
+                );
+            } else {
+                // Global var
+                res.add(
+                    new Store(
+                        align,
+                        valueToStore,
+                        AReg.zero,
+                        new Immediate(builder.getGlobalVarTag(inst.getOperand(1)))
+                    )
+                );
+            }
         } else {
             res.add(
                 new Store(

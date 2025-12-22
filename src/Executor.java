@@ -67,7 +67,7 @@ public class Executor {
 
         // 4. Optimization
         if (Settings.OptimizeConfig.enableOptimization) {
-            List<Pass> passes = List.of(
+            List<Pass> passes = List.of(/*
                 new ControlFlowAnalysis(),
                 new RemoveUnreachableBBlocks(),
                 new DominatorAnalysis(),
@@ -100,16 +100,25 @@ public class Executor {
                 new ConstantFolding(),
                 new ControlFlowAnalysis(),
                 new DominatorAnalysis(),
+                new LoopAnalysis(),
 
                 new SimplifyControlFlow(),
                 new ControlFlowAnalysis(),
                 new DominatorAnalysis(),
+                new LoopAnalysis(),
                 new EliminateDeadCode(),
 
                 new Oscillate(),
                 // new PhiCheck(),
                 // new Interpret(),
-                new RenameValues()/**/
+                new RenameValues()*/
+                new ControlFlowAnalysis(),
+                new DominatorAnalysis(),
+                new Mem2Reg(),
+                new ControlFlowAnalysis(),
+                new DominatorAnalysis(),
+                new LoopAnalysis(),
+                new LoopExtend()
             );
             for (int i = 0; i < passes.size(); i++) {
                 Pass pass = passes.get(i);
