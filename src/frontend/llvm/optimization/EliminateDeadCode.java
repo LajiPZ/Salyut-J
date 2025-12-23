@@ -31,7 +31,12 @@ public class EliminateDeadCode implements Pass {
                     if (inst instanceof IReturn) hasReturn = true;
                 }
             }
-            if (!hasReturn) it.remove();
+            if (!hasReturn)  {
+                it.remove();
+                if (f.getName().equals("main")) {
+                    throw new RuntimeException("What have you done???");
+                }
+            }
         }
 
         for (Function f : module.getFunctions()) {

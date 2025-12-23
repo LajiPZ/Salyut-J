@@ -12,6 +12,7 @@ public class LoopInformation {
 
     private List<LoopInformation> subLoops = new LinkedList<>();
     private List<BBlock> blocks = new LinkedList<>();
+    private List<BBlock> preHeaderBlocks = new LinkedList<>(); // 理论而言有且只有一个
     private List<BBlock> latchBlocks = new LinkedList<>(); // 循环返回开头的块
     private List<BBlock> exitBlocks = new LinkedList<>();
     private List<BBlock> exitTargetBlocks = new LinkedList<>();
@@ -83,6 +84,22 @@ public class LoopInformation {
     public void insertBefore(BBlock loc, BBlock newBlock) {
         int index = blocks.indexOf(loc);
         blocks.add(index, newBlock);
+    }
+
+    public List<BBlock> getExitTargetBlocks() {
+        return exitTargetBlocks;
+    }
+
+    public void addPreHeaderBlock(BBlock preHeaderBlock) {
+        preHeaderBlocks.add(preHeaderBlock);
+    }
+
+    public List<BBlock> getPreHeaderBlocks() {
+        return preHeaderBlocks;
+    }
+
+    public List<BBlock> getExitBlocks() {
+        return exitBlocks;
     }
 
 }

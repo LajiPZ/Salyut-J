@@ -20,7 +20,28 @@ public class SimplifyControlFlow implements Pass {
             cutConstantCondition(function);
             var predecessorMap = buildPredecessorMap(function);
             dropUnreachableBBlocks(function, predecessorMap);
+            clearPhiHazard(function, predecessorMap);
             mergeBBlock(function, predecessorMap);
+       }
+   }
+
+   private void clearPhiHazard(Function function, HashMap<BBlock, HashSet<BBlock>> predecessorMap) {
+       for (var bNode : function.getBBlocks()) {
+           for (var iNode : bNode.getValue().getInstructions()) {
+               Inst inst = iNode.getValue();
+               if (inst instanceof IPhi phi) {
+                   LinkedList<Integer> droppedIndex = new LinkedList<>();
+                   var sourcePairs = phi.getSourcePairs();
+                   for (int i = 0; i < sourcePairs.size(); i++) {
+                       if (!predecessorMap.containsKey(sourcePairs.get(i).getValue1())) {
+                           droppedIndex.add(i);
+                       }
+                   }
+                   for (int i = droppedIndex.size() - 1; i >= 0; i--) {
+                       phi.dropSourcePair(droppedIndex.get(i));
+                   }
+               }
+           }
        }
    }
 
@@ -133,8 +154,16 @@ public class SimplifyControlFlow implements Pass {
                        for (DoublyLinkedList.Node<Inst> node : bBlock.getInstructions()) {
                            Inst inst = node.getValue();
                            // 此时就不需要Phi赋值了
+                           Value value = null;
                            if (inst instanceof IPhi phi) {
-                               Value value = phi.getOperand(1);
+                               for (var sourcePair : phi.getSourcePairs()) {
+                                   BBlock src = sourcePair.getValue1();
+                                   if (src == predecessor) {
+                                       value = sourcePair.getValue2();
+                                       break;
+                                   }
+                               }
+                               if (value == null) throw new RuntimeException("No matching PhiSource found!!");
                                replacementMap.put(phi, value);
                            } else {
                                predecessor.addInstruction(inst);
@@ -153,7 +182,7 @@ public class SimplifyControlFlow implements Pass {
                            }
                        }
 
-                       break;
+                       // break; // TODO: ???
                    }
                }
            }

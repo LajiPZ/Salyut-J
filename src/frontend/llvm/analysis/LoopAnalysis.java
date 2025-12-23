@@ -66,8 +66,10 @@ public class LoopAnalysis implements Pass {
                 }
             }
             for (BBlock predecessor : cfg.getPredecessors(loop.getBlocks().get(0))) {
-                if (!loop.getBlocks().contains(predecessor)) {
+                if (loop.getBlocks().contains(predecessor)) {
                     loop.addLatchBlock(predecessor);
+                } else {
+                    loop.addPreHeaderBlock(predecessor);
                 }
             }
         }

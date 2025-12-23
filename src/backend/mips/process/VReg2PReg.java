@@ -166,7 +166,7 @@ public class VReg2PReg {
             HashMap<PReg, CP1Reg> CP1SaveMap = new HashMap<>();
             for (PReg pReg : assignedPRegs) {
                 if (Settings.OptimizeConfig.allowCallSaveToCP1) {
-                    if (!CP1Reg.availableCP1Regs.isEmpty()) {
+                    if (!CP1Reg.availableCP1Regs.isEmpty() && pReg != AReg.ra) {
                         CP1Reg cp1Reg = CP1Reg.availableCP1Regs.iterator().next();
                         CP1Reg.availableCP1Regs.remove(cp1Reg);
                         CP1SaveMap.put(pReg, cp1Reg);

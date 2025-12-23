@@ -30,5 +30,6 @@ final public class Settings {
         public static boolean enableOptimization = true;
         public static boolean allowGlobalVarInCP1 = true;
         public static boolean allowCallSaveToCP1 = true;
+        public static int maxLoopExtendIterations = 100;
     }
 }

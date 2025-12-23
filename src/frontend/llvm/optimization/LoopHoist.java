@@ -23,7 +23,6 @@ public class LoopHoist implements Pass {
             execute(f);
             f.saveCurrentValCounter(Value.counter.reset());
         }
-        // TODO: 重跑分析？
     }
 
     private void execute(Function function) {
@@ -36,10 +35,10 @@ public class LoopHoist implements Pass {
         }
 
         for (LoopInformation loop : loopsToHoist) {
-            // 2.1. 在循环头前面插一个块，存外提结果
+            // 2.1. 在preHeader前面插一个块，存外提结果
             currentHoistedBlock = new BBlock(function);
             for (var predecessor : new LinkedList<>(function.getCtrlFlowGraph().getPredecessors(loop.getHead()))) {
-                if (!loop.getLatchBlocks().contains(predecessor)) {
+                if (!loop.getPreHeaderBlocks().contains(predecessor)) {
                     continue;
                 }
                 Objects.requireNonNull(predecessor.getLastInstruction())
@@ -80,6 +79,7 @@ public class LoopHoist implements Pass {
                             || inst instanceof IPhi || inst instanceof IStore || inst instanceof ICall) {
                             continue;
                         }
+                        // TODO：这里有问题？ e.g. m = getint(); for(int i = 0; i < m; i++) i = 2 * 30; 输入50，预期结果为61
                         boolean allInvariant = true;
                         for (Value operand : inst.getOperands()) {
                             if (innerDefPoints.contains(operand)) {
