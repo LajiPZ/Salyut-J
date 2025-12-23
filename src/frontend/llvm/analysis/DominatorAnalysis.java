@@ -2,7 +2,6 @@ package frontend.llvm.analysis;
 
 import frontend.llvm.IrModule;
 import frontend.llvm.Pass;
-import frontend.llvm.tools.ControlFlowGraph;
 import frontend.llvm.tools.DominatorTree;
 import frontend.llvm.value.BBlock;
 import frontend.llvm.value.Function;
@@ -37,7 +36,7 @@ public class DominatorAnalysis implements Pass {
             Set<BBlock> visited = new HashSet<>() {{
                 add(blk);
             }};
-            dfs(f.getBBlocks().getHead().getValue(), f.getCtrlFlowGraph(), visited);
+            dfs(f.getBBlocks().getHead().getValue(), visited);
             // 移除Blk之后，不能到，则被blk支配；注意此时已经删掉了不可达块
             for (var node1 : f.getBBlocks()) {
                 BBlock t = node1.getValue();
@@ -72,13 +71,13 @@ public class DominatorAnalysis implements Pass {
         return new DominatorTree(dominatedBy, dominates, immediateDominators);
     }
 
-    private void dfs(BBlock blk, ControlFlowGraph ctrlFlowGraph, Set<BBlock> visited) {
+    private void dfs(BBlock blk, Set<BBlock> visited) {
         if (visited.contains(blk)) {
             return;
         }
         visited.add(blk);
         for (BBlock successor : blk.getSuccessors()) {
-            dfs(successor, ctrlFlowGraph, visited);
+            dfs(successor, visited);
         }
     }
 }
