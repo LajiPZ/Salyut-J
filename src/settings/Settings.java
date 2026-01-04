@@ -29,8 +29,8 @@ final public class Settings {
     public static class OptimizeConfig {
         public static boolean enableOptimization = true;
         public static boolean allowGlobalVarInCP1 = true;
-        public static boolean allowCallSaveToCP1 = false; // This is problematic, only use it when you need extra performance；在递归调用的时候就会发生问题
+        public static boolean allowCallSaveToCP1 = true; // This is problematic, only use it when you need extra performance；在递归调用的时候就会发生问题
         public static int maxLoopExtendIterations = 100;
-        public static int oscillateIterations = 0;
+        public static int oscillateIterations = 7;
     }
 }
