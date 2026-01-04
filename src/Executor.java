@@ -61,6 +61,13 @@ public class Executor {
             collectErrors(tabulator.getErrors());
         }
 
+        if (Settings.PrintConfig.printError) {
+            if (!errors.isEmpty()) {
+                printErrors(Settings.FilePath.errOut);
+                Executor.exit(1);
+            }
+        }
+
         // 3. Intermediate code generation
         IrBuilder irBuilder = new IrBuilder(compileUnit);
         IrModule irModule = irBuilder.build();
@@ -140,10 +147,6 @@ public class Executor {
             mipsModule.printMIPS(Settings.FilePath.MIPSOut);
         }
 
-        if (Settings.PrintConfig.printError) {
-            printErrors(Settings.FilePath.errOut);
-            Executor.exit(1);
-        }
         Executor.exit(0);
     }
 

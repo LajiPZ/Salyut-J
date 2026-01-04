@@ -23,7 +23,21 @@ public class Token {
         // TODO: Some special scenarios may need to be tackled
         // i.e. "\\", StrConst;
         // Maybe CharConst
-        return type.toString() + " " + value;
+        if (type == TokenType.StringConst) {
+            StringBuilder builder = new StringBuilder();
+            builder.append('\"');
+            for (char c : value.toCharArray()) {
+                switch (c) {
+                    case '\n': builder.append("\\n"); break;
+                    case '\"': builder.append("\\\""); break;
+                    default: builder.append(c);
+                }
+            }
+            builder.append('\"');
+            return builder.toString();
+        } else {
+            return type.toString() + " " + value;
+        }
     }
 
     @Override

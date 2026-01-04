@@ -45,6 +45,10 @@ public class ValSymbol extends Symbol {
 
     public Value getValue() { return value; }
 
+    public boolean isConst() {
+        return type == Type.Const;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

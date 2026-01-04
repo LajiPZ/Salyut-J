@@ -40,7 +40,11 @@ public class EliminateReadOnlyGlobal implements Pass {
     private HashMap<Value, List<Integer>> recognize(IrModule module) {
         HashMap<Value, List<Integer>> readOnly = new HashMap<>();
         for (GlobalVariable gv : module.getGlobalVariableList()) {
-            readOnly.put(gv.getSymbol().getValue(), gv.getInitList());
+            if (!(gv.getSymbol().getDataType() instanceof ArrayType)) {
+                readOnly.put(gv.getSymbol().getValue(), gv.getInitList());
+            } else if (gv.getSymbol().isConst()) {
+                readOnly.put(gv.getSymbol().getValue(), gv.getInitList());
+            }
         }
         for (Function function : module.getFunctions()) {
             for (var n : function.getBBlocks()) {
