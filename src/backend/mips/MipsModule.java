@@ -7,6 +7,7 @@ import backend.mips.operand.AReg;
 import backend.mips.operand.CP1Reg;
 import backend.mips.operand.Immediate;
 import backend.mips.operand.VReg;
+import backend.mips.process.ConservativeRemovePhi;
 import backend.mips.process.RemovePhi;
 import backend.mips.process.VReg2PReg;
 import frontend.datatype.BaseType;
@@ -94,7 +95,11 @@ public class MipsModule {
 
     private void runRemovePhi() {
         for (MipsFunction func : functions) {
-            new RemovePhi(func).run();
+            if (Settings.OptimizeConfig.useConservativeRemovePhi) {
+                new ConservativeRemovePhi(func).run();
+            } else {
+                new RemovePhi(func).run();
+            }
         }
     }
 

@@ -103,7 +103,7 @@ public class Executor {
                 new DominatorAnalysis(),
                 new EliminateDeadCode(),
 
-                new InlineFunction(),
+                new InlineFunction(), // 高风险
                 new ConstantFolding(),
                 new ControlFlowAnalysis(),
                 new DominatorAnalysis(),
@@ -120,7 +120,7 @@ public class Executor {
                 new ControlFlowAnalysis(),
                 new DominatorAnalysis(),
                 new LoopAnalysis(),
-                new LoopExtend(),
+                new LoopExtend(), // 高风险
                 new RenameValues()/**/
             );
             for (int i = 0; i < passes.size(); i++) {
