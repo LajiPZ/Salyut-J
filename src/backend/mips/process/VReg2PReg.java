@@ -1030,6 +1030,9 @@ public class VReg2PReg {
             releaseSpillLocMap.put(spillStore, spillLoc);
 
             // 原文似乎把insert笔误成了delete...
+            // On 260109：在压力极高的情况下，我们按理只能诉诸局部溢出，但我们已无精力处理这事，如果遇到这种情况，建议找办法给寄存器使用降频，或者表演一下现场修这玩意...
+            // 怎么修呢？首先不得不留2个寄存器；然后，对于def，在指令后加store，对于use，指令前加load...
+            if (colorMap.get(target) == null) throw new RuntimeException("You shouldn't see this");
             freeRegisters.add(colorMap.get(target));
             localSpillDefMap.put(colorMap.get(target), startTimeR.get(target));
             // System.out.println("Spilled: " + target.toString());

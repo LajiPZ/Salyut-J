@@ -12,6 +12,7 @@ import frontend.llvm.value.instruction.IGep;
 import frontend.llvm.value.instruction.ILoad;
 import frontend.llvm.value.instruction.IStore;
 import frontend.llvm.value.instruction.Inst;
+import settings.Settings;
 import utils.DoublyLinkedList;
 
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public class EliminateReadOnlyGlobal implements Pass {
         for (GlobalVariable gv : module.getGlobalVariableList()) {
             if (!(gv.getSymbol().getDataType() instanceof ArrayType)) {
                 readOnly.put(gv.getSymbol().getValue(), gv.getInitList());
-            } else if (gv.getSymbol().isConst()) {
+            } else if (Settings.OptimizeConfig.ignoreGlobalArrayCheck || gv.getSymbol().isConst()) {
                 readOnly.put(gv.getSymbol().getValue(), gv.getInitList());
             }
         }

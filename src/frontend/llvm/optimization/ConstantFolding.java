@@ -44,6 +44,7 @@ public class ConstantFolding implements Pass {
                             } else {
                                 opcode = ((ICompare) inst).getOp();
                             }
+                            if (opcode == Operator.DIV && ((IntConstant) inst.getOperand(1)).getValue() == 0) continue;
                             int result = opcode.calc(
                                 ((IntConstant) inst.getOperand(0)).getValue(),
                                 ((IntConstant) inst.getOperand(1)).getValue()

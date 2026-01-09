@@ -180,7 +180,7 @@ public class InlineFunction implements Pass {
             var pair = pendingCalls.pop();
             DoublyLinkedList.Node<Inst> node = pair.getValue1();
             BBlock blk = pair.getValue2();
-            execute(module, node, blk, callAtFunction, new HashSet<>());
+            execute(module, node, blk, callAtFunction, new HashSet<>(activeFunctions));
         }
 
         while (!recursiveCalls.isEmpty()) {

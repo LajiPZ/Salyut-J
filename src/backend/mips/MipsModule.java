@@ -42,10 +42,13 @@ public class MipsModule {
             if (Settings.OptimizeConfig.allowGlobalVarInCP1) {
                 Value value = gv.getSymbol().getValue();
                 if (((PointerType) value.getType()).getBaseType() instanceof BaseType) {
-                    CP1Reg cp1Reg = CP1Reg.availableCP1Regs.iterator().next();
-                    CP1Reg.availableCP1Regs.remove(cp1Reg);
-                    globalVarsInCP1Reg.put(value, cp1Reg);
-                    forCP1Init.put(gv, cp1Reg);
+                    var iterator = CP1Reg.availableCP1Regs.iterator();
+                    if (iterator.hasNext()) {
+                        CP1Reg cp1Reg = CP1Reg.availableCP1Regs.iterator().next();
+                        CP1Reg.availableCP1Regs.remove(cp1Reg);
+                        globalVarsInCP1Reg.put(value, cp1Reg);
+                        forCP1Init.put(gv, cp1Reg);
+                    }
                 }
             }
         }
