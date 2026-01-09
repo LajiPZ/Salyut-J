@@ -144,6 +144,10 @@ public class VReg2PReg {
         // 1. refill
         for (MipsBlock block : function.getBlocks()) {
             for (DoublyLinkedList.Node<Instruction> node : block.getInstructions()) {
+                // TODO：如果你要给局部也加溢出，则在这里改
+                // Config.temporaryRegisters.get(temporaryRegisterIndex ^= 1);
+                // 读取useVRegs，如果有SpillLoc，则在前面load进k1/k2
+                // 读取defVRegs，如果有SpillLoc，则在后面加Store进SpillLoc
                 Instruction instruction = node.getValue();
                 instruction.fillPReg(colorMap);
             }
@@ -163,6 +167,7 @@ public class VReg2PReg {
             }
 
             HashSet<PReg> stackSavedPRegs = new HashSet<>();
+            // 事实上这样是会出问题的，如果栈上多次调用了同一个函数呢？
             HashMap<PReg, CP1Reg> CP1SaveMap = new HashMap<>();
             for (PReg pReg : assignedPRegs) {
                 if (Settings.OptimizeConfig.allowCallSaveToCP1) {
