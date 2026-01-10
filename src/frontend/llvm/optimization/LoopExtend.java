@@ -118,13 +118,20 @@ public class LoopExtend implements Pass {
         replacementMap.put(now, currentNewBBlock);
         returnBBlocks.add(currentNewBBlock);
         var currentINode = now.getInstructions().getHead();
+
+        HashMap<Value, Value> knownTemp = new HashMap<>();
+        HashMap<Value, Value> replacementTemp = new HashMap<>();
+        HashSet<Value> knownRemoveTemp = new HashSet<>();
+        HashSet<Value> replacementRemoveTemp = new HashSet<>();
+
         do {
             if (cnt >= MAX_ITERATIONS) throw new RuntimeException("Max iterations reached");
             Inst inst = currentINode.getValue();
             Inst newInst = inst.clone();
+
             if (inst instanceof IPhi phi) {
-                knownMap.remove(inst);
-                replacementMap.remove(inst);
+                knownRemoveTemp.add(inst);
+                replacementRemoveTemp.add(inst);
                 Value valueFromSrc = null;
                 for (var sourcePair : phi.getSourcePairs()) {
                     if (sourcePair.getValue1() == prev) {
@@ -133,14 +140,29 @@ public class LoopExtend implements Pass {
                     }
                 }
                 if (valueFromSrc instanceof IntConstant) {
-                    knownMap.put(inst, valueFromSrc);
+                    knownTemp.put(inst, valueFromSrc);
                 } else if (knownMap.containsKey(valueFromSrc)) {
-                    knownMap.put(inst, knownMap.get(valueFromSrc));
+                    knownTemp.put(inst, knownMap.get(valueFromSrc));
                 } else {
                     valueFromSrc = replacementMap.getOrDefault(valueFromSrc, valueFromSrc);
-                    replacementMap.put(inst, valueFromSrc);
+                    replacementTemp.put(inst, valueFromSrc);
                 }
                 currentINode = currentINode.getNext();
+                if (!(currentINode.getValue() instanceof IPhi)) {
+                    for (Value val : knownRemoveTemp) {
+                        knownMap.remove(val);
+                    }
+                    for (Value val : replacementRemoveTemp) {
+                        replacementMap.remove(val);
+                    }
+                    knownRemoveTemp.clear();
+                    replacementRemoveTemp.clear();
+
+                    knownMap.putAll(knownTemp);
+                    replacementMap.putAll(replacementTemp);
+                    knownTemp.clear();
+                    replacementTemp.clear();
+                }
             }
             else if (inst instanceof IBranch branch) {
                 if (branch.isConditinal()) {

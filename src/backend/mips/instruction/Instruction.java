@@ -41,8 +41,6 @@ abstract public class Instruction {
         if (prev instanceof VReg vReg) {
             if (colorMap.containsKey(vReg)) {
                 return colorMap.get(vReg);
-            } else {
-                throw new RuntimeException("Can't find color for " + vReg);
             }
         }
         return prev;

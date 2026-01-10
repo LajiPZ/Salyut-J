@@ -8,6 +8,7 @@ import backend.mips.operand.CP1Reg;
 import backend.mips.operand.Immediate;
 import backend.mips.operand.VReg;
 import backend.mips.process.ConservativeRemovePhi;
+import backend.mips.process.ConservativeVReg2PReg;
 import backend.mips.process.RemovePhi;
 import backend.mips.process.VReg2PReg;
 import frontend.datatype.BaseType;
@@ -108,7 +109,11 @@ public class MipsModule {
             this.printMIPS(Settings.FilePath.MIPSBeforePRegAlloc);
         }
         for (MipsFunction func : functions) {
-            new VReg2PReg(func).run();
+            if (Settings.OptimizeConfig.useConservativeVReg2PReg) {
+                new ConservativeVReg2PReg(func).run();
+            } else {
+                new VReg2PReg(func).run();
+            }
         }
     }
 

@@ -29,10 +29,12 @@ final public class Settings {
     public static class OptimizeConfig {
         public static boolean enableOptimization = true;
         public static boolean allowGlobalVarInCP1 = true;
+        public static boolean allowSpillToCP1 = false; // TODO: 仔细一想，和不能caller save一样，这里一样会引起问题
         public static boolean allowCallSaveToCP1 = false; // This is problematic, only use it when you need extra performance；e.g. recursion
         public static int maxLoopExtendIterations = 100;
-        public static int oscillateIterations = 7; // This may lead to Xtra-long processing time, consider setting it to 0
+        public static int oscillateIterations = 0; // This may lead to Xtra-long processing time, consider setting it to 0
         public static boolean ignoreGlobalArrayCheck = false; // This is problematic as well, when the globalArray is written, it may cause problems
         public static boolean useConservativeRemovePhi = true;
+        public static boolean useConservativeVReg2PReg = true;
     }
 }
